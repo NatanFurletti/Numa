@@ -1,5 +1,6 @@
 // Início (docs/SCREENS.md §3.2): sequência de dias, "Continuar" e atalhos.
 
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { continueStageId } from '@/engine/progression';
@@ -14,9 +15,12 @@ import { colors, maxContentWidth, spacing } from '@/ui/theme';
 interface HomeScreenProps {
   onContinue: (stageId: string) => void;
   onLevels: () => void;
+  onPractice: () => void;
+  onSettings: () => void;
 }
 
-export function HomeScreen({ onContinue, onLevels }: HomeScreenProps) {
+export function HomeScreen({ onContinue, onLevels, onPractice, onSettings }: HomeScreenProps) {
+  const { t } = useTranslation();
   const stages = useProgress((s) => s.stages);
   const streak = useProgress((s) => s.streak);
 
@@ -30,16 +34,18 @@ export function HomeScreen({ onContinue, onLevels }: HomeScreenProps) {
         <Text style={styles.title} accessibilityRole="header">
           Numa
         </Text>
-        <Text style={styles.subtitle}>Treine sua mente alguns minutos por dia.</Text>
-        {days > 0 ? (
-          <Text style={styles.streak}>{`🔥 ${days} ${days === 1 ? 'dia' : 'dias'}`}</Text>
-        ) : null}
+        <Text style={styles.subtitle}>{t('home.tagline')}</Text>
+        {days > 0 ? <Text style={styles.streak}>{t('home.streak', { count: days })}</Text> : null}
         <View style={styles.actions}>
           <Button
-            label={`${neverPlayed ? 'Começar' : 'Continuar'} — ${stageLabel(stageId)}`}
+            label={t(neverPlayed ? 'home.start' : 'home.continue', {
+              stage: stageLabel(t, stageId),
+            })}
             onPress={() => onContinue(stageId)}
           />
-          <Button label="Níveis" onPress={onLevels} variant="secondary" />
+          <Button label={t('home.levels')} onPress={onLevels} variant="secondary" />
+          <Button label={t('home.practice')} onPress={onPractice} variant="secondary" />
+          <Button label={t('home.settings')} onPress={onSettings} variant="secondary" />
         </View>
       </View>
     </View>

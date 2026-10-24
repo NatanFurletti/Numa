@@ -17,6 +17,7 @@ interface HistoryData {
 
 interface HistoryState extends HistoryData {
   addRound: (round: RoundRecord) => void;
+  clearHistory: () => void;
   saveReviewAttempts: (
     roundId: string,
     attempts: { roundIndex: number; attempts: number }[],
@@ -25,7 +26,7 @@ interface HistoryState extends HistoryData {
 
 export const HISTORY_KEY = 'numa.history';
 
-const MODES = ['challenge', 'practice', 'warmup'];
+const MODES = ['challenge', 'practice', 'warmup', 'placement'];
 const STATUSES = ['completed', 'abandoned'];
 
 /** Checagem leve: o suficiente para as telas não quebrarem com um registro estragado. */
@@ -55,6 +56,7 @@ export function createHistoryStore(storage: KeyValueStorage = deviceStorage) {
       (set) => ({
         rounds: [],
         addRound: (round) => set((state) => ({ rounds: pruneHistory([...state.rounds, round]) })),
+        clearHistory: () => set({ rounds: [] }),
         saveReviewAttempts: (roundId, attempts) =>
           set((state) => {
             if (!state.rounds.some((r) => r.id === roundId)) return state;

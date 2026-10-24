@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { ZoomIn } from 'react-native-reanimated';
 
@@ -9,12 +10,13 @@ const STAR_DELAY_MS = 180;
 
 /** Estrelas da rodada, uma depois da outra (animação simples). */
 export function Stars({ count }: { count: StarCount }) {
+  const { t } = useTranslation();
   return (
     <View
       style={styles.row}
       accessible
       accessibilityRole="image"
-      accessibilityLabel={`${count} de ${MAX_STARS} estrelas`}
+      accessibilityLabel={t('result.stars', { count })}
     >
       {Array.from({ length: MAX_STARS }, (_, i) => {
         const filled = i < count;

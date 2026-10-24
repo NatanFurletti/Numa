@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, spacing } from '@/ui/theme';
@@ -9,6 +10,7 @@ interface TimeBarProps {
 }
 
 export function TimeBar({ ratio, timeUp }: TimeBarProps) {
+  const { t } = useTranslation();
   if (ratio === null) return null;
   // Tempo esgotado: a barra fica cheia e âmbar.
   const fill = timeUp ? 1 : ratio;
@@ -18,7 +20,7 @@ export function TimeBar({ ratio, timeUp }: TimeBarProps) {
       <View
         accessible
         accessibilityRole="progressbar"
-        accessibilityLabel="Tempo restante"
+        accessibilityLabel={t('round.timeLeft')}
         accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100) }}
         style={styles.track}
       >
@@ -29,7 +31,7 @@ export function TimeBar({ ratio, timeUp }: TimeBarProps) {
           ]}
         />
       </View>
-      {timeUp ? <Text style={styles.timeUp}>tempo esgotado, continue!</Text> : null}
+      {timeUp ? <Text style={styles.timeUp}>{t('round.timeUp')}</Text> : null}
     </View>
   );
 }

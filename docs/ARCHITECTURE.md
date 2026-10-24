@@ -78,7 +78,7 @@ numa/
 │  │  └─ settings/
 │  ├─ store/                   # Zustand: progress, settings, history
 │  ├─ storage/                 # Interface Storage + implementação AsyncStorage
-│  ├─ i18n/                    # index.ts, pt.json, en.json
+│  ├─ i18n/                    # index.ts, pt.ts, en.ts (D-024)
 │  ├─ ui/                      # Botões, tema (cores, fontes), layout
 │  └─ lib/                     # clock.ts (relógio injetável), id.ts
 ├─ e2e/                        # Playwright

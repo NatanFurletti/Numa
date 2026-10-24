@@ -1,5 +1,7 @@
-// Tela de níveis (docs/SCREENS.md §3.3): níveis com as 3 etapas, estrelas e cadeados.
+// Tela de níveis (docs/SCREENS.md §3.3) e escolha do treino livre (§3.8).
+// No treino livre: a mesma lista, só com as etapas desbloqueadas e sem estrelas.
 
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { LEVELS } from '@/engine/config/levels';
@@ -10,12 +12,23 @@ import { colors, maxContentWidth, spacing } from '@/ui/theme';
 import { levelName, levelTitle } from './names';
 
 interface LevelsScreenProps {
+  /** levels: todas as etapas, com estrelas e cadeados. practice: só as desbloqueadas. */
+  variant?: 'levels' | 'practice';
   onPlay: (stageId: string) => void;
   onBack: () => void;
 }
 
-export function LevelsScreen({ onPlay, onBack }: LevelsScreenProps) {
+export function LevelsScreen({ variant = 'levels', onPlay, onBack }: LevelsScreenProps) {
+  const { t } = useTranslation();
   const stages = useProgress((s) => s.stages);
+  const practice = variant === 'practice';
+
+  const levels = LEVELS.map((level) => ({
+    id: level.id,
+    stages: level.stages
+      .map((stage) => ({ letter: stage.id, id: `${level.id}-${stage.id}` }))
+      .filter((stage) => !practice || stages[stage.id]?.unlocked),
+  })).filter((level) => level.stages.length > 0);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.screen}>
@@ -23,7 +36,7 @@ export function LevelsScreen({ onPlay, onBack }: LevelsScreenProps) {
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Voltar"
+            accessibilityLabel={t('common.back')}
             onPress={onBack}
             hitSlop={12}
             style={styles.back}
@@ -31,29 +44,28 @@ export function LevelsScreen({ onPlay, onBack }: LevelsScreenProps) {
             <Text style={styles.backText}>←</Text>
           </Pressable>
           <Text style={styles.title} accessibilityRole="header">
-            Níveis
+            {practice ? t('practice.title') : t('levels.title')}
           </Text>
         </View>
+        {practice ? <Text style={styles.subtitle}>{t('practice.subtitle')}</Text> : null}
 
-        {LEVELS.map((level) => (
+        {levels.map((level) => (
           <View key={level.id} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.levelTitle}>{levelTitle(level.id)}</Text>
-              <Text style={styles.levelName}>{levelName(level.id)}</Text>
+              <Text style={styles.levelTitle}>{levelTitle(t, level.id)}</Text>
+              <Text style={styles.levelName}>{levelName(t, level.id)}</Text>
             </View>
             <View style={styles.stages}>
-              {level.stages.map((stage) => {
-                const stageId = `${level.id}-${stage.id}`;
-                return (
-                  <StageButton
-                    key={stageId}
-                    levelLabel={levelTitle(level.id)}
-                    letter={stage.id}
-                    progress={stages[stageId]}
-                    onPress={() => onPlay(stageId)}
-                  />
-                );
-              })}
+              {level.stages.map((stage) => (
+                <StageButton
+                  key={stage.id}
+                  levelLabel={levelTitle(t, level.id)}
+                  letter={stage.letter}
+                  progress={stages[stage.id]}
+                  showStars={!practice}
+                  onPress={() => onPlay(stage.id)}
+                />
+              ))}
             </View>
           </View>
         ))}
@@ -66,18 +78,24 @@ function StageButton({
   levelLabel,
   letter,
   progress,
+  showStars,
   onPress,
 }: {
   levelLabel: string;
   letter: string;
   progress: StageProgress | undefined;
+  showStars: boolean;
   onPress: () => void;
 }) {
+  const { t } = useTranslation();
   const unlocked = progress?.unlocked === true;
   const stars = progress?.bestStars ?? 0;
-  const label = unlocked
-    ? `${levelLabel}, etapa ${letter}, ${stars} de 3 estrelas`
-    : `${levelLabel}, etapa ${letter}, bloqueada`;
+  const params = { level: levelLabel, letter, stars };
+  const label = !unlocked
+    ? t('levels.stageButtonLocked', params)
+    : showStars
+      ? t('levels.stageButton', params)
+      : t('practice.stageButton', params);
 
   return (
     <Pressable
@@ -89,14 +107,14 @@ function StageButton({
       style={({ pressed }) => [styles.stage, !unlocked && styles.locked, pressed && styles.pressed]}
     >
       <Text style={styles.letter}>{letter}</Text>
-      {unlocked ? (
+      {!unlocked ? (
+        <Text style={styles.lock}>🔒</Text>
+      ) : showStars ? (
         <Text style={styles.stars}>
           {'★'.repeat(stars)}
           <Text style={styles.emptyStars}>{'☆'.repeat(3 - stars)}</Text>
         </Text>
-      ) : (
-        <Text style={styles.lock}>🔒</Text>
-      )}
+      ) : null}
     </Pressable>
   );
 }
@@ -135,6 +153,10 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 28,
     fontWeight: '700',
+  },
+  subtitle: {
+    color: colors.textMuted,
+    fontSize: 16,
   },
   card: {
     gap: spacing.sm,

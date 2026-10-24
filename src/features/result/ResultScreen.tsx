@@ -1,5 +1,7 @@
 // Tela de resultado (docs/GAME_RULES.md §5, docs/SCREENS.md §3.6).
 
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { roundOutcome, type RoundOutcome, type RoundRecord } from '@/engine/round-record';
@@ -21,12 +23,8 @@ interface ResultScreenProps {
   onHome: () => void;
 }
 
-const MODE_LABEL: Partial<Record<PlayMode, string>> = {
-  warmup: 'Aquecimento',
-  practice: 'Treino livre',
-};
-
 export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreenProps) {
+  const { t } = useTranslation();
   const rounds = useHistory((s) => s.rounds);
   const round = rounds.find((r) => r.id === roundId);
   const warmupNext = useProgress((s) =>
@@ -37,41 +35,37 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
   if (!round || !outcome) {
     return (
       <View style={[styles.screen, styles.centered]}>
-        <Text style={styles.message}>Rodada não encontrada.</Text>
-        <Button label="Início" onPress={onHome} />
+        <Text style={styles.message}>{t('common.roundNotFound')}</Text>
+        <Button label={t('common.home')} onPress={onHome} />
       </View>
     );
   }
 
-  const comparison = comparisonText(outcome.comparison);
-  const modeLabel = MODE_LABEL[round.mode];
+  const comparison = comparisonText(t, outcome.comparison);
+  const modeLabel =
+    round.mode === 'warmup' || round.mode === 'practice' ? t(`modes.${round.mode}`) : null;
   const warmupAhead = warmupNext && round.mode === 'challenge' && !outcome.passed;
-  const playAgain = playAgainAction(round, outcome, warmupAhead);
+  const playAgain = playAgainAction(t, round, outcome, warmupAhead);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.screen}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.stage}>{stageLabel(round.stageId)}</Text>
+          <Text style={styles.stage}>{stageLabel(t, round.stageId)}</Text>
           {modeLabel ? <Text style={styles.mode}>{modeLabel}</Text> : null}
         </View>
 
         <View style={styles.scoreBlock}>
           <Text style={styles.score}>{`${round.correct}/${round.total}`}</Text>
-          <Text style={styles.time}>{scoreTimeText(round)}</Text>
+          <Text style={styles.time}>{scoreTimeText(t, round)}</Text>
         </View>
 
         {outcome.stars !== null ? <Stars count={outcome.stars} /> : null}
         {outcome.message ? (
-          <Text style={styles.message}>{messageText(outcome.message)}</Text>
+          <Text style={styles.message}>{messageText(t, outcome.message)}</Text>
         ) : null}
         {comparison ? <Text style={styles.comparison}>{comparison}</Text> : null}
-        {warmupAhead ? (
-          <Text style={styles.warmup}>
-            A próxima rodada é um aquecimento, com contas da etapa anterior. Depois, o desafio volta
-            ao normal.
-          </Text>
-        ) : null}
+        {warmupAhead ? <Text style={styles.warmup}>{t('result.warmupAhead')}</Text> : null}
 
         <View style={styles.list}>
           {round.problems.map((problem, i) => (
@@ -80,35 +74,49 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
         </View>
 
         <View style={styles.actions}>
-          {outcome.wrongCount > 0 ? <Button label="Corrigir erradas" onPress={onReview} /> : null}
+          {outcome.wrongCount > 0 ? <Button label={t('result.review')} onPress={onReview} /> : null}
           <Button
             label={playAgain.label}
             onPress={() => onPlay(playAgain.stageId, playAgain.mode)}
             variant={outcome.wrongCount > 0 ? 'secondary' : 'primary'}
           />
-          <Button label="Início" onPress={onHome} variant="secondary" />
+          <Button label={t('common.home')} onPress={onHome} variant="secondary" />
         </View>
       </View>
     </ScrollView>
   );
 }
 
-function playAgainAction(round: RoundRecord, outcome: RoundOutcome, warmupAhead: boolean) {
+function playAgainAction(
+  t: TFunction,
+  round: RoundRecord,
+  outcome: RoundOutcome,
+  warmupAhead: boolean,
+) {
   const same = { stageId: round.stageId, mode: 'challenge' as PlayMode };
-  if (round.mode === 'practice')
-    return { ...same, mode: 'practice' as PlayMode, label: 'Treinar de novo' };
-  if (round.mode === 'warmup') return { ...same, label: 'Voltar ao desafio' };
+  if (round.mode === 'practice') {
+    return { ...same, mode: 'practice' as PlayMode, label: t('result.practiceAgain') };
+  }
+  if (round.mode === 'warmup') return { ...same, label: t('result.backToChallenge') };
   // O pedido continua sendo um desafio: a rodada vira aquecimento sozinha (playModeFor).
-  if (warmupAhead) return { ...same, label: 'Fazer aquecimento' };
-  if (!outcome.passed) return { ...same, label: 'Tentar de novo' };
-  if (outcome.nextStageId) return { ...same, stageId: outcome.nextStageId, label: 'Próxima etapa' };
-  return { ...same, label: 'Jogar de novo' };
+  if (warmupAhead) return { ...same, label: t('result.doWarmup') };
+  if (!outcome.passed) return { ...same, label: t('result.retry') };
+  if (outcome.nextStageId) {
+    return { ...same, stageId: outcome.nextStageId, label: t('result.nextStage') };
+  }
+  return { ...same, label: t('result.playAgain') };
 }
 
 function ProblemRow({ problem }: { problem: ProblemAttempt }) {
+  const { t } = useTranslation();
   const line = problemLine(problem);
-  const answered = problem.answer === null ? 'sem resposta' : `você respondeu ${problem.answer}`;
-  const label = problem.correct ? `${line}, certa` : `${line}, errada, ${answered}`;
+  const answered =
+    problem.answer === null
+      ? t('result.noAnswer')
+      : t('result.youAnswered', { answer: problem.answer });
+  const label = problem.correct
+    ? t('result.right', { line })
+    : t('result.wrong', { line, answered });
 
   return (
     <View

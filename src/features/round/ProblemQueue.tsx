@@ -55,7 +55,9 @@ export function ProblemQueue({ problems, answerText, direction }: ProblemQueuePr
         accessible
         accessibilityLabel={`${expression} ${answerText}`.trim()}
       >
-        <Text style={styles.current}>{expression}</Text>
+        <Text testID="current-problem" style={styles.current}>
+          {expression}
+        </Text>
         <View testID="answer" style={styles.answer}>
           {direction === 'rtl' ? <Cursor /> : null}
           <Text style={styles.current}>{answerText}</Text>

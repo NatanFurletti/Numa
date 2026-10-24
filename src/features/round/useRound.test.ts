@@ -18,7 +18,9 @@ const advance = (ms: number) =>
   });
 
 async function renderRound(stageId = 'L01-A', mode: PlayMode = 'challenge') {
-  const hook = await renderHook(() => useRound({ stageId, mode, seed: SEED, direction: 'ltr' }));
+  const hook = await renderHook(() =>
+    useRound({ setup: setupRound({ stageId, mode, seed: SEED }), direction: 'ltr' }),
+  );
   const problems = setupRound({ stageId, mode, seed: SEED }).problems;
   return { ...hook, problems };
 }
@@ -172,7 +174,11 @@ describe('aviso de fim (onEnd)', () => {
   async function renderWithOnEnd() {
     const onEnd = jest.fn();
     const hook = await renderHook(() =>
-      useRound({ stageId: 'L01-A', mode: 'challenge', seed: SEED, direction: 'ltr', onEnd }),
+      useRound({
+        setup: setupRound({ stageId: 'L01-A', mode: 'challenge', seed: SEED }),
+        direction: 'ltr',
+        onEnd,
+      }),
     );
     const problems = setupRound({ stageId: 'L01-A', mode: 'challenge', seed: SEED }).problems;
     return { ...hook, problems, onEnd };

@@ -1,6 +1,7 @@
 // Tela de correção (docs/GAME_RULES.md §7, docs/SCREENS.md §3.7).
 
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -27,6 +28,7 @@ interface ReviewScreenProps {
 }
 
 export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: ReviewScreenProps) {
+  const { t } = useTranslation();
   const review = useReview({ roundId });
 
   usePhysicalKeyboard({
@@ -40,8 +42,8 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
   if (!review.found) {
     return (
       <View style={[styles.screen, styles.centered]}>
-        <Text style={styles.title}>Rodada não encontrada.</Text>
-        <Button label="Início" onPress={onHome} />
+        <Text style={styles.title}>{t('common.roundNotFound')}</Text>
+        <Button label={t('common.home')} onPress={onHome} />
       </View>
     );
   }
@@ -50,9 +52,9 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
     return (
       <View style={[styles.screen, styles.centered]}>
         <View style={[styles.content, styles.done]}>
-          <Text style={styles.title}>Tudo corrigido! 👏</Text>
-          <Button label="Voltar ao resultado" onPress={onBack} />
-          <Button label="Início" onPress={onHome} variant="secondary" />
+          <Text style={styles.title}>{t('review.done')}</Text>
+          <Button label={t('review.backToResult')} onPress={onBack} />
+          <Button label={t('common.home')} onPress={onHome} variant="secondary" />
         </View>
       </View>
     );
@@ -66,14 +68,16 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Voltar"
+            accessibilityLabel={t('common.back')}
             onPress={onBack}
             hitSlop={12}
             style={styles.close}
           >
             <Text style={styles.closeText}>✕</Text>
           </Pressable>
-          <Text style={styles.progress}>{`${review.position + 1} de ${review.total}`}</Text>
+          <Text style={styles.progress}>
+            {t('review.progress', { current: review.position + 1, total: review.total })}
+          </Text>
           <View style={styles.close} />
         </View>
 
@@ -82,14 +86,19 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
         <View style={styles.middle}>
           <Shake trigger={review.wrongCount}>
             <View style={styles.row}>
-              <Text style={styles.expression}>{formatProblem(item.problem)}</Text>
+              <Text testID="current-problem" style={styles.expression}>
+                {formatProblem(item.problem)}
+              </Text>
               <Answer
                 status={review.status}
                 text={review.status === 'revealed' ? String(item.expected) : review.answerText}
                 direction={review.direction}
               />
               {review.status === 'correct' ? (
-                <Text style={[styles.expression, styles.correct]} accessibilityLabel="Certa!">
+                <Text
+                  style={[styles.expression, styles.correct]}
+                  accessibilityLabel={t('review.correct')}
+                >
                   ✓
                 </Text>
               ) : null}
@@ -98,18 +107,20 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
 
           <Text style={styles.hint}>
             {review.status === 'revealed'
-              ? 'Esta é a resposta certa.'
+              ? t('review.revealed')
               : review.lastWrong
-                ? 'Quase! Tente de novo.'
+                ? t('review.tryAgain')
                 : item.roundAnswer === null
-                  ? 'Na rodada você não respondeu.'
-                  : `Na rodada você respondeu ${item.roundAnswer}`}
+                  ? t('review.roundNoAnswer')
+                  : t('review.roundAnswer', { answer: item.roundAnswer })}
           </Text>
 
           {review.canReveal ? (
-            <Button label="Ver resposta" onPress={review.reveal} variant="secondary" />
+            <Button label={t('review.reveal')} onPress={review.reveal} variant="secondary" />
           ) : null}
-          {review.status === 'revealed' ? <Button label="Próxima" onPress={review.next} /> : null}
+          {review.status === 'revealed' ? (
+            <Button label={t('review.next')} onPress={review.next} />
+          ) : null}
         </View>
 
         <Keypad

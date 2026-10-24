@@ -151,3 +151,46 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Nomes curtos dos níveis** em `src/features/levels/names.ts`. Vão para o i18n no M5, assim como o idioma salvo (fixo em `pt` até lá).
 - **Cobertura:** `src/storage` exige ≥ 85%, o mesmo alvo do store.
 
+### D-024 · Detalhes do M5 (treino livre, configurações e i18n)
+**Data:** 2026-10-24
+- **Dicionários em TypeScript** (`src/i18n/pt.ts` e `en.ts`), e não em JSON como previa o ARCHITECTURE. O `en.ts` tem o tipo do `pt.ts`, então uma chave faltando ou sobrando em inglês quebra o typecheck. As chaves de `t('...')` também são tipadas (`src/i18n/i18next.d.ts`).
+- **Idioma padrão:** o do aparelho (`expo-localization`), se for português ou inglês. Para qualquer outro idioma, português (GAME_RULES §12).
+- **`numa.settings` sobe para a versão 2.** Na v1 (M4), o idioma era gravado sempre como `pt`, sem a pessoa poder escolher. A migração 1 → 2 descarta esse valor, e o app volta a seguir o aparelho. É a primeira migração real, testada com um dado gravado pelo M4.
+- **O app espera o idioma escolhido entrar** (`useLanguageSync`) antes de mostrar a primeira tela, para nada piscar no idioma errado.
+- **Treino livre** reaproveita a tela de níveis (`variant="practice"`): só as etapas desbloqueadas, sem estrelas, e só os níveis com alguma etapa liberada.
+- **Apagar progresso:** apaga o progresso (estrelas, etapas, sequência) e o histórico de rodadas. Idioma, direção e a dica já vista ficam. São duas confirmações ("Apagar todo o progresso?" e "Tem certeza?").
+- **"Refazer nivelamento" foi para o M6**, junto com a tela de nivelamento. Sem ela, o botão não teria o que abrir.
+- **Testes em português:** o `jest.setup.js` simula o aparelho em pt-BR e inicializa o i18n em pt. Os testes de inglês trocam o idioma e voltam ao pt no fim.
+- **Nomes dos idiomas** sempre no próprio idioma ("Português", "English"), qualquer que seja o idioma do app.
+
+### D-025 · Ambientes de produção e homologação
+**Data:** 2026-10-24
+**Decisão:** dois ambientes na Vercel, separados por branch.
+- **Produção:** branch `main` (Production Branch da Vercel). Recebe só PRs vindos de `homolog`.
+- **Homologação:** branch `homolog`, publicada como Preview com um endereço fixo (domínio ligado à branch). Recebe os PRs de cada marco ou feature.
+- **Fluxo:** branch de trabalho sai de `homolog` → PR para `homolog` → testar no endereço de homologação → PR de `homolog` para `main` → produção.
+**Por quê:** dá para mostrar uma versão estável para testes com pessoas, enquanto o projeto avança, sem que cada merge chegue direto a elas. Os dados de cada ambiente ficam separados, porque são endereços diferentes e cada endereço tem o seu `localStorage`.
+**Plano gratuito:** a Vercel Hobby não tem "ambientes personalizados", então homologação é um Preview com domínio fixo. Se um dia for preciso, migrar para um Custom Environment não muda o fluxo de branches.
+
+### D-026 · Nivelamento pela mediana do tempo por conta, e boas-vindas
+**Data:** 2026-10-24
+**Substitui:** a regra "≥ 4/5 certas dentro do tempo" do GAME_RULES §10.
+**Contexto:** medir só o tempo total do bloco deixava uma única hesitação (alguém chamou, a pessoa se distraiu) reprovar quem domina o nível. E a primeira conta do teste sai mais lenta, porque a pessoa ainda está conhecendo o teclado. Medir só o tempo de cada conta, sem o acerto, também não serve: o tamanho da resposta pesa no tempo de digitar, e rápido-e-errado não pode passar.
+**Decisão:**
+- Passa no bloco com **4 de 5 certas** e a **mediana do tempo por conta** ≤ o ritmo da etapa B (tempo-limite da B ÷ contas da rodada). A barra de tempo continua mostrando metade do tempo da B, como referência.
+- No **primeiro bloco**, a 1ª conta fica fora do cálculo do tempo (`placement.ignoreFirstProblemTime`).
+- Cada bloco vai para o histórico (`mode: 'placement'`, etapa B do checkpoint), com o tempo de cada conta. Isso permite calibrar a regra na Fase 2 com dados reais. Os blocos não contam como dia jogado na sequência.
+- **Boas-vindas** só para quem nunca jogou. Quem já jogava antes do M6 (sem `onboardingDone` salvo) vai direto ao início.
+- O resultado do nivelamento é aplicado assim que o último bloco termina, e não ao tocar em "Vamos lá". Assim vale mesmo se a pessoa fechar o app nessa tela. Refazer o nivelamento nunca bloqueia o que já estava liberado.
+
+### D-027 · PWA, testes E2E e o bug da troca de idioma (M6)
+**Data:** 2026-10-24
+- **PWA:** `public/manifest.json`, ícones em `public/icons` e o service worker gerado pelo Workbox depois do `expo export` (`npm run build:web`, config em `workbox-config.js`). O registro do service worker fica no `src/app/+html.tsx` e só entra no build de produção.
+- **`+html.tsx` no SDK 58:** precisa renderizar `headNodes` e `bodyNodes` de `useServerDocumentContext()`, porque são eles que trazem os scripts do app. O guia de PWA do Expo ainda mostra o template antigo. Com ele, a página abre em branco.
+- **Atualizações:** o service worker guarda o site inteiro. Um deploy novo chega na visita seguinte: o service worker novo baixa os arquivos em segundo plano e assume na próxima abertura (`skipWaiting`, `clientsClaim`). Um aviso de "nova versão disponível" fica para depois, se fizer falta.
+- **Offline em `/result/<id>` e `/review/<id>`:** não há arquivo por id, então o service worker responde com o `index.html`. Todas as páginas estáticas são iguais (o app só desenha depois de carregar os dados salvos), então isso não tem efeito colateral.
+- **Ícone provisório:** um "+" branco num círculo azul, gerado por `scripts/generate-pwa-icons.js`. Trocar quando houver um logo. O ícone dos apps nativos (`app.json`) continua o padrão do Expo até a Fase 3.
+- **E2E sem seed fixa:** os testes leem a conta na tela e calculam a resposta. Isso substitui a ideia do TESTING de uma seed por variável de ambiente, e evita um build especial só para testes. Rodam no CI em um job próprio (`e2e`), com o Chromium do Playwright, emulando um celular (Pixel 7) em pt-BR.
+- **Bug corrigido (vinha do M5):** trocar o idioma nas configurações voltava o app ao início. O layout escondia as telas até o idioma novo entrar, o que desmontava a navegação. Agora as telas só esperam na primeira abertura (`useAppReady`). Há um teste de unidade e um E2E para isso.
+- **Botão "Sair do teste"** no nivelamento, e não "Sair": dois botões com o mesmo nome confundiam o leitor de tela.
+
