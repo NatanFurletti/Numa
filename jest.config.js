@@ -34,6 +34,8 @@ const coverageThreshold = Object.fromEntries(
 /** @type {import('jest').Config} */
 module.exports = {
   preset: 'jest-expo',
+  // Necessário para o Reanimated 4 rodar no Jest.
+  resolver: 'react-native-reanimated/jest/resolver',
   testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/dist/'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
