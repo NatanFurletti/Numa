@@ -52,12 +52,6 @@ export function comparisonText(comparison: PersonalComparison | null): string | 
   }
 }
 
-/** "L07-B" → "Nível 7 · Etapa B". */
-export function stageLabel(stageId: string): string {
-  const [level, letter] = stageId.split('-');
-  return `Nível ${Number(level.slice(1))} · Etapa ${letter}`;
-}
-
 /** "24 + 73 = 97". */
 export function problemLine(problem: Problem & { expected: number }): string {
   return `${formatProblem(problem)} ${problem.expected}`;

@@ -33,10 +33,10 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [x] Balão de dica da direção da digitação (uma vez)
 
 ### M4 · Progressão e persistência
-- [ ] Stores (settings, progress, history) com persistência e migrações
-- [ ] Tela de níveis com estrelas e cadeados
-- [ ] Início com "Continuar" e sequência de dias
-- [ ] Aquecimento após 3 falhas
+- [x] Stores (settings, progress, history) com persistência e migrações
+- [x] Tela de níveis com estrelas e cadeados
+- [x] Início com "Continuar" e sequência de dias
+- [x] Aquecimento após 3 falhas
 
 ### M5 · Treino livre, configurações e i18n
 - [ ] Treino livre

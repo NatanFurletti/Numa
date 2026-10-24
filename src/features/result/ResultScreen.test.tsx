@@ -2,11 +2,15 @@ import { render, screen, userEvent, within } from '@testing-library/react-native
 
 import type { RoundRecord } from '@/engine/round-record';
 import { useHistory } from '@/store/history';
+import { useProgress } from '@/store/progress';
 import { buildRecord } from '@/test-utils/rounds';
 
 import { ResultScreen } from './ResultScreen';
 
-beforeEach(() => useHistory.setState(useHistory.getInitialState(), true));
+beforeEach(() => {
+  useHistory.setState(useHistory.getInitialState(), true);
+  useProgress.setState(useProgress.getInitialState(), true);
+});
 
 async function renderResult(...rounds: RoundRecord[]) {
   useHistory.setState({ rounds });
@@ -87,6 +91,19 @@ describe('ResultScreen', () => {
 
     expect(onPlay).toHaveBeenCalledWith('L01-A', 'challenge');
     expect(screen.queryByRole('button', { name: 'Próxima etapa' })).not.toBeOnTheScreen();
+  });
+
+  it('depois da 3ª falha seguida: avisa do aquecimento e o botão vira "Fazer aquecimento"', async () => {
+    useProgress.setState((s) => ({
+      stages: { ...s.stages, 'L01-A': { ...s.stages['L01-A'], pendingWarmup: true } },
+    }));
+    const { onPlay, user } = await renderResult(buildRecord({ correct: 5 }));
+
+    expect(screen.getByText(/próxima rodada é um aquecimento/)).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: 'Fazer aquecimento' }));
+
+    expect(onPlay).toHaveBeenCalledWith('L01-A', 'challenge');
   });
 
   it('última etapa concluída: "Jogar de novo" no lugar de "Próxima etapa"', async () => {

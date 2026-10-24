@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { playModeFor } from '@/engine/progress';
 import { buildRoundRecord } from '@/engine/round-record';
 import { isKnownStage, type PlayMode } from '@/engine/round-setup';
 import type { InputDirection } from '@/engine/types';
 import { Keypad } from '@/features/keypad/Keypad';
 import { type KeyTarget, usePhysicalKeyboard } from '@/features/keypad/usePhysicalKeyboard';
 import { appVersion } from '@/lib/app-info';
+import { systemClock } from '@/lib/clock';
+import { localDateString } from '@/lib/date';
 import { toIsoString } from '@/lib/format';
 import { newId } from '@/lib/id';
 import { randomSeed } from '@/lib/seed';
 import { useHistory } from '@/store/history';
+import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 import { Button } from '@/ui/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
@@ -22,6 +26,7 @@ import { type RoundEnd, useRound } from './useRound';
 
 interface PlayScreenProps {
   stageId: string;
+  /** Modo pedido. Um desafio vira aquecimento se a etapa tiver aquecimento pendente. */
   mode: PlayMode;
   /** Sem ela, usa a direção das configurações. */
   direction?: InputDirection;
@@ -34,10 +39,13 @@ interface PlayScreenProps {
 }
 
 export function PlayScreen({ stageId, ...props }: PlayScreenProps) {
-  if (!isKnownStage(stageId)) {
+  const unlocked = useProgress((s) => s.stages[stageId]?.unlocked === true);
+  if (!isKnownStage(stageId) || !unlocked) {
     return (
       <View style={[styles.screen, styles.centered]}>
-        <Text style={styles.title}>Etapa não encontrada.</Text>
+        <Text style={styles.title}>
+          {isKnownStage(stageId) ? 'Esta etapa ainda está bloqueada.' : 'Etapa não encontrada.'}
+        </Text>
         <Button label="Início" onPress={props.onExit} />
       </View>
     );
@@ -47,7 +55,7 @@ export function PlayScreen({ stageId, ...props }: PlayScreenProps) {
 
 function RoundView({
   stageId,
-  mode,
+  mode: requestedMode,
   direction: directionProp,
   seed: seedProp,
   onFinished,
@@ -55,6 +63,9 @@ function RoundView({
   keyboardTarget,
 }: PlayScreenProps) {
   const [seed] = useState(() => seedProp ?? randomSeed());
+  // Decidido uma vez, ao abrir: o fim da rodada muda o progresso, mas não o modo dela.
+  const [mode] = useState(() => playModeFor(useProgress.getState(), stageId, requestedMode));
+  const recordRound = useProgress((s) => s.recordRound);
   const settingsDirection = useSettings((s) => s.inputDirection);
   const direction = directionProp ?? settingsDirection;
   const addRound = useHistory((s) => s.addRound);
@@ -66,20 +77,20 @@ function RoundView({
       return;
     }
     const id = newId();
-    addRound(
-      buildRoundRecord({
-        id,
-        appVersion,
-        stageId,
-        mode,
-        status,
-        seed,
-        startedAt: toIsoString(startedAt),
-        timeLimitMs,
-        inputDirection: direction,
-        summary,
-      }),
-    );
+    const record = buildRoundRecord({
+      id,
+      appVersion,
+      stageId,
+      mode,
+      status,
+      seed,
+      startedAt: toIsoString(startedAt),
+      timeLimitMs,
+      inputDirection: direction,
+      summary,
+    });
+    addRound(record);
+    recordRound(record, localDateString(systemClock.now()));
     if (status === 'completed') onFinished(id);
     else onExit();
   };

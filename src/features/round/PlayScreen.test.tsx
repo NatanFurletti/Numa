@@ -4,6 +4,7 @@ import { solve } from '@/engine/carry';
 import { setupRound } from '@/engine/round-setup';
 import type { PlayMode } from '@/engine/round-setup';
 import { useHistory } from '@/store/history';
+import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 
 import { PlayScreen } from './PlayScreen';
@@ -15,6 +16,7 @@ beforeEach(() => {
   jest.useFakeTimers({ now: 1_700_000_000_000 });
   useHistory.setState(useHistory.getInitialState(), true);
   useSettings.setState(useSettings.getInitialState(), true);
+  useProgress.setState(useProgress.getInitialState(), true);
 });
 afterEach(() => jest.useRealTimers());
 
@@ -180,6 +182,42 @@ describe('PlayScreen', () => {
     await user.press(screen.getByRole('button', { name: '2' }));
 
     expect(screen.getByTestId('answer')).toHaveTextContent('▌21');
+  });
+
+  it('ao terminar, atualiza o progresso: estrelas, próxima etapa e sequência de dias', async () => {
+    const { problems, user } = await renderPlay();
+    await finishCountdown();
+
+    for (const problem of problems) await answer(user, solve(problem));
+
+    const { stages, streak } = useProgress.getState();
+    expect(stages['L01-A']).toMatchObject({ bestStars: 3, attempts: 1 });
+    expect(stages['L01-B'].unlocked).toBe(true);
+    expect(streak.current).toBe(1);
+  });
+
+  it('desafio com aquecimento pendente vira aquecimento', async () => {
+    useProgress.setState((s) => ({
+      stages: { ...s.stages, 'L01-A': { ...s.stages['L01-A'], pendingWarmup: true } },
+    }));
+
+    await renderPlay('challenge');
+
+    expect(screen.getByText('Aquecimento')).toBeOnTheScreen();
+  });
+
+  it('etapa bloqueada mostra um aviso com o botão de voltar', async () => {
+    const onExit = jest.fn();
+    const user = userEvent.setup();
+    await render(
+      <PlayScreen stageId="L05-B" mode="challenge" onExit={onExit} onFinished={jest.fn()} />,
+    );
+
+    expect(screen.getByText('Esta etapa ainda está bloqueada.')).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: 'Início' }));
+
+    expect(onExit).toHaveBeenCalledTimes(1);
   });
 
   it('etapa inexistente mostra um aviso com o botão de voltar', async () => {

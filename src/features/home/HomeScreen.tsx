@@ -1,14 +1,29 @@
+// Início (docs/SCREENS.md §3.2): sequência de dias, "Continuar" e atalhos.
+
 import { StyleSheet, Text, View } from 'react-native';
 
+import { continueStageId } from '@/engine/progression';
+import { currentStreak } from '@/engine/streak';
+import { stageLabel } from '@/features/levels/names';
+import { systemClock } from '@/lib/clock';
+import { localDateString } from '@/lib/date';
+import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
 interface HomeScreenProps {
-  /** Provisório: no M4 vira "Continuar" para a etapa mais avançada. */
-  onStart: () => void;
+  onContinue: (stageId: string) => void;
+  onLevels: () => void;
 }
 
-export function HomeScreen({ onStart }: HomeScreenProps) {
+export function HomeScreen({ onContinue, onLevels }: HomeScreenProps) {
+  const stages = useProgress((s) => s.stages);
+  const streak = useProgress((s) => s.streak);
+
+  const stageId = continueStageId(stages);
+  const neverPlayed = Object.values(stages).every((stage) => stage.attempts === 0);
+  const days = currentStreak(streak, localDateString(systemClock.now()));
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -16,8 +31,15 @@ export function HomeScreen({ onStart }: HomeScreenProps) {
           Numa
         </Text>
         <Text style={styles.subtitle}>Treine sua mente alguns minutos por dia.</Text>
+        {days > 0 ? (
+          <Text style={styles.streak}>{`🔥 ${days} ${days === 1 ? 'dia' : 'dias'}`}</Text>
+        ) : null}
         <View style={styles.actions}>
-          <Button label="Começar" onPress={onStart} />
+          <Button
+            label={`${neverPlayed ? 'Começar' : 'Continuar'} — ${stageLabel(stageId)}`}
+            onPress={() => onContinue(stageId)}
+          />
+          <Button label="Níveis" onPress={onLevels} variant="secondary" />
         </View>
       </View>
     </View>
@@ -43,13 +65,20 @@ const styles = StyleSheet.create({
     fontSize: 56,
     fontWeight: '700',
   },
-  actions: {
-    alignSelf: 'stretch',
-    marginTop: spacing.lg,
-  },
   subtitle: {
     color: colors.textMuted,
     fontSize: 18,
     textAlign: 'center',
+  },
+  streak: {
+    color: colors.warning,
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: spacing.sm,
+  },
+  actions: {
+    alignSelf: 'stretch',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
 });
