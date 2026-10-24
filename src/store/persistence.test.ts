@@ -1,6 +1,8 @@
 // Persistência dos três stores (docs/DATA.md §1): grava no formato do DATA, lê de volta,
 // e volta aos padrões quando o dado está ilegível.
 
+import { getLocales } from 'expo-localization';
+
 import { createInitialStages } from '@/engine/progression';
 import { memoryStorage } from '@/storage/key-value';
 import { buildRecord } from '@/test-utils/rounds';
@@ -15,7 +17,12 @@ let warn: jest.SpyInstance;
 beforeEach(() => {
   warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
 });
-afterEach(() => warn.mockRestore());
+afterEach(() => {
+  warn.mockRestore();
+  jest
+    .mocked(getLocales)
+    .mockImplementation(() => [{ languageTag: 'pt-BR', languageCode: 'pt' } as never]);
+});
 
 describe('numa.settings', () => {
   it('grava com schemaVersion e lê de volta numa nova sessão', async () => {
@@ -28,7 +35,7 @@ describe('numa.settings', () => {
     await flush();
 
     expect(JSON.parse(storage.dump()[SETTINGS_KEY])).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       language: 'pt',
       inputDirection: 'rtl',
       onboardingDone: false,
@@ -44,7 +51,7 @@ describe('numa.settings', () => {
   it('campos com valores inválidos voltam ao padrão, os outros são mantidos', async () => {
     const storage = memoryStorage({
       [SETTINGS_KEY]: JSON.stringify({
-        schemaVersion: 1,
+        schemaVersion: 2,
         language: 'xx',
         inputDirection: 'rtl',
         hasSeenDirectionTip: 'sim',
@@ -58,6 +65,37 @@ describe('numa.settings', () => {
       inputDirection: 'rtl',
       hasSeenDirectionTip: false,
     });
+  });
+
+  it('migra da v1 (M4): o idioma salvo não foi escolhido, então volta a seguir o aparelho', async () => {
+    jest
+      .mocked(getLocales)
+      .mockReturnValue([{ languageTag: 'en-US', languageCode: 'en' } as never]);
+    // Fixture real gravada pelo M4.
+    const fixture =
+      '{"schemaVersion":1,"language":"pt","inputDirection":"rtl","onboardingDone":false,"hasSeenDirectionTip":true}';
+    const storage = memoryStorage({ [SETTINGS_KEY]: fixture });
+    const store = createSettingsStore(storage);
+    await store.persist.rehydrate();
+
+    expect(store.getState()).toMatchObject({
+      language: 'en',
+      inputDirection: 'rtl',
+      hasSeenDirectionTip: true,
+    });
+  });
+
+  it('o idioma escolhido fica salvo', async () => {
+    const storage = memoryStorage();
+    const first = createSettingsStore(storage);
+    await first.persist.rehydrate();
+
+    first.getState().setLanguage('en');
+    await flush();
+
+    const second = createSettingsStore(storage);
+    await second.persist.rehydrate();
+    expect(second.getState().language).toBe('en');
   });
 
   it('dado ilegível: volta aos padrões e registra o erro', async () => {
@@ -80,6 +118,20 @@ describe('numa.settings', () => {
 });
 
 describe('numa.progress', () => {
+  it('apagar o progresso volta ao início e salva', async () => {
+    const storage = memoryStorage();
+    const store = createProgressStore(storage);
+    await store.persist.rehydrate();
+    store.getState().recordRound(buildRecord({ correct: 10 }), '2026-10-23');
+
+    store.getState().resetProgress();
+    await flush();
+
+    expect(store.getState().stages).toEqual(createInitialStages());
+    expect(store.getState().streak).toEqual({ current: 0, best: 0 });
+    expect(JSON.parse(storage.dump()[PROGRESS_KEY]).stages['L01-B'].unlocked).toBe(false);
+  });
+
   it('grava estágios, nivelamento e sequência, e lê de volta', async () => {
     const storage = memoryStorage();
     const first = createProgressStore(storage);
@@ -139,6 +191,16 @@ describe('numa.progress', () => {
 });
 
 describe('numa.history', () => {
+  it('apagar o histórico remove todas as rodadas', async () => {
+    const store = createHistoryStore(memoryStorage());
+    await store.persist.rehydrate();
+    store.getState().addRound(buildRecord({ id: 'a' }));
+
+    store.getState().clearHistory();
+
+    expect(store.getState().rounds).toEqual([]);
+  });
+
   it('grava as rodadas e lê de volta, descartando registros estragados', async () => {
     const storage = memoryStorage();
     const first = createHistoryStore(storage);

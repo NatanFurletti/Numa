@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import type { InputDirection } from '@/engine/types';
+import { deviceLanguage } from '@/lib/locale';
 import type { DocumentSpec } from '@/storage/document';
 import { deviceStorage } from '@/storage/device-storage';
 import type { KeyValueStorage } from '@/storage/key-value';
@@ -20,39 +21,47 @@ export interface SettingsData {
 }
 
 interface SettingsState extends SettingsData {
+  setLanguage: (language: Language) => void;
   setInputDirection: (direction: InputDirection) => void;
   markDirectionTipSeen: () => void;
 }
 
 export const SETTINGS_KEY = 'numa.settings';
 
-// O idioma do aparelho entra no M5 (i18n). Até lá, português.
-const DEFAULTS: SettingsData = {
-  language: 'pt',
+const defaults = (): SettingsData => ({
+  language: deviceLanguage(),
   inputDirection: 'ltr',
   onboardingDone: false,
   hasSeenDirectionTip: false,
-};
+});
 
 export const settingsSpec: DocumentSpec<SettingsData> = {
-  version: 1,
-  parse: (doc) => ({
-    language: pick(doc.language, oneOf(['pt', 'en'] as const), DEFAULTS.language),
-    inputDirection: pick(
-      doc.inputDirection,
-      oneOf(['ltr', 'rtl'] as const),
-      DEFAULTS.inputDirection,
-    ),
-    onboardingDone: pick(doc.onboardingDone, isBoolean, DEFAULTS.onboardingDone),
-    hasSeenDirectionTip: pick(doc.hasSeenDirectionTip, isBoolean, DEFAULTS.hasSeenDirectionTip),
-  }),
+  version: 2,
+  migrations: {
+    // v1 (M4): o idioma era sempre 'pt', sem a pessoa escolher. Volta a seguir o aparelho.
+    1: ({ language: _notChosen, ...rest }) => rest,
+  },
+  parse: (doc) => {
+    const fallback = defaults();
+    return {
+      language: pick(doc.language, oneOf(['pt', 'en'] as const), fallback.language),
+      inputDirection: pick(
+        doc.inputDirection,
+        oneOf(['ltr', 'rtl'] as const),
+        fallback.inputDirection,
+      ),
+      onboardingDone: pick(doc.onboardingDone, isBoolean, fallback.onboardingDone),
+      hasSeenDirectionTip: pick(doc.hasSeenDirectionTip, isBoolean, fallback.hasSeenDirectionTip),
+    };
+  },
 };
 
 export function createSettingsStore(storage: KeyValueStorage = deviceStorage) {
   return create<SettingsState>()(
     persist(
       (set) => ({
-        ...DEFAULTS,
+        ...defaults(),
+        setLanguage: (language) => set({ language }),
         setInputDirection: (inputDirection) => set({ inputDirection }),
         markDirectionTipSeen: () => set({ hasSeenDirectionTip: true }),
       }),
