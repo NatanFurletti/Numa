@@ -39,12 +39,12 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [x] Aquecimento após 3 falhas
 
 ### M5 · Treino livre, configurações e i18n
-- [ ] Treino livre
-- [ ] Configurações (idioma, direção, refazer nivelamento, apagar progresso)
-- [ ] Todos os textos em PT e EN
+- [x] Treino livre
+- [x] Configurações (idioma, direção, apagar progresso). "Refazer nivelamento" foi para o M6 (D-024)
+- [x] Todos os textos em PT e EN
 
 ### M6 · Nivelamento, PWA e publicação
-- [ ] Boas-vindas + teste de nivelamento
+- [ ] Boas-vindas + teste de nivelamento, com "Refazer nivelamento" nas configurações
 - [ ] Manifest, ícones e service worker (offline)
 - [ ] Testes E2E dos fluxos críticos (TESTING §3.6)
 - [ ] Deploy na Vercel/Netlify

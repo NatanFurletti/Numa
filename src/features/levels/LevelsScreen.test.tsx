@@ -69,3 +69,38 @@ describe('LevelsScreen', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('LevelsScreen no treino livre', () => {
+  async function renderPractice() {
+    const onPlay = jest.fn();
+    await render(<LevelsScreen variant="practice" onPlay={onPlay} onBack={jest.fn()} />);
+    return { onPlay, user: userEvent.setup() };
+  }
+
+  it('mostra só as etapas desbloqueadas, sem estrelas', async () => {
+    setStage('L01-A', { bestStars: 3 });
+    setStage('L01-B', { unlocked: true });
+    await renderPractice();
+
+    expect(screen.getByText('Treino livre')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Nível 1, etapa A' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Nível 1, etapa B' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: /etapa C/ })).not.toBeOnTheScreen();
+    expect(screen.queryByText(/★/)).not.toBeOnTheScreen();
+  });
+
+  it('esconde os níveis sem nenhuma etapa desbloqueada', async () => {
+    await renderPractice();
+
+    expect(screen.getByText('Nível 1')).toBeOnTheScreen();
+    expect(screen.queryByText('Nível 2')).not.toBeOnTheScreen();
+  });
+
+  it('tocar numa etapa inicia o treino', async () => {
+    const { onPlay, user } = await renderPractice();
+
+    await user.press(screen.getByRole('button', { name: 'Nível 1, etapa A' }));
+
+    expect(onPlay).toHaveBeenCalledWith('L01-A');
+  });
+});

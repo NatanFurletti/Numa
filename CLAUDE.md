@@ -41,5 +41,5 @@ Antes de dar uma tarefa como pronta: `npm run typecheck`, `npm run lint` e `npm 
 - **Rotas em `src/app/`** (D-017), finas: só chamam componentes de `src/features/`.
 - **`src/engine/` é TypeScript puro:** sem React/Expo/storage, sem `Date` e sem `Math.random` (relógio e Rng injetados). O lint barra isso.
 - Números ajustáveis (tempos, limites de estrelas, etc.) ficam em `src/engine/config/`, nunca espalhados no código.
-- Textos de interface vão para o i18n (PT e EN) assim que `src/i18n/` existir (M5).
+- Textos de interface sempre pelo i18n: chave nova em `src/i18n/pt.ts` e `en.ts` (o typecheck acusa se faltar em um dos dois). Nada de texto fixo nas telas.
 - Teste ao lado do arquivo (`scoring.ts` → `scoring.test.ts`). Sem snapshots de componentes inteiros.

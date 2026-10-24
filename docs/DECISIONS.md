@@ -151,3 +151,15 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Nomes curtos dos níveis** em `src/features/levels/names.ts`. Vão para o i18n no M5, assim como o idioma salvo (fixo em `pt` até lá).
 - **Cobertura:** `src/storage` exige ≥ 85%, o mesmo alvo do store.
 
+### D-024 · Detalhes do M5 (treino livre, configurações e i18n)
+**Data:** 2026-10-24
+- **Dicionários em TypeScript** (`src/i18n/pt.ts` e `en.ts`), e não em JSON como previa o ARCHITECTURE. O `en.ts` tem o tipo do `pt.ts`, então uma chave faltando ou sobrando em inglês quebra o typecheck. As chaves de `t('...')` também são tipadas (`src/i18n/i18next.d.ts`).
+- **Idioma padrão:** o do aparelho (`expo-localization`), se for português ou inglês. Para qualquer outro idioma, português (GAME_RULES §12).
+- **`numa.settings` sobe para a versão 2.** Na v1 (M4), o idioma era gravado sempre como `pt`, sem a pessoa poder escolher. A migração 1 → 2 descarta esse valor, e o app volta a seguir o aparelho. É a primeira migração real, testada com um dado gravado pelo M4.
+- **O app espera o idioma escolhido entrar** (`useLanguageSync`) antes de mostrar a primeira tela, para nada piscar no idioma errado.
+- **Treino livre** reaproveita a tela de níveis (`variant="practice"`): só as etapas desbloqueadas, sem estrelas, e só os níveis com alguma etapa liberada.
+- **Apagar progresso:** apaga o progresso (estrelas, etapas, sequência) e o histórico de rodadas. Idioma, direção e a dica já vista ficam. São duas confirmações ("Apagar todo o progresso?" e "Tem certeza?").
+- **"Refazer nivelamento" foi para o M6**, junto com a tela de nivelamento. Sem ela, o botão não teria o que abrir.
+- **Testes em português:** o `jest.setup.js` simula o aparelho em pt-BR e inicializa o i18n em pt. Os testes de inglês trocam o idioma e voltam ao pt no fim.
+- **Nomes dos idiomas** sempre no próprio idioma ("Português", "English"), qualquer que seja o idioma do app.
+

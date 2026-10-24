@@ -1,23 +1,22 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, spacing } from '@/ui/theme';
 
 /** Balão da dica única sobre a direção da digitação (GAME_RULES §7). */
 export function DirectionTip({ onDismiss }: { onDismiss: () => void }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.balloon} accessibilityRole="alert">
-      <Text style={styles.text}>
-        💡 Dica: você pode mudar a direção da digitação nas Configurações. Da esquerda para a
-        direita, ou da direita para a esquerda, como no papel.
-      </Text>
+      <Text style={styles.text}>{t('review.tip')}</Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Entendi"
+        accessibilityLabel={t('review.tipDismiss')}
         onPress={onDismiss}
         hitSlop={8}
         style={styles.button}
       >
-        <Text style={styles.buttonText}>Entendi</Text>
+        <Text style={styles.buttonText}>{t('review.tipDismiss')}</Text>
       </Pressable>
     </View>
   );
