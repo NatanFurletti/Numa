@@ -21,11 +21,11 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [x] rng · carry · answer-input · scoring · generator · round · progression · feedback · streak · placement
 
 ### M2 · Rodada jogável
-- [ ] Teclado na tela + teclado físico
-- [ ] Fila de contas (atual + 2 próximas) com animação
-- [ ] Resposta no lugar do "?" com cursor e direção da digitação
-- [ ] Barra de tempo, incluindo o estado "tempo esgotado"
-- [ ] Contagem 3-2-1 e saída com confirmação
+- [x] Teclado na tela + teclado físico
+- [x] Fila de contas (atual + 2 próximas) com animação
+- [x] Resposta no lugar do "?" com cursor e direção da digitação
+- [x] Barra de tempo, incluindo o estado "tempo esgotado"
+- [x] Contagem 3-2-1 e saída com confirmação
 
 ### M3 · Resultado e correção
 - [ ] Tela de resultado (placar, estrelas, mensagem, comparação, lista)

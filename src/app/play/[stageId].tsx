@@ -1,0 +1,21 @@
+import { router, useLocalSearchParams } from 'expo-router';
+
+import { PlayScreen } from '@/features/round/PlayScreen';
+import { playableStageIds } from '@/features/round/stages';
+
+type Mode = 'challenge' | 'practice' | 'warmup';
+
+function parseMode(value: string | undefined): Mode {
+  return value === 'practice' || value === 'warmup' ? value : 'challenge';
+}
+
+// Uma página estática por etapa (web), para abrir /play/L07-B direto e funcionar offline.
+export function generateStaticParams(): { stageId: string }[] {
+  return playableStageIds().map((stageId) => ({ stageId }));
+}
+
+export default function Play() {
+  const { stageId, mode } = useLocalSearchParams<{ stageId: string; mode?: string }>();
+  const exit = () => (router.canGoBack() ? router.back() : router.replace('/'));
+  return <PlayScreen stageId={stageId} mode={parseMode(mode)} onExit={exit} />;
+}

@@ -46,4 +46,20 @@ describe('ConfirmDialog', () => {
 
     expect(screen.queryByText('Sair da rodada?')).not.toBeOnTheScreen();
   });
+
+  it('a mensagem é opcional', async () => {
+    await render(
+      <ConfirmDialog
+        visible
+        title="Tem certeza?"
+        confirmLabel="Sim"
+        cancelLabel="Não"
+        onConfirm={jest.fn()}
+        onCancel={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Tem certeza?')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Sim' })).toBeOnTheScreen();
+  });
 });

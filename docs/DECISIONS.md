@@ -116,3 +116,11 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 **Data:** 2026-10-23
 **Decisão:** Uma rodada só conta como **melhor tempo** da etapa, e só gera as frases "Seu melhor tempo aqui" ou "Você foi Xs mais rápido que da última vez", se tiver **100% de acerto** (`records.minAccuracy = 1` em `game-config.ts`).
 **Por quê:** Terminar rápido com erros não pode ser premiado. O jogo mede precisão **e** velocidade, e o recorde deve refletir as duas. A frase "mais acertos que da última vez" continua valendo para qualquer rodada.
+
+### D-021 · Ajustes técnicos do M2 (rodada jogável)
+**Data:** 2026-10-23
+- **Tipos das rotas:** `npm run typecheck` roda antes `scripts/generate-route-types.js`, que gera `.expo/types/router.d.ts` sem subir o servidor. Sem isso, o typecheck local (com tipos velhos) e o do CI (sem tipos) davam resultados diferentes. O script usa uma parte interna do Expo; se quebrar numa atualização do SDK, é o primeiro lugar a olhar.
+- **Uma página estática por etapa** (`generateStaticParams` em `src/app/play/[stageId].tsx`): `/play/L07-B` abre direto na hospedagem estática e fica pronto para o cache offline do PWA.
+- **Confirmação de saída própria** (`src/ui/ConfirmDialog.tsx`), porque o `Alert` do React Native não funciona na web.
+- **Fim da rodada provisório:** até o M3, a rodada termina num painel simples (placar, tempo, "Jogar de novo" e "Início"). O botão "Começar" do início sempre abre a L01-A até o M4 trazer o "Continuar".
+- **Textos em português direto no código** até o M5 (i18n).

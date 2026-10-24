@@ -1,8 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
-export function HomeScreen() {
+interface HomeScreenProps {
+  /** Provisório: no M4 vira "Continuar" para a etapa mais avançada. */
+  onStart: () => void;
+}
+
+export function HomeScreen({ onStart }: HomeScreenProps) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -10,6 +16,9 @@ export function HomeScreen() {
           Numa
         </Text>
         <Text style={styles.subtitle}>Treine sua mente alguns minutos por dia.</Text>
+        <View style={styles.actions}>
+          <Button label="Começar" onPress={onStart} />
+        </View>
       </View>
     </View>
   );
@@ -33,6 +42,10 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 56,
     fontWeight: '700',
+  },
+  actions: {
+    alignSelf: 'stretch',
+    marginTop: spacing.lg,
   },
   subtitle: {
     color: colors.textMuted,
