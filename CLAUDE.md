@@ -35,6 +35,16 @@ npx expo install <pkg>   # sempre use para adicionar pacotes
 
 Antes de dar uma tarefa como pronta: `npm run typecheck`, `npm run lint` e `npm test` passando.
 
+## Branches e ambientes (D-025)
+
+| Branch    | Ambiente                                        | Quando muda                                                |
+| --------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| `main`    | Produção (Vercel, Production)                   | PR de `homolog` → `main`, depois de testado em homologação |
+| `homolog` | Homologação (Vercel, Preview com endereço fixo) | PR de cada marco/feature → `homolog`                       |
+| `mN-...`  | Preview próprio de cada branch                  | Trabalho do dia a dia                                      |
+
+Branches de trabalho saem de `homolog`, e os PRs apontam para `homolog`, nunca direto para `main`.
+
 ## Regras do projeto
 
 - **TDD sempre:** teste falhando primeiro, depois o código mínimo, depois refatorar. Bug → teste que reproduz antes da correção.

@@ -163,3 +163,12 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Testes em português:** o `jest.setup.js` simula o aparelho em pt-BR e inicializa o i18n em pt. Os testes de inglês trocam o idioma e voltam ao pt no fim.
 - **Nomes dos idiomas** sempre no próprio idioma ("Português", "English"), qualquer que seja o idioma do app.
 
+### D-025 · Ambientes de produção e homologação
+**Data:** 2026-10-24
+**Decisão:** dois ambientes na Vercel, separados por branch.
+- **Produção:** branch `main` (Production Branch da Vercel). Recebe só PRs vindos de `homolog`.
+- **Homologação:** branch `homolog`, publicada como Preview com um endereço fixo (domínio ligado à branch). Recebe os PRs de cada marco ou feature.
+- **Fluxo:** branch de trabalho sai de `homolog` → PR para `homolog` → testar no endereço de homologação → PR de `homolog` para `main` → produção.
+**Por quê:** dá para mostrar uma versão estável para testes com pessoas, enquanto o projeto avança, sem que cada merge chegue direto a elas. Os dados de cada ambiente ficam separados, porque são endereços diferentes e cada endereço tem o seu `localStorage`.
+**Plano gratuito:** a Vercel Hobby não tem "ambientes personalizados", então homologação é um Preview com domínio fixo. Se um dia for preciso, migrar para um Custom Environment não muda o fluxo de branches.
+
