@@ -124,3 +124,16 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Confirmação de saída própria** (`src/ui/ConfirmDialog.tsx`), porque o `Alert` do React Native não funciona na web.
 - **Fim da rodada provisório:** até o M3, a rodada termina num painel simples (placar, tempo, "Jogar de novo" e "Início"). O botão "Começar" do início sempre abre a L01-A até o M4 trazer o "Continuar".
 - **Textos em português direto no código** até o M5 (i18n).
+
+### D-022 · Detalhes do M3 (resultado e correção)
+**Data:** 2026-10-23
+**Substitui:** o item "Fim da rodada provisório" do D-021.
+- **Histórico e configurações só em memória até o M4:** `src/store/history.ts` e `src/store/settings.ts` já usam Zustand, mas ainda sem persistência. Recarregar a página apaga as rodadas, e `/result/<id>` mostra "Rodada não encontrada". O M4 acrescenta a persistência e as migrações.
+- **Rodadas no histórico:** toda rodada concluída ou abandonada é gravada (`RoundRecord`, DATA §1.3). A exceção é sair durante a contagem 3-2-1: nenhuma conta apareceu, então não há o que gravar.
+- **Comparação pessoal a partir do histórico:** a tentativa anterior e o melhor tempo anterior (só rodadas 100% certas, D-020) vêm das rodadas de desafio concluídas na mesma etapa.
+- **Frase de comparação arredondada:** se a melhora some ao arredondar para segundos (ex.: 0,3s mais rápido), a frase não aparece. Nunca mostramos "52s → 52s".
+- **Aquecimento e treino livre no resultado:** placar, tempo e lista, sem estrelas, mensagem nem comparação. Botões: "Voltar ao desafio" (aquecimento) e "Treinar de novo" (treino livre). Passar na última etapa (L15-C) mostra "Jogar de novo" no lugar de "Próxima etapa".
+- **Correção:** o ✓ verde fica 0,7s na tela e a próxima conta entra sozinha. "Ver resposta" mostra a resposta certa e um botão "Próxima" (Enter também avança). As tentativas (`reviewAttempts`) vão para o histórico a cada resposta, então valem mesmo se a pessoa sair no meio. A regra fica em `src/engine/review.ts`; o limite de 2 erros, em `GAME_CONFIG.review`.
+- **Dica de direção:** marcada como vista (`hasSeenDirectionTip`) assim que aparece, e não quando a pessoa toca em "Entendi".
+- **Navegação:** a rodada terminada é trocada pelo resultado (`router.replace`), para o "voltar" não reabrir uma rodada encerrada. "Início" usa `router.dismissTo('/')`. `/result` e `/review` não têm página estática por id, porque os ids são criados no aparelho.
+

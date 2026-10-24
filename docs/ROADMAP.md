@@ -28,9 +28,9 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [x] Contagem 3-2-1 e saída com confirmação
 
 ### M3 · Resultado e correção
-- [ ] Tela de resultado (placar, estrelas, mensagem, comparação, lista)
-- [ ] Tela de correção com "Ver resposta"
-- [ ] Balão de dica da direção da digitação (uma vez)
+- [x] Tela de resultado (placar, estrelas, mensagem, comparação, lista)
+- [x] Tela de correção com "Ver resposta"
+- [x] Balão de dica da direção da digitação (uma vez)
 
 ### M4 · Progressão e persistência
 - [ ] Stores (settings, progress, history) com persistência e migrações

@@ -167,3 +167,53 @@ describe('sair', () => {
     expect(result.current.visible).toEqual([]);
   });
 });
+
+describe('aviso de fim (onEnd)', () => {
+  async function renderWithOnEnd() {
+    const onEnd = jest.fn();
+    const hook = await renderHook(() =>
+      useRound({ stageId: 'L01-A', mode: 'challenge', seed: SEED, direction: 'ltr', onEnd }),
+    );
+    const problems = setupRound({ stageId: 'L01-A', mode: 'challenge', seed: SEED }).problems;
+    return { ...hook, problems, onEnd };
+  }
+
+  it('avisa uma vez ao concluir, com o resumo e o horário de início', async () => {
+    const { result, problems, onEnd } = await renderWithOnEnd();
+    await finishCountdown();
+
+    for (const problem of problems) {
+      await typeNumber(result, solve(problem));
+      await act(() => result.current.submit());
+    }
+    await advance(1000);
+
+    expect(onEnd).toHaveBeenCalledTimes(1);
+    expect(onEnd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'completed',
+        startedAt: T0 + 3000,
+        summary: expect.objectContaining({ correct: 10, total: 10 }),
+      }),
+    );
+  });
+
+  it('avisa ao abandonar no meio', async () => {
+    const { result, onEnd } = await renderWithOnEnd();
+    await finishCountdown();
+
+    await act(() => result.current.abandon());
+
+    expect(onEnd).toHaveBeenCalledWith(expect.objectContaining({ status: 'abandoned' }));
+  });
+
+  it('abandonar durante a contagem avisa sem horário de início', async () => {
+    const { result, onEnd } = await renderWithOnEnd();
+
+    await act(() => result.current.abandon());
+
+    expect(onEnd).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'abandoned', startedAt: null }),
+    );
+  });
+});

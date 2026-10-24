@@ -3,13 +3,19 @@ import { act, render, screen, userEvent } from '@testing-library/react-native';
 import { solve } from '@/engine/carry';
 import { setupRound } from '@/engine/round-setup';
 import type { PlayMode } from '@/engine/round-setup';
+import { useHistory } from '@/store/history';
+import { useSettings } from '@/store/settings';
 
 import { PlayScreen } from './PlayScreen';
 import { formatProblem } from './ProblemQueue';
 
 const SEED = 7;
 
-beforeEach(() => jest.useFakeTimers({ now: 1_700_000_000_000 }));
+beforeEach(() => {
+  jest.useFakeTimers({ now: 1_700_000_000_000 });
+  useHistory.setState(useHistory.getInitialState(), true);
+  useSettings.setState(useSettings.getInitialState(), true);
+});
 afterEach(() => jest.useRealTimers());
 
 async function finishCountdown() {
@@ -22,9 +28,18 @@ async function finishCountdown() {
 
 async function renderPlay(mode: PlayMode = 'challenge', stageId = 'L01-A') {
   const onExit = jest.fn();
-  await render(<PlayScreen stageId={stageId} mode={mode} seed={SEED} onExit={onExit} />);
+  const onFinished = jest.fn();
+  await render(
+    <PlayScreen
+      stageId={stageId}
+      mode={mode}
+      seed={SEED}
+      onExit={onExit}
+      onFinished={onFinished}
+    />,
+  );
   const problems = setupRound({ stageId, mode, seed: SEED }).problems;
-  return { onExit, problems, user: userEvent.setup() };
+  return { onExit, onFinished, problems, user: userEvent.setup() };
 }
 
 async function answer(user: ReturnType<typeof userEvent.setup>, value: number) {
@@ -87,31 +102,52 @@ describe('PlayScreen', () => {
     expect(onExit).not.toHaveBeenCalled();
   });
 
-  it('confirmar a saída abandona a rodada e volta', async () => {
-    const { onExit, user } = await renderPlay();
+  it('confirmar a saída abandona a rodada, grava no histórico e volta', async () => {
+    const { onExit, onFinished, user } = await renderPlay();
     await finishCountdown();
 
     await user.press(screen.getByRole('button', { name: 'Sair' }));
     await user.press(screen.getByRole('button', { name: 'Sair da rodada' }));
 
     expect(onExit).toHaveBeenCalledTimes(1);
+    expect(onFinished).not.toHaveBeenCalled();
+    expect(useHistory.getState().rounds).toEqual([
+      expect.objectContaining({ status: 'abandoned', stageId: 'L01-A', stars: null }),
+    ]);
   });
 
-  it('ao terminar as 10 contas, mostra o placar; "Jogar de novo" recomeça com a contagem', async () => {
-    const { problems, user } = await renderPlay();
+  it('sair durante a contagem volta sem gravar nada', async () => {
+    const { onExit, user } = await renderPlay();
+
+    await user.press(screen.getByRole('button', { name: 'Sair' }));
+    await user.press(screen.getByRole('button', { name: 'Sair da rodada' }));
+
+    expect(onExit).toHaveBeenCalledTimes(1);
+    expect(useHistory.getState().rounds).toEqual([]);
+  });
+
+  it('ao terminar as 10 contas, grava a rodada e avisa com o id dela', async () => {
+    const { problems, onFinished, user } = await renderPlay();
     await finishCountdown();
 
     for (const problem of problems) await answer(user, solve(problem));
 
-    expect(screen.getByText('Rodada concluída!')).toBeOnTheScreen();
-    expect(screen.getByText('10/10')).toBeOnTheScreen();
-
-    await user.press(screen.getByRole('button', { name: 'Jogar de novo' }));
-
-    expect(screen.getByLabelText('Começa em 3')).toBeOnTheScreen();
+    const [round] = useHistory.getState().rounds;
+    expect(round).toMatchObject({
+      status: 'completed',
+      mode: 'challenge',
+      stageId: 'L01-A',
+      seed: SEED,
+      correct: 10,
+      total: 10,
+      stars: 3,
+      inputDirection: 'ltr',
+      startedAt: new Date(1_700_000_003_000).toISOString(),
+    });
+    expect(onFinished).toHaveBeenCalledWith(round.id);
   });
 
-  it('com o tempo estourado, o placar mostra quanto passou (L01-A: 60s)', async () => {
+  it('com o tempo estourado, grava o tempo total (L01-A: 60s)', async () => {
     const { problems, user } = await renderPlay();
     await finishCountdown();
 
@@ -121,22 +157,37 @@ describe('PlayScreen', () => {
     });
     await answer(user, solve(problems[9]));
 
-    expect(screen.getByText(/^\d+s, passou \d+s$/)).toBeOnTheScreen();
+    const [round] = useHistory.getState().rounds;
+    expect(round.elapsedMs).toBeGreaterThan(60_000);
+    expect(round.stars).toBe(1);
   });
 
-  it('no treino livre, o placar mostra só o tempo', async () => {
+  it('no treino livre, grava sem tempo-limite e sem estrelas', async () => {
     const { problems, user } = await renderPlay('practice');
     await finishCountdown();
 
     for (const problem of problems) await answer(user, solve(problem));
 
-    expect(screen.getByText(/^\d+s$/)).toBeOnTheScreen();
+    expect(useHistory.getState().rounds[0]).toMatchObject({ timeLimitMs: null, stars: null });
+  });
+
+  it('usa a direção de digitação das configurações', async () => {
+    useSettings.getState().setInputDirection('rtl');
+    const { user } = await renderPlay();
+    await finishCountdown();
+
+    await user.press(screen.getByRole('button', { name: '1' }));
+    await user.press(screen.getByRole('button', { name: '2' }));
+
+    expect(screen.getByTestId('answer')).toHaveTextContent('▌21');
   });
 
   it('etapa inexistente mostra um aviso com o botão de voltar', async () => {
     const onExit = jest.fn();
     const user = userEvent.setup();
-    await render(<PlayScreen stageId="L99-A" mode="challenge" onExit={onExit} />);
+    await render(
+      <PlayScreen stageId="L99-A" mode="challenge" onExit={onExit} onFinished={jest.fn()} />,
+    );
 
     expect(screen.getByText('Etapa não encontrada.')).toBeOnTheScreen();
 

@@ -1,7 +1,15 @@
 // Liga o reducer da rodada (src/engine/round.ts) ao relógio, à contagem 3-2-1 e à barra de tempo.
 // Toda a regra fica no engine; aqui só entram timers e o horário atual.
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
 import { displayAnswer, isAnswerEmpty } from '@/engine/answer-input';
 import {
@@ -9,6 +17,7 @@ import {
   isTimeUp,
   roundReducer,
   roundSummary,
+  type RoundSummary,
   timeRemainingRatio,
   visibleProblems,
 } from '@/engine/round';
@@ -17,6 +26,15 @@ import type { InputDirection } from '@/engine/types';
 import { type Clock, systemClock } from '@/lib/clock';
 
 export type RoundPhase = 'countdown' | 'playing' | 'finished' | 'abandoned';
+
+export interface RoundEnd {
+  status: 'completed' | 'abandoned';
+  summary: RoundSummary;
+  /** Quando a primeira conta apareceu, ou null se saiu durante a contagem. */
+  startedAt: number | null;
+  /** null no treino livre. */
+  timeLimitMs: number | null;
+}
 
 interface UseRoundOptions {
   stageId: string;
@@ -28,6 +46,8 @@ interface UseRoundOptions {
   countdownFrom?: number;
   /** De quanto em quanto tempo a barra de tempo é redesenhada. */
   tickMs?: number;
+  /** Chamado uma vez, quando a rodada termina ou é abandonada. */
+  onEnd?: (end: RoundEnd) => void;
 }
 
 const COUNTDOWN_STEP_MS = 1000;
@@ -40,6 +60,7 @@ export function useRound({
   clock = systemClock,
   countdownFrom = 3,
   tickMs = 100,
+  onEnd,
 }: UseRoundOptions) {
   const [setup] = useState(() => setupRound({ stageId, mode, seed }));
   const [state, dispatch] = useReducer(roundReducer, undefined, () =>
@@ -78,6 +99,20 @@ export function useRound({
 
   const ended = state.status === 'finished' || state.status === 'abandoned';
   const summary = useMemo(() => (ended ? roundSummary(state) : null), [ended, state]);
+
+  // Avisa o fim uma única vez (quem chama grava no histórico e navega).
+  const notifyEnd = useEffectEvent((end: RoundEnd) => onEnd?.(end));
+  const notified = useRef(false);
+  useEffect(() => {
+    if (!summary || notified.current) return;
+    notified.current = true;
+    notifyEnd({
+      status: state.status === 'finished' ? 'completed' : 'abandoned',
+      summary,
+      startedAt: state.startedAt,
+      timeLimitMs: setup.timeLimitMs,
+    });
+  }, [summary, state.status, state.startedAt, setup.timeLimitMs]);
 
   const phase: RoundPhase =
     state.status === 'ready' ? 'countdown' : state.status === 'running' ? 'playing' : state.status;

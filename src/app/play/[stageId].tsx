@@ -17,5 +17,17 @@ export function generateStaticParams(): { stageId: string }[] {
 export default function Play() {
   const { stageId, mode } = useLocalSearchParams<{ stageId: string; mode?: string }>();
   const exit = () => (router.canGoBack() ? router.back() : router.replace('/'));
-  return <PlayScreen stageId={stageId} mode={parseMode(mode)} onExit={exit} />;
+  // replace: o "voltar" do resultado não deve reabrir a rodada já terminada.
+  const showResult = (roundId: string) =>
+    router.replace({ pathname: '/result/[roundId]', params: { roundId } });
+  return (
+    <PlayScreen
+      // Uma rodada nova a cada etapa ou modo (ex.: "Próxima etapa" a partir do resultado).
+      key={`${stageId}:${mode ?? ''}`}
+      stageId={stageId}
+      mode={parseMode(mode)}
+      onExit={exit}
+      onFinished={showResult}
+    />
+  );
 }
