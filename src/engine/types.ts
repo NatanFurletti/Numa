@@ -25,4 +25,6 @@ export interface ProblemAttempt {
   timeMs: number;
   /** Teclas pressionadas, incluindo apagar. Mede hesitação. */
   keystrokes: number;
+  /** Tentativas na tela de correção (só nas contas corrigidas). */
+  reviewAttempts?: number;
 }

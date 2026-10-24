@@ -19,6 +19,14 @@ export interface GameConfig {
     /** Acerto mínimo para a rodada valer como melhor tempo ou "mais rápido que da última vez". */
     minAccuracy: number;
   };
+  review: {
+    /** Tentativas erradas na mesma conta antes de aparecer "Ver resposta". */
+    wrongTriesBeforeReveal: number;
+  };
+  history: {
+    /** Rodadas guardadas no histórico. As mais antigas são descartadas. */
+    maxRounds: number;
+  };
   warmup: {
     /** Falhas seguidas na mesma etapa que disparam o aquecimento. */
     failsToTrigger: number;
@@ -45,6 +53,12 @@ export const GAME_CONFIG: GameConfig = {
   },
   records: {
     minAccuracy: 1,
+  },
+  review: {
+    wrongTriesBeforeReveal: 2,
+  },
+  history: {
+    maxRounds: 500,
   },
   warmup: {
     failsToTrigger: 3,
