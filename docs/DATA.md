@@ -7,7 +7,7 @@ Os dados são salvos com Zustand `persist` + AsyncStorage (`localStorage` na web
 ### 1.1 `numa.settings`
 ```ts
 interface Settings {
-  schemaVersion: 1;
+  schemaVersion: 2;                     // v1 → v2: o idioma salvo é descartado (D-024)
   language: 'pt' | 'en';
   inputDirection: 'ltr' | 'rtl';        // esquerda→direita / direita→esquerda
   onboardingDone: boolean;

@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, spacing } from '@/ui/theme';
@@ -19,13 +21,14 @@ const ROWS: Key[][] = [
 ].map((row) => row.map((digit): Key => ({ kind: 'digit', digit })));
 ROWS.push([{ kind: 'backspace' }, { kind: 'digit', digit: 0 }, { kind: 'submit' }]);
 
-function keyLabel(key: Key): { text: string; label: string } {
+function keyLabel(key: Key, t: TFunction): { text: string; label: string } {
   if (key.kind === 'digit') return { text: String(key.digit), label: String(key.digit) };
-  if (key.kind === 'backspace') return { text: '⌫', label: 'Apagar' };
-  return { text: '✓', label: 'Confirmar' };
+  if (key.kind === 'backspace') return { text: '⌫', label: t('keypad.backspace') };
+  return { text: '✓', label: t('keypad.submit') };
 }
 
 export function Keypad({ onDigit, onBackspace, onSubmit, submitDisabled }: KeypadProps) {
+  const { t } = useTranslation();
   const handlePress = (key: Key) => {
     if (key.kind === 'digit') onDigit(key.digit);
     else if (key.kind === 'backspace') onBackspace();
@@ -37,7 +40,7 @@ export function Keypad({ onDigit, onBackspace, onSubmit, submitDisabled }: Keypa
       {ROWS.map((row, r) => (
         <View key={r} style={styles.row}>
           {row.map((key) => {
-            const { text, label } = keyLabel(key);
+            const { text, label } = keyLabel(key, t);
             const disabled = key.kind === 'submit' && submitDisabled;
             return (
               <Pressable

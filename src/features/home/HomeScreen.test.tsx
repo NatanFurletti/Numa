@@ -1,5 +1,6 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
 
+import i18n from '@/i18n';
 import { useProgress } from '@/store/progress';
 
 import { HomeScreen } from './HomeScreen';
@@ -21,10 +22,21 @@ function setStage(stageId: string, change: { unlocked?: boolean; attempts?: numb
 async function renderHome() {
   const onContinue = jest.fn();
   const onLevels = jest.fn();
-  await render(<HomeScreen onContinue={onContinue} onLevels={onLevels} />);
+  const onPractice = jest.fn();
+  const onSettings = jest.fn();
+  await render(
+    <HomeScreen
+      onContinue={onContinue}
+      onLevels={onLevels}
+      onPractice={onPractice}
+      onSettings={onSettings}
+    />,
+  );
   return {
     onContinue,
     onLevels,
+    onPractice,
+    onSettings,
     user: userEvent.setup({ advanceTimers: jest.advanceTimersByTime }),
   };
 }
@@ -55,12 +67,16 @@ describe('HomeScreen', () => {
     expect(onContinue).toHaveBeenCalledWith('L01-C');
   });
 
-  it('o botão "Níveis" abre a lista de níveis', async () => {
-    const { onLevels, user } = await renderHome();
+  it('atalhos: "Níveis", "Treino livre" e "Configurações"', async () => {
+    const { onLevels, onPractice, onSettings, user } = await renderHome();
 
     await user.press(screen.getByRole('button', { name: 'Níveis' }));
+    await user.press(screen.getByRole('button', { name: 'Treino livre' }));
+    await user.press(screen.getByRole('button', { name: '⚙️ Configurações' }));
 
     expect(onLevels).toHaveBeenCalledTimes(1);
+    expect(onPractice).toHaveBeenCalledTimes(1);
+    expect(onSettings).toHaveBeenCalledTimes(1);
   });
 
   it('mostra a sequência de dias (jogou ontem)', async () => {
@@ -82,5 +98,20 @@ describe('HomeScreen', () => {
     await renderHome();
 
     expect(screen.queryByText(/🔥/)).not.toBeOnTheScreen();
+  });
+});
+
+describe('HomeScreen em inglês', () => {
+  afterEach(() => i18n.changeLanguage('pt'));
+
+  it('mostra os textos em inglês, com o plural certo', async () => {
+    await i18n.changeLanguage('en');
+    useProgress.setState({ streak: { current: 2, best: 2, lastPlayedDate: '2026-10-23' } });
+    await renderHome();
+
+    expect(screen.getByText('Train your mind a few minutes a day.')).toBeOnTheScreen();
+    expect(screen.getByText('🔥 2 days')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Start — Level 1 · Stage A' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: '⚙️ Settings' })).toBeOnTheScreen();
   });
 });

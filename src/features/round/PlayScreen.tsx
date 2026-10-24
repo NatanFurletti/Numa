@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { playModeFor } from '@/engine/progress';
@@ -39,14 +40,15 @@ interface PlayScreenProps {
 }
 
 export function PlayScreen({ stageId, ...props }: PlayScreenProps) {
+  const { t } = useTranslation();
   const unlocked = useProgress((s) => s.stages[stageId]?.unlocked === true);
   if (!isKnownStage(stageId) || !unlocked) {
     return (
       <View style={[styles.screen, styles.centered]}>
         <Text style={styles.title}>
-          {isKnownStage(stageId) ? 'Esta etapa ainda está bloqueada.' : 'Etapa não encontrada.'}
+          {isKnownStage(stageId) ? t('common.stageLocked') : t('common.stageNotFound')}
         </Text>
-        <Button label="Início" onPress={props.onExit} />
+        <Button label={t('common.home')} onPress={props.onExit} />
       </View>
     );
   }
@@ -62,6 +64,7 @@ function RoundView({
   onExit,
   keyboardTarget,
 }: PlayScreenProps) {
+  const { t } = useTranslation();
   const [seed] = useState(() => seedProp ?? randomSeed());
   // Decidido uma vez, ao abrir: o fim da rodada muda o progresso, mas não o modo dela.
   const [mode] = useState(() => playModeFor(useProgress.getState(), stageId, requestedMode));
@@ -124,21 +127,24 @@ function RoundView({
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Sair"
+            accessibilityLabel={t('round.exit')}
             onPress={() => setConfirmingExit(true)}
             hitSlop={12}
             style={styles.close}
           >
             <Text style={styles.closeText}>✕</Text>
           </Pressable>
-          {mode === 'warmup' ? <Text style={styles.warmup}>Aquecimento</Text> : null}
+          {mode === 'warmup' ? <Text style={styles.warmup}>{t('modes.warmup')}</Text> : null}
         </View>
 
         <TimeBar ratio={round.timeRatio} timeUp={round.timeUp} />
 
         <View style={styles.middle}>
           {round.phase === 'countdown' ? (
-            <Text style={styles.countdown} accessibilityLabel={`Começa em ${round.countdown}`}>
+            <Text
+              style={styles.countdown}
+              accessibilityLabel={t('round.countdown', { n: round.countdown })}
+            >
               {round.countdown}
             </Text>
           ) : (
@@ -160,10 +166,10 @@ function RoundView({
 
       <ConfirmDialog
         visible={confirmingExit}
-        title="Sair da rodada?"
-        message="Esta rodada não vai contar para o seu progresso."
-        confirmLabel="Sair da rodada"
-        cancelLabel="Continuar jogando"
+        title={t('round.exitTitle')}
+        message={t('round.exitMessage')}
+        confirmLabel={t('round.exitConfirm')}
+        cancelLabel={t('round.exitCancel')}
         onConfirm={exit}
         onCancel={() => setConfirmingExit(false)}
       />

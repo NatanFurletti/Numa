@@ -35,11 +35,21 @@ npx expo install <pkg>   # sempre use para adicionar pacotes
 
 Antes de dar uma tarefa como pronta: `npm run typecheck`, `npm run lint` e `npm test` passando.
 
+## Branches e ambientes (D-025)
+
+| Branch    | Ambiente                                        | Quando muda                                                |
+| --------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| `main`    | Produção (Vercel, Production)                   | PR de `homolog` → `main`, depois de testado em homologação |
+| `homolog` | Homologação (Vercel, Preview com endereço fixo) | PR de cada marco/feature → `homolog`                       |
+| `mN-...`  | Preview próprio de cada branch                  | Trabalho do dia a dia                                      |
+
+Branches de trabalho saem de `homolog`, e os PRs apontam para `homolog`, nunca direto para `main`.
+
 ## Regras do projeto
 
 - **TDD sempre:** teste falhando primeiro, depois o código mínimo, depois refatorar. Bug → teste que reproduz antes da correção.
 - **Rotas em `src/app/`** (D-017), finas: só chamam componentes de `src/features/`.
 - **`src/engine/` é TypeScript puro:** sem React/Expo/storage, sem `Date` e sem `Math.random` (relógio e Rng injetados). O lint barra isso.
 - Números ajustáveis (tempos, limites de estrelas, etc.) ficam em `src/engine/config/`, nunca espalhados no código.
-- Textos de interface vão para o i18n (PT e EN) assim que `src/i18n/` existir (M5).
+- Textos de interface sempre pelo i18n: chave nova em `src/i18n/pt.ts` e `en.ts` (o typecheck acusa se faltar em um dos dois). Nada de texto fixo nas telas.
 - Teste ao lado do arquivo (`scoring.ts` → `scoring.test.ts`). Sem snapshots de componentes inteiros.

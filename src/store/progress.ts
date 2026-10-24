@@ -21,6 +21,8 @@ import { documentStorage, isBoolean, isCount, isRecord, isString, pick } from '.
 interface ProgressState extends Progress {
   /** Aplica uma rodada terminada. `today` é a data local, 'YYYY-MM-DD'. */
   recordRound: (round: FinishedRound, today: string) => void;
+  /** Apagar progresso (configurações): volta ao início, como no primeiro acesso. */
+  resetProgress: () => void;
 }
 
 export const PROGRESS_KEY = 'numa.progress';
@@ -83,6 +85,7 @@ export function createProgressStore(storage: KeyValueStorage = deviceStorage) {
       (set) => ({
         ...createInitialProgress(),
         recordRound: (round, today) => set((state) => applyRound(state, round, today)),
+        resetProgress: () => set(createInitialProgress()),
       }),
       {
         name: PROGRESS_KEY,
