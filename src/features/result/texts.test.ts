@@ -1,4 +1,4 @@
-import { comparisonText, messageText, problemLine, scoreTimeText, stageLabel } from './texts';
+import { comparisonText, messageText, problemLine, scoreTimeText } from './texts';
 
 describe('scoreTimeText', () => {
   it('dentro do tempo: "52s de 60s"', () => {
@@ -66,13 +66,6 @@ describe('comparisonText', () => {
 
   it('sem comparação → nada', () => {
     expect(comparisonText(null)).toBeNull();
-  });
-});
-
-describe('stageLabel', () => {
-  it('"L07-B" → "Nível 7 · Etapa B"', () => {
-    expect(stageLabel('L07-B')).toBe('Nível 7 · Etapa B');
-    expect(stageLabel('L15-C')).toBe('Nível 15 · Etapa C');
   });
 });
 

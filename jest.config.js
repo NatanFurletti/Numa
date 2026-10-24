@@ -7,6 +7,8 @@ const path = require('path');
 const thresholds = [
   { glob: './src/engine/**/*.ts', dir: 'src/engine', match: /\.ts$/, min: 95 },
   { glob: './src/store/**/*.ts', dir: 'src/store', match: /\.ts$/, min: 85 },
+  // TESTING §2 não fixa um alvo para storage; usa o mesmo do store, que depende dele.
+  { glob: './src/storage/**/*.ts', dir: 'src/storage', match: /\.ts$/, min: 85 },
   {
     glob: './src/features/**/use*.ts',
     dir: 'src/features',
@@ -36,6 +38,7 @@ module.exports = {
   preset: 'jest-expo',
   // Necessário para o Reanimated 4 rodar no Jest.
   resolver: 'react-native-reanimated/jest/resolver',
+  setupFiles: ['<rootDir>/jest.setup.js'],
   testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/dist/'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

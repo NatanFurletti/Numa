@@ -137,3 +137,17 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Dica de direção:** marcada como vista (`hasSeenDirectionTip`) assim que aparece, e não quando a pessoa toca em "Entendi".
 - **Navegação:** a rodada terminada é trocada pelo resultado (`router.replace`), para o "voltar" não reabrir uma rodada encerrada. "Início" usa `router.dismissTo('/')`. `/result` e `/review` não têm página estática por id, porque os ids são criados no aparelho.
 
+### D-023 · Detalhes do M4 (progressão e persistência)
+**Data:** 2026-10-23
+**Substitui:** o item "Histórico e configurações só em memória até o M4" do D-022.
+- **Formato salvo:** cada chave (`numa.settings`, `numa.progress`, `numa.history`) guarda um JSON com `schemaVersion` junto dos campos, como no DATA §1. A leitura e as migrações ficam em `src/storage/document.ts` (`migrations[n]` leva da versão n para a n + 1). `src/store/persist.ts` liga isso ao `persist` do Zustand.
+- **Leitura tolerante:** um campo com valor inválido volta ao padrão, e os outros são mantidos. Etapas que não existem mais são descartadas, e etapas novas (de uma atualização) entram bloqueadas. Registros estragados do histórico são descartados. Documento ilegível ou de versão desconhecida: o app usa os padrões e registra o erro com `console.warn`.
+- **Versão mais nova que o app** (ex.: voltou para uma versão antiga): também cai nos padrões. A próxima gravação sobrescreve o dado. É raro na Fase 1; rever quando houver sincronização (Fase 2).
+- **O app espera os dados carregarem** (`useStoresReady`) antes de abrir qualquer tela. Assim o "Continuar" nunca aparece com o progresso zerado.
+- **Páginas estáticas da web:** durante o `expo export` não há `window`. Ali o armazenamento não lê nem salva nada, e o navegador carrega os dados ao abrir a página.
+- **Aquecimento:** decidido quando a rodada abre (`playModeFor`). Pedir um desafio numa etapa com aquecimento pendente abre o aquecimento. Depois da 3ª falha seguida, o resultado avisa e o botão vira "Fazer aquecimento".
+- **Etapa bloqueada** aberta direto pelo endereço (`/play/L10-A`) mostra um aviso, em vez da rodada.
+- **Início:** "Começar" enquanto nenhuma rodada de desafio foi concluída, e "Continuar" depois. A sequência some quando é 0 e usa "1 dia" no singular. Treino livre e Configurações entram no M5.
+- **Nomes curtos dos níveis** em `src/features/levels/names.ts`. Vão para o i18n no M5, assim como o idioma salvo (fixo em `pt` até lá).
+- **Cobertura:** `src/storage` exige ≥ 85%, o mesmo alvo do store.
+

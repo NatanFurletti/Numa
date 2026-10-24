@@ -5,12 +5,14 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { roundOutcome, type RoundOutcome, type RoundRecord } from '@/engine/round-record';
 import type { PlayMode } from '@/engine/round-setup';
 import type { ProblemAttempt } from '@/engine/types';
+import { stageLabel } from '@/features/levels/names';
 import { useHistory } from '@/store/history';
+import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
 import { Stars } from './Stars';
-import { comparisonText, messageText, problemLine, scoreTimeText, stageLabel } from './texts';
+import { comparisonText, messageText, problemLine, scoreTimeText } from './texts';
 
 interface ResultScreenProps {
   roundId: string;
@@ -27,6 +29,9 @@ const MODE_LABEL: Partial<Record<PlayMode, string>> = {
 export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreenProps) {
   const rounds = useHistory((s) => s.rounds);
   const round = rounds.find((r) => r.id === roundId);
+  const warmupNext = useProgress((s) =>
+    round ? s.stages[round.stageId]?.pendingWarmup === true : false,
+  );
   const outcome = round ? roundOutcome(rounds, roundId) : undefined;
 
   if (!round || !outcome) {
@@ -40,7 +45,8 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
 
   const comparison = comparisonText(outcome.comparison);
   const modeLabel = MODE_LABEL[round.mode];
-  const playAgain = playAgainAction(round, outcome);
+  const warmupAhead = warmupNext && round.mode === 'challenge' && !outcome.passed;
+  const playAgain = playAgainAction(round, outcome, warmupAhead);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.screen}>
@@ -60,6 +66,12 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
           <Text style={styles.message}>{messageText(outcome.message)}</Text>
         ) : null}
         {comparison ? <Text style={styles.comparison}>{comparison}</Text> : null}
+        {warmupAhead ? (
+          <Text style={styles.warmup}>
+            A próxima rodada é um aquecimento, com contas da etapa anterior. Depois, o desafio volta
+            ao normal.
+          </Text>
+        ) : null}
 
         <View style={styles.list}>
           {round.problems.map((problem, i) => (
@@ -81,11 +93,13 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
   );
 }
 
-function playAgainAction(round: RoundRecord, outcome: RoundOutcome) {
+function playAgainAction(round: RoundRecord, outcome: RoundOutcome, warmupAhead: boolean) {
   const same = { stageId: round.stageId, mode: 'challenge' as PlayMode };
   if (round.mode === 'practice')
     return { ...same, mode: 'practice' as PlayMode, label: 'Treinar de novo' };
   if (round.mode === 'warmup') return { ...same, label: 'Voltar ao desafio' };
+  // O pedido continua sendo um desafio: a rodada vira aquecimento sozinha (playModeFor).
+  if (warmupAhead) return { ...same, label: 'Fazer aquecimento' };
   if (!outcome.passed) return { ...same, label: 'Tentar de novo' };
   if (outcome.nextStageId) return { ...same, stageId: outcome.nextStageId, label: 'Próxima etapa' };
   return { ...same, label: 'Jogar de novo' };
@@ -164,6 +178,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 20,
     fontWeight: '600',
+    textAlign: 'center',
+  },
+  warmup: {
+    color: colors.warning,
+    fontSize: 16,
     textAlign: 'center',
   },
   comparison: {
