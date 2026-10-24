@@ -48,3 +48,11 @@ describe('idioma padrão', () => {
     expect(useSettings.getState().language).toBe('en');
   });
 });
+
+describe('boas-vindas', () => {
+  it('marca as boas-vindas como vistas', () => {
+    useSettings.getState().markOnboardingDone();
+
+    expect(useSettings.getState().onboardingDone).toBe(true);
+  });
+});

@@ -26,7 +26,7 @@ interface HistoryState extends HistoryData {
 
 export const HISTORY_KEY = 'numa.history';
 
-const MODES = ['challenge', 'practice', 'warmup'];
+const MODES = ['challenge', 'practice', 'warmup', 'placement'];
 const STATUSES = ['completed', 'abandoned'];
 
 /** Checagem leve: o suficiente para as telas não quebrarem com um registro estragado. */

@@ -128,8 +128,9 @@ Mostre **uma** frase, na ordem de prioridade:
 
 - Oferecido **no primeiro acesso** ("Quer fazer um teste rápido para começar no seu nível?"). Pode ser pulado e refeito depois nas configurações.
 - Testa uma sequência de **níveis-checkpoint** ⚙️ (ver [LEVELS.md](LEVELS.md)), em ordem.
-- Em cada checkpoint: **5 contas** ⚙️ com a configuração da etapa B e metade do tempo-limite dela.
-- **Passa o checkpoint** com ≥ 4/5 certas dentro do tempo.
+- Em cada checkpoint: um bloco de **5 contas** ⚙️ com a configuração da etapa B. A barra de tempo mostra metade do tempo-limite dela.
+- **Passa o checkpoint** com ≥ 4/5 certas ⚙️ **e** a **mediana do tempo por conta** dentro do ritmo da etapa B (tempo-limite da B ÷ 10). A mediana evita que uma única hesitação reprove (D-026).
+- No **primeiro bloco**, o tempo da 1ª conta não conta ⚙️: a pessoa ainda está conhecendo o teclado.
 - Para no primeiro checkpoint em que falhar. A pessoa começa na **etapa A do nível seguinte ao último checkpoint aprovado** (ou no L01-A se não passou nenhum).
 - Todas as etapas anteriores ao ponto de início ficam desbloqueadas, com 0 estrelas.
 - Sem tela de correção. Mensagem final: "Você começa no Nível X!".

@@ -1,5 +1,4 @@
 // Configurações (docs/GAME_RULES.md §12, docs/SCREENS.md §3.9).
-// "Refazer nivelamento" entra no M6, junto com a tela de nivelamento (D-024).
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +14,12 @@ import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
 type EraseStep = 'idle' | 'first' | 'second' | 'done';
 
-export function SettingsScreen({ onBack }: { onBack: () => void }) {
+interface SettingsScreenProps {
+  onBack: () => void;
+  onRedoPlacement: () => void;
+}
+
+export function SettingsScreen({ onBack, onRedoPlacement }: SettingsScreenProps) {
   const { t } = useTranslation();
   const language = useSettings((s) => s.language);
   const direction = useSettings((s) => s.inputDirection);
@@ -72,6 +76,15 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
             hint={t('settings.rtlExample')}
             selected={direction === 'rtl'}
             onPress={() => setDirection('rtl')}
+          />
+        </Section>
+
+        <Section title={t('settings.placementSection')}>
+          <Text style={styles.hint}>{t('settings.redoPlacementHint')}</Text>
+          <Button
+            label={t('settings.redoPlacement')}
+            onPress={onRedoPlacement}
+            variant="secondary"
           />
         </Section>
 

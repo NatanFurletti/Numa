@@ -172,3 +172,14 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 **Por quê:** dá para mostrar uma versão estável para testes com pessoas, enquanto o projeto avança, sem que cada merge chegue direto a elas. Os dados de cada ambiente ficam separados, porque são endereços diferentes e cada endereço tem o seu `localStorage`.
 **Plano gratuito:** a Vercel Hobby não tem "ambientes personalizados", então homologação é um Preview com domínio fixo. Se um dia for preciso, migrar para um Custom Environment não muda o fluxo de branches.
 
+### D-026 · Nivelamento pela mediana do tempo por conta, e boas-vindas
+**Data:** 2026-10-24
+**Substitui:** a regra "≥ 4/5 certas dentro do tempo" do GAME_RULES §10.
+**Contexto:** medir só o tempo total do bloco deixava uma única hesitação (alguém chamou, a pessoa se distraiu) reprovar quem domina o nível. E a primeira conta do teste sai mais lenta, porque a pessoa ainda está conhecendo o teclado. Medir só o tempo de cada conta, sem o acerto, também não serve: o tamanho da resposta pesa no tempo de digitar, e rápido-e-errado não pode passar.
+**Decisão:**
+- Passa no bloco com **4 de 5 certas** e a **mediana do tempo por conta** ≤ o ritmo da etapa B (tempo-limite da B ÷ contas da rodada). A barra de tempo continua mostrando metade do tempo da B, como referência.
+- No **primeiro bloco**, a 1ª conta fica fora do cálculo do tempo (`placement.ignoreFirstProblemTime`).
+- Cada bloco vai para o histórico (`mode: 'placement'`, etapa B do checkpoint), com o tempo de cada conta. Isso permite calibrar a regra na Fase 2 com dados reais. Os blocos não contam como dia jogado na sequência.
+- **Boas-vindas** só para quem nunca jogou. Quem já jogava antes do M6 (sem `onboardingDone` salvo) vai direto ao início.
+- O resultado do nivelamento é aplicado assim que o último bloco termina, e não ao tocar em "Vamos lá". Assim vale mesmo se a pessoa fechar o app nessa tela. Refazer o nivelamento nunca bloqueia o que já estava liberado.
+

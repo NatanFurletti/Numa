@@ -15,8 +15,9 @@ beforeEach(() => {
 
 async function renderSettings() {
   const onBack = jest.fn();
-  await render(<SettingsScreen onBack={onBack} />);
-  return { onBack, user: userEvent.setup() };
+  const onRedoPlacement = jest.fn();
+  await render(<SettingsScreen onBack={onBack} onRedoPlacement={onRedoPlacement} />);
+  return { onBack, onRedoPlacement, user: userEvent.setup() };
 }
 
 describe('SettingsScreen', () => {
@@ -77,6 +78,14 @@ describe('SettingsScreen', () => {
 
     expect(useHistory.getState().rounds).toHaveLength(1);
     expect(screen.queryByText('Tem certeza?')).not.toBeOnTheScreen();
+  });
+
+  it('"Refazer nivelamento" abre o teste', async () => {
+    const { onRedoPlacement, user } = await renderSettings();
+
+    await user.press(screen.getByRole('button', { name: 'Refazer nivelamento' }));
+
+    expect(onRedoPlacement).toHaveBeenCalledTimes(1);
   });
 
   it('o botão de voltar leva ao início', async () => {

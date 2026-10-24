@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import {
+  applyPlacement,
   applyRound,
   createInitialProgress,
   type FinishedRound,
@@ -21,6 +22,8 @@ import { documentStorage, isBoolean, isCount, isRecord, isString, pick } from '.
 interface ProgressState extends Progress {
   /** Aplica uma rodada terminada. `today` é a data local, 'YYYY-MM-DD'. */
   recordRound: (round: FinishedRound, today: string) => void;
+  /** Resultado do nivelamento: aprovado ou não em cada checkpoint, na ordem. */
+  completePlacement: (results: readonly boolean[]) => void;
   /** Apagar progresso (configurações): volta ao início, como no primeiro acesso. */
   resetProgress: () => void;
 }
@@ -85,6 +88,7 @@ export function createProgressStore(storage: KeyValueStorage = deviceStorage) {
       (set) => ({
         ...createInitialProgress(),
         recordRound: (round, today) => set((state) => applyRound(state, round, today)),
+        completePlacement: (results) => set((state) => applyPlacement(state, results)),
         resetProgress: () => set(createInitialProgress()),
       }),
       {
