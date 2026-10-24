@@ -8,11 +8,10 @@ import {
   resultMessage,
   type ResultMessage,
 } from './feedback';
-import type { PlayMode } from './round-setup';
 import type { RoundSummary } from './round';
 import { calculateStars, qualifiesForRecord } from './scoring';
 import { nextStageId } from './stages';
-import type { InputDirection, ProblemAttempt, Stars } from './types';
+import type { InputDirection, Mode, ProblemAttempt, Stars } from './types';
 
 export type RoundStatus = 'completed' | 'abandoned';
 
@@ -22,7 +21,7 @@ export interface RoundRecord {
   rulesVersion: number;
   appVersion: string;
   stageId: string;
-  mode: PlayMode;
+  mode: Mode;
   status: RoundStatus;
   seed: number;
   /** ISO 8601. */
@@ -42,7 +41,7 @@ export interface BuildRoundRecordInput {
   id: string;
   appVersion: string;
   stageId: string;
-  mode: PlayMode;
+  mode: Mode;
   status: RoundStatus;
   seed: number;
   startedAt: string;

@@ -21,7 +21,7 @@ import {
   timeRemainingRatio,
   visibleProblems,
 } from '@/engine/round';
-import { type PlayMode, setupRound } from '@/engine/round-setup';
+import type { RoundSetup } from '@/engine/round-setup';
 import type { InputDirection } from '@/engine/types';
 import { type Clock, systemClock } from '@/lib/clock';
 
@@ -37,9 +37,8 @@ export interface RoundEnd {
 }
 
 interface UseRoundOptions {
-  stageId: string;
-  mode: PlayMode;
-  seed: number;
+  /** Contas e tempo-limite (setupRound para as rodadas; setupCheckpoint para o nivelamento). */
+  setup: RoundSetup;
   direction: InputDirection;
   clock?: Clock;
   /** Início da contagem regressiva (3, 2, 1). */
@@ -53,16 +52,15 @@ interface UseRoundOptions {
 const COUNTDOWN_STEP_MS = 1000;
 
 export function useRound({
-  stageId,
-  mode,
-  seed,
+  setup: initialSetup,
   direction,
   clock = systemClock,
   countdownFrom = 3,
   tickMs = 100,
   onEnd,
 }: UseRoundOptions) {
-  const [setup] = useState(() => setupRound({ stageId, mode, seed }));
+  // Fixado ao montar: a rodada não muda de contas no meio.
+  const [setup] = useState(initialSetup);
   const [state, dispatch] = useReducer(roundReducer, undefined, () =>
     createRound({ problems: setup.problems, timeLimitMs: setup.timeLimitMs, direction }),
   );

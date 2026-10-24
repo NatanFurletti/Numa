@@ -37,8 +37,10 @@ export interface GameConfig {
     checkpoints: string[];
     problemsPerCheckpoint: number;
     minCorrect: number;
-    /** Fração do tempo-limite da etapa B. */
+    /** Fração do tempo-limite da etapa B (para o bloco de contas; a barra de tempo usa este valor). */
     timeRatio: number;
+    /** No primeiro bloco, ignora o tempo da 1ª conta (a pessoa ainda está conhecendo o teclado). */
+    ignoreFirstProblemTime: boolean;
   };
 }
 
@@ -69,5 +71,6 @@ export const GAME_CONFIG: GameConfig = {
     problemsPerCheckpoint: 5,
     minCorrect: 4,
     timeRatio: 0.5,
+    ignoreFirstProblemTime: true,
   },
 };

@@ -44,10 +44,10 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [x] Todos os textos em PT e EN
 
 ### M6 · Nivelamento, PWA e publicação
-- [ ] Boas-vindas + teste de nivelamento, com "Refazer nivelamento" nas configurações
-- [ ] Manifest, ícones e service worker (offline)
-- [ ] Testes E2E dos fluxos críticos (TESTING §3.6)
-- [ ] Deploy na Vercel/Netlify
+- [x] Boas-vindas + teste de nivelamento, com "Refazer nivelamento" nas configurações
+- [x] Manifest, ícones e service worker (offline). Ícone provisório até existir um logo
+- [x] Testes E2E dos fluxos críticos (TESTING §3.6)
+- [x] Deploy na Vercel, com produção (`main`) e homologação (`homolog`) (D-025)
 - [ ] Teste com 5–10 pessoas de idades diferentes e ajuste dos tempos ⚙️
 
 **MVP pronto quando:** alguém joga do L01 ao L15 no celular e no computador, offline, em PT ou EN, sem perder progresso.

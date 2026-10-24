@@ -24,6 +24,8 @@ interface SettingsState extends SettingsData {
   setLanguage: (language: Language) => void;
   setInputDirection: (direction: InputDirection) => void;
   markDirectionTipSeen: () => void;
+  /** Boas-vindas vistas (escolheu o nivelamento ou começar do início). */
+  markOnboardingDone: () => void;
 }
 
 export const SETTINGS_KEY = 'numa.settings';
@@ -64,6 +66,7 @@ export function createSettingsStore(storage: KeyValueStorage = deviceStorage) {
         setLanguage: (language) => set({ language }),
         setInputDirection: (inputDirection) => set({ inputDirection }),
         markDirectionTipSeen: () => set({ hasSeenDirectionTip: true }),
+        markOnboardingDone: () => set({ onboardingDone: true }),
       }),
       {
         name: SETTINGS_KEY,

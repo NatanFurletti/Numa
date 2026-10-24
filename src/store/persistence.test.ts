@@ -118,6 +118,19 @@ describe('numa.settings', () => {
 });
 
 describe('numa.progress', () => {
+  it('o nivelamento desbloqueia até a etapa inicial e fica salvo', async () => {
+    const storage = memoryStorage();
+    const store = createProgressStore(storage);
+    await store.persist.rehydrate();
+
+    store.getState().completePlacement([true, true, false]);
+    await flush();
+
+    const saved = JSON.parse(storage.dump()[PROGRESS_KEY]);
+    expect(saved.placementDone).toBe(true);
+    expect(saved.stages['L06-A'].unlocked).toBe(true);
+  });
+
   it('apagar o progresso volta ao início e salva', async () => {
     const storage = memoryStorage();
     const store = createProgressStore(storage);
