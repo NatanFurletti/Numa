@@ -1,5 +1,6 @@
 import { systemClock } from './clock';
 import { formatSeconds, toIsoString } from './format';
+import { localDateString } from './date';
 import { newId } from './id';
 import { randomSeed } from './seed';
 
@@ -62,5 +63,12 @@ describe('newId', () => {
         configurable: true,
       });
     }
+  });
+});
+
+describe('localDateString', () => {
+  it('data local no formato YYYY-MM-DD', () => {
+    expect(localDateString(new Date(2026, 0, 5, 23, 59).getTime())).toBe('2026-01-05');
+    expect(localDateString(new Date(2026, 11, 31, 0, 1).getTime())).toBe('2026-12-31');
   });
 });
