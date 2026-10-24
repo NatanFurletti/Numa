@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/result/:roundId", "destination": "/result/[roundId].html" },
+    { "source": "/review/:roundId", "destination": "/review/[roundId].html" }
+  ]
+}
