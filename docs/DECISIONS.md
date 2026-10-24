@@ -183,3 +183,14 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Boas-vindas** só para quem nunca jogou. Quem já jogava antes do M6 (sem `onboardingDone` salvo) vai direto ao início.
 - O resultado do nivelamento é aplicado assim que o último bloco termina, e não ao tocar em "Vamos lá". Assim vale mesmo se a pessoa fechar o app nessa tela. Refazer o nivelamento nunca bloqueia o que já estava liberado.
 
+### D-027 · PWA, testes E2E e o bug da troca de idioma (M6)
+**Data:** 2026-10-24
+- **PWA:** `public/manifest.json`, ícones em `public/icons` e o service worker gerado pelo Workbox depois do `expo export` (`npm run build:web`, config em `workbox-config.js`). O registro do service worker fica no `src/app/+html.tsx` e só entra no build de produção.
+- **`+html.tsx` no SDK 58:** precisa renderizar `headNodes` e `bodyNodes` de `useServerDocumentContext()`, porque são eles que trazem os scripts do app. O guia de PWA do Expo ainda mostra o template antigo. Com ele, a página abre em branco.
+- **Atualizações:** o service worker guarda o site inteiro. Um deploy novo chega na visita seguinte: o service worker novo baixa os arquivos em segundo plano e assume na próxima abertura (`skipWaiting`, `clientsClaim`). Um aviso de "nova versão disponível" fica para depois, se fizer falta.
+- **Offline em `/result/<id>` e `/review/<id>`:** não há arquivo por id, então o service worker responde com o `index.html`. Todas as páginas estáticas são iguais (o app só desenha depois de carregar os dados salvos), então isso não tem efeito colateral.
+- **Ícone provisório:** um "+" branco num círculo azul, gerado por `scripts/generate-pwa-icons.js`. Trocar quando houver um logo. O ícone dos apps nativos (`app.json`) continua o padrão do Expo até a Fase 3.
+- **E2E sem seed fixa:** os testes leem a conta na tela e calculam a resposta. Isso substitui a ideia do TESTING de uma seed por variável de ambiente, e evita um build especial só para testes. Rodam no CI em um job próprio (`e2e`), com o Chromium do Playwright, emulando um celular (Pixel 7) em pt-BR.
+- **Bug corrigido (vinha do M5):** trocar o idioma nas configurações voltava o app ao início. O layout escondia as telas até o idioma novo entrar, o que desmontava a navegação. Agora as telas só esperam na primeira abertura (`useAppReady`). Há um teste de unidade e um E2E para isso.
+- **Botão "Sair do teste"** no nivelamento, e não "Sair": dois botões com o mesmo nome confundiam o leitor de tela.
+

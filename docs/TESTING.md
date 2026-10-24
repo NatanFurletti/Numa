@@ -98,7 +98,9 @@ Fluxos críticos da Fase 1:
 4. Trocar o idioma para EN.
 5. Direção direita → esquerda: digitar `2,1,1` resulta em `112`.
 
-Para os testes E2E serem determinísticos, o app aceita uma seed fixa via variável de ambiente **apenas em builds de teste**.
+Também: o teste de nivelamento (falhar no 1º bloco) e o **funcionamento offline** (depois da primeira visita, recarregar sem internet abre o app).
+
+Os testes E2E leem a conta atual na tela (`testID="current-problem"`) e calculam a resposta. Assim não precisam de uma seed fixa nem de um build especial de teste (D-027). Eles rodam sobre o site estático de `npm run build:web`, servido como na Vercel (`e2e/serve.json` repete as regras do `vercel.json`).
 
 ## 4. Ordem sugerida do TDD no engine
 
@@ -121,7 +123,7 @@ Do mais simples para o mais complexo. Cada item é uma sequência de ciclos red 
 npm test                 # todos os testes
 npm run test:watch       # modo watch (use durante o TDD)
 npm run test:coverage    # com cobertura
-npm run e2e              # Playwright
+npm run e2e              # Playwright (rode antes o npm run build:web)
 ```
 
 ## 6. Convenções

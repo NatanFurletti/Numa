@@ -29,7 +29,8 @@ npm run test:coverage    # testes com cobertura (o CI usa este)
 npm run typecheck        # tsc --noEmit
 npm run lint             # ESLint, incluindo as fronteiras entre camadas
 npm run format           # Prettier
-npm run build:web        # site estático em dist/
+npm run build:web        # site estático em dist/, com o service worker do PWA
+npm run e2e              # testes E2E (Playwright) sobre o dist/; rode o build:web antes
 npx expo install <pkg>   # sempre use para adicionar pacotes
 ```
 

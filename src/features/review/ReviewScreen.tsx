@@ -86,7 +86,9 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
         <View style={styles.middle}>
           <Shake trigger={review.wrongCount}>
             <View style={styles.row}>
-              <Text style={styles.expression}>{formatProblem(item.problem)}</Text>
+              <Text testID="current-problem" style={styles.expression}>
+                {formatProblem(item.problem)}
+              </Text>
               <Answer
                 status={review.status}
                 text={review.status === 'revealed' ? String(item.expected) : review.answerText}
