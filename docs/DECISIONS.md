@@ -111,3 +111,8 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Relógio do aparelho voltando no tempo:** a sequência de dias não muda.
 - **Sequência no início:** mostra 0 se a pessoa não jogou nem hoje nem ontem (em vez de um número antigo).
 - **Teclas (`keystrokes`):** contam todos os toques em dígitos e apagar, inclusive dígitos ignorados por passar do limite.
+
+### D-020 · Recorde de tempo só com 100% de acerto (substitui o 1º item do D-019)
+**Data:** 2026-10-23
+**Decisão:** Uma rodada só conta como **melhor tempo** da etapa, e só gera as frases "Seu melhor tempo aqui" ou "Você foi Xs mais rápido que da última vez", se tiver **100% de acerto** (`records.minAccuracy = 1` em `game-config.ts`).
+**Por quê:** Terminar rápido com erros não pode ser premiado. O jogo mede precisão **e** velocidade, e o recorde deve refletir as duas. A frase "mais acertos que da última vez" continua valendo para qualquer rodada.

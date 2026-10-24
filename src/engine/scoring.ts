@@ -13,6 +13,11 @@ export function accuracy(correct: number, total: number): number {
   return total === 0 ? 0 : correct / total;
 }
 
+/** A rodada tem acerto suficiente para valer como recorde de tempo? */
+export function qualifiesForRecord(correct: number, total: number): boolean {
+  return accuracy(correct, total) >= GAME_CONFIG.records.minAccuracy;
+}
+
 export function isCorrect(problem: Problem, answer: number | null): boolean {
   return answer !== null && answer === solve(problem);
 }

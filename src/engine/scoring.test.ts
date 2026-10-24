@@ -1,4 +1,4 @@
-import { accuracy, calculateStars, isCorrect } from './scoring';
+import { accuracy, calculateStars, isCorrect, qualifiesForRecord } from './scoring';
 
 const limitMs = 60_000;
 
@@ -64,5 +64,13 @@ describe('isCorrect', () => {
 
   it('resposta vazia nunca está certa', () => {
     expect(isCorrect({ a: 5, b: 5, op: 'sub' }, null)).toBe(false);
+  });
+});
+
+describe('qualifiesForRecord', () => {
+  it('só rodadas 100% certas valem como recorde de tempo', () => {
+    expect(qualifiesForRecord(10, 10)).toBe(true);
+    expect(qualifiesForRecord(9, 10)).toBe(false);
+    expect(qualifiesForRecord(0, 0)).toBe(false);
   });
 });

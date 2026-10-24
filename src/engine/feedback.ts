@@ -2,7 +2,7 @@
 // O engine só escolhe a chave; o texto final fica no i18n.
 
 import { GAME_CONFIG } from './config/game-config';
-import { accuracy, calculateStars, type RoundScore } from './scoring';
+import { accuracy, calculateStars, qualifiesForRecord, type RoundScore } from './scoring';
 
 export type ResultMessageKey =
   'perfect' | 'stageCleared' | 'accurateButSlow' | 'fastButInaccurate' | 'inaccurateAndSlow';
@@ -42,24 +42,22 @@ export interface ComparisonInput {
   previousBestTimeMs?: number;
 }
 
-/** Uma única frase positiva, por ordem de prioridade. Sem melhora, nada. */
+/**
+ * Uma única frase positiva, por ordem de prioridade. Sem melhora, nada.
+ * Frases sobre tempo só valem para rodadas com acerto de recorde (records.minAccuracy).
+ */
 export function personalComparison(input: ComparisonInput): PersonalComparison | null {
   const { current, previous, previousBestTimeMs } = input;
   if (!previous) return null;
 
-  const qualifiesForBest =
-    accuracy(current.correct, current.total) >= GAME_CONFIG.stars.minAccuracy;
-  if (
-    qualifiesForBest &&
-    previousBestTimeMs !== undefined &&
-    current.elapsedMs < previousBestTimeMs
-  ) {
+  const timeCounts = qualifiesForRecord(current.correct, current.total);
+  if (timeCounts && previousBestTimeMs !== undefined && current.elapsedMs < previousBestTimeMs) {
     return { type: 'newBestTime', fromMs: previousBestTimeMs, toMs: current.elapsedMs };
   }
   if (current.correct > previous.correct) {
     return { type: 'moreCorrect', diff: current.correct - previous.correct };
   }
-  if (current.elapsedMs < previous.elapsedMs) {
+  if (timeCounts && current.elapsedMs < previous.elapsedMs) {
     return { type: 'faster', diffMs: previous.elapsedMs - current.elapsedMs };
   }
   return null;

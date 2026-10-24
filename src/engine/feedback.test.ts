@@ -35,15 +35,15 @@ describe('resultMessage', () => {
 });
 
 describe('personalComparison', () => {
-  const current = { correct: 9, total: 10, elapsedMs: 47_000 };
+  const perfect = { correct: 10, total: 10, elapsedMs: 47_000 };
 
   it('sem tentativa anterior, não mostra nada', () => {
-    expect(personalComparison({ current })).toBeNull();
+    expect(personalComparison({ current: perfect })).toBeNull();
   });
 
-  it('prioridade 1: novo melhor tempo na etapa', () => {
+  it('prioridade 1: novo melhor tempo na etapa (rodada 100% certa)', () => {
     const comparison = personalComparison({
-      current,
+      current: perfect,
       previous: { correct: 7, elapsedMs: 50_000 },
       previousBestTimeMs: 52_000,
     });
@@ -53,7 +53,7 @@ describe('personalComparison', () => {
 
   it('prioridade 2: mais acertos que a tentativa anterior', () => {
     const comparison = personalComparison({
-      current,
+      current: { correct: 9, total: 10, elapsedMs: 47_000 },
       previous: { correct: 7, elapsedMs: 50_000 },
       previousBestTimeMs: 40_000,
     });
@@ -61,10 +61,10 @@ describe('personalComparison', () => {
     expect(comparison).toEqual({ type: 'moreCorrect', diff: 2 });
   });
 
-  it('prioridade 3: mais rápido que a tentativa anterior', () => {
+  it('prioridade 3: mais rápido que a tentativa anterior (rodada 100% certa)', () => {
     const comparison = personalComparison({
-      current,
-      previous: { correct: 9, elapsedMs: 51_000 },
+      current: perfect,
+      previous: { correct: 10, elapsedMs: 51_000 },
       previousBestTimeMs: 40_000,
     });
 
@@ -73,7 +73,7 @@ describe('personalComparison', () => {
 
   it('sem melhora, não mostra nada (nunca diz "você piorou")', () => {
     const comparison = personalComparison({
-      current,
+      current: perfect,
       previous: { correct: 10, elapsedMs: 30_000 },
       previousBestTimeMs: 30_000,
     });
@@ -81,18 +81,31 @@ describe('personalComparison', () => {
     expect(comparison).toBeNull();
   });
 
-  it('rodada rápida com muitos erros não conta como novo melhor tempo', () => {
+  it('rodada mais rápida com 1 erro não conta como recorde nem como "mais rápido"', () => {
+    const comparison = personalComparison({
+      current: { correct: 9, total: 10, elapsedMs: 30_000 },
+      previous: { correct: 9, elapsedMs: 50_000 },
+      previousBestTimeMs: 45_000,
+    });
+
+    expect(comparison).toBeNull();
+  });
+
+  it('rodada rápida com muitos erros não mostra nada', () => {
     const comparison = personalComparison({
       current: { correct: 3, total: 10, elapsedMs: 20_000 },
       previous: { correct: 3, elapsedMs: 50_000 },
       previousBestTimeMs: 45_000,
     });
 
-    expect(comparison).toEqual({ type: 'faster', diffMs: 30_000 });
+    expect(comparison).toBeNull();
   });
 
-  it('primeiro melhor tempo com tentativas anteriores ruins: compara com a anterior', () => {
-    const comparison = personalComparison({ current, previous: { correct: 9, elapsedMs: 49_000 } });
+  it('primeira rodada 100% certa, sem recorde anterior: compara com a tentativa anterior', () => {
+    const comparison = personalComparison({
+      current: perfect,
+      previous: { correct: 10, elapsedMs: 49_000 },
+    });
 
     expect(comparison).toEqual({ type: 'faster', diffMs: 2000 });
   });

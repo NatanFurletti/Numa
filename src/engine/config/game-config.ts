@@ -15,6 +15,10 @@ export interface GameConfig {
   problemsPerRound: number;
   maxAnswerDigits: number;
   stars: StarRules;
+  records: {
+    /** Acerto mínimo para a rodada valer como melhor tempo ou "mais rápido que da última vez". */
+    minAccuracy: number;
+  };
   warmup: {
     /** Falhas seguidas na mesma etapa que disparam o aquecimento. */
     failsToTrigger: number;
@@ -38,6 +42,9 @@ export const GAME_CONFIG: GameConfig = {
     minAccuracy: 0.8,
     threeStarAccuracy: 0.95,
     threeStarTimeRatio: 0.75,
+  },
+  records: {
+    minAccuracy: 1,
   },
   warmup: {
     failsToTrigger: 3,

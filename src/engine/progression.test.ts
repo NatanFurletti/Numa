@@ -11,7 +11,12 @@ import {
 import { allStageIds } from './stages';
 import type { Stars } from './types';
 
-const result = (stars: Stars, correct = 8, elapsedMs = 50_000) => ({ stars, correct, elapsedMs });
+const result = (stars: Stars, correct = 8, elapsedMs = 50_000) => ({
+  stars,
+  correct,
+  total: 10,
+  elapsedMs,
+});
 
 function failTimes(stages: StageProgressMap, stageId: string, times: number): StageProgressMap {
   let current = stages;
@@ -65,13 +70,21 @@ describe('applyChallengeResult', () => {
     expect(stages['L01-A'].bestCorrect).toBe(10);
   });
 
-  it('guarda o melhor tempo entre as rodadas com pelo menos 1 estrela', () => {
-    let stages = applyChallengeResult(createInitialStages(), 'L01-A', result(2, 8, 50_000));
+  it('guarda o melhor tempo entre as rodadas 100% certas', () => {
+    let stages = applyChallengeResult(createInitialStages(), 'L01-A', result(3, 10, 50_000));
 
-    stages = applyChallengeResult(stages, 'L01-A', result(2, 9, 47_000));
-    stages = applyChallengeResult(stages, 'L01-A', result(1, 8, 70_000));
+    stages = applyChallengeResult(stages, 'L01-A', result(3, 10, 47_000));
+    stages = applyChallengeResult(stages, 'L01-A', result(1, 10, 70_000));
 
     expect(stages['L01-A'].bestTimeMs).toBe(47_000);
+  });
+
+  it('uma rodada mais rápida com 1 erro não vira melhor tempo', () => {
+    let stages = applyChallengeResult(createInitialStages(), 'L01-A', result(3, 10, 50_000));
+
+    stages = applyChallengeResult(stages, 'L01-A', result(2, 9, 30_000));
+
+    expect(stages['L01-A'].bestTimeMs).toBe(50_000);
   });
 
   it('uma rodada rápida mas com muitos erros não vira melhor tempo', () => {

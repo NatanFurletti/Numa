@@ -1,6 +1,7 @@
 // Progressão entre etapas e aquecimento (docs/GAME_RULES.md §4 e §8).
 
 import { GAME_CONFIG } from './config/game-config';
+import { qualifiesForRecord } from './scoring';
 import { allStageIds, getStage, nextStageId, previousStageId, stageIndex } from './stages';
 import type { Stars } from './types';
 
@@ -8,7 +9,7 @@ import type { Stars } from './types';
 export interface StageProgress {
   unlocked: boolean;
   bestStars: Stars;
-  /** Melhor tempo entre as rodadas de desafio com pelo menos 1 estrela. */
+  /** Melhor tempo entre as rodadas de desafio 100% certas (records.minAccuracy). */
   bestTimeMs?: number;
   bestCorrect?: number;
   /** Rodadas de desafio concluídas. */
@@ -23,6 +24,7 @@ export type StageProgressMap = Record<string, StageProgress>;
 export interface ChallengeResult {
   stars: Stars;
   correct: number;
+  total: number;
   elapsedMs: number;
 }
 
@@ -54,7 +56,7 @@ export function applyChallengeResult(
   const before = stages[stageId] ?? lockedStage();
   const passed = result.stars >= PASSING_STARS;
   const consecutiveFails = passed ? 0 : before.consecutiveFails + 1;
-  const countsForTime = result.stars >= 1;
+  const countsForTime = qualifiesForRecord(result.correct, result.total);
   const bestTimeMs =
     countsForTime && (before.bestTimeMs === undefined || result.elapsedMs < before.bestTimeMs)
       ? result.elapsedMs

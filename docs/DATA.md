@@ -20,7 +20,7 @@ interface Settings {
 interface StageProgress {
   unlocked: boolean;
   bestStars: 0 | 1 | 2 | 3;
-  bestTimeMs?: number;                  // melhor tempo em rodada de desafio
+  bestTimeMs?: number;                  // melhor tempo em rodada de desafio 100% certa (D-020)
   bestCorrect?: number;
   attempts: number;                     // rodadas de desafio concluídas
   consecutiveFails: number;             // para o aquecimento

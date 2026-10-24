@@ -93,9 +93,9 @@ Todas as mensagens são amigáveis e incentivadoras, nunca punitivas. Os textos 
 
 ### 6.2 Comparação pessoal (sempre que for positiva)
 Mostre **uma** frase, na ordem de prioridade:
-1. Novo melhor tempo na etapa: "Seu melhor tempo aqui: 52s → 47s!"
+1. Novo melhor tempo na etapa: "Seu melhor tempo aqui: 52s → 47s!" (só com 100% de acerto, D-020)
 2. Mais acertos que a tentativa anterior: "2 acertos a mais que da última vez."
-3. Mais rápido que a tentativa anterior: "Você foi 4s mais rápido que da última vez."
+3. Mais rápido que a tentativa anterior: "Você foi 4s mais rápido que da última vez." (só com 100% de acerto, D-020)
 4. Nenhuma melhora: não mostra nada (nunca diga "você piorou").
 
 ## 7. Correção (após a rodada)
