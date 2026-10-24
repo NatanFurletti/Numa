@@ -99,3 +99,15 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 **Data:** 2026-10-23
 **Decisão:** Node 22.13+ (`.nvmrc` = 22.23.4, `engines` no `package.json`). Expo SDK 58, React 19.3, React Native 0.88, TypeScript 6, Jest 30 (`jest-expo`), React Native Testing Library 14.
 **Por quê:** O Expo SDK 58 não roda em Node 20. A RNTL 14 usa o pacote `test-renderer` no lugar do antigo `react-test-renderer`.
+
+### D-019 · Detalhes de regra decididos no TDD do engine (M1)
+**Data:** 2026-10-23
+**Contexto:** Pontos que os docs não definiam e que apareceram ao escrever os testes.
+**Decisões:**
+- **Melhor tempo** de uma etapa só conta rodadas com pelo menos ⭐ (≥ 80% de acerto). Uma rodada rápida e cheia de erros não vira recorde nem gera a frase "Seu melhor tempo aqui".
+- **Espalhar os resultados** (LEVELS §5, regra 8): cada conta nova sai do resultado menos usado até ali na rodada. Na prática, nenhum resultado aparece mais de 2 vezes em 10 contas, inclusive nos níveis mistos.
+- **Misto com quantidade ímpar** (ex.: 5 contas no nivelamento): a soma fica com a conta a mais.
+- **Nivelamento aprovado até o L15:** começa na última etapa (L15-C), já que não há nível seguinte.
+- **Relógio do aparelho voltando no tempo:** a sequência de dias não muda.
+- **Sequência no início:** mostra 0 se a pessoa não jogou nem hoje nem ontem (em vez de um número antigo).
+- **Teclas (`keystrokes`):** contam todos os toques em dígitos e apagar, inclusive dígitos ignorados por passar do limite.

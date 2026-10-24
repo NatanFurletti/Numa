@@ -308,6 +308,11 @@ describe('abandono', () => {
     expect(roundSummary(state)).toMatchObject({ correct: 0, total: 3, elapsedMs: 0 });
   });
 
+  it('pedir o resumo de uma rodada ainda em andamento é um erro', () => {
+    expect(() => roundSummary(started())).toThrow();
+    expect(() => roundSummary(newRound())).toThrow();
+  });
+
   it('não dá para abandonar uma rodada já terminada', () => {
     const done = play(started({ problems: [problems[0]] }), [
       ...digits(5),

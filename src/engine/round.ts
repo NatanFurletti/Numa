@@ -74,7 +74,8 @@ function submit(state: RoundState, at: number): RoundState {
     expected,
     answer,
     correct: answer === expected,
-    timeMs: at - (state.currentStartedAt ?? at),
+    // Rodada em andamento sempre tem currentStartedAt.
+    timeMs: at - state.currentStartedAt!,
     keystrokes: state.keystrokes,
   };
   const nextIndex = state.currentIndex + 1;
@@ -158,7 +159,8 @@ export interface RoundSummary {
 
 /** Resumo de uma rodada terminada ou abandonada. */
 export function roundSummary(state: RoundState): RoundSummary {
-  const end = state.finishedAt ?? state.startedAt ?? 0;
+  const end = state.finishedAt;
+  if (end === null) throw new Error('A rodada ainda não terminou.');
   const pending = state.problems.slice(state.results.length).map((problem, i): ProblemAttempt => {
     const isCurrent = i === 0 && state.currentStartedAt !== null;
     return {

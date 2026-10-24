@@ -188,3 +188,24 @@ describe('unlockThrough (nivelamento)', () => {
     expect(stages['L01-A'].bestStars).toBe(3);
   });
 });
+
+describe('progresso salvo sem algumas etapas (ex.: níveis novos numa versão futura)', () => {
+  it('trata a etapa ausente como bloqueada e sem estrelas', () => {
+    const stages = applyChallengeResult({}, 'L01-A', result(2));
+
+    expect(stages['L01-A']).toMatchObject({ unlocked: true, bestStars: 2, attempts: 1 });
+    expect(stages['L01-B'].unlocked).toBe(true);
+  });
+
+  it('o aquecimento funciona mesmo sem a etapa salva', () => {
+    expect(applyWarmupResult({}, 'L01-A')['L01-A'].pendingWarmup).toBe(false);
+  });
+
+  it('o nivelamento desbloqueia etapas que não estavam salvas', () => {
+    expect(unlockThrough({}, 'L01-B')['L01-B'].unlocked).toBe(true);
+  });
+
+  it('sem nada salvo, "Continuar" leva à L01-A', () => {
+    expect(continueStageId({})).toBe('L01-A');
+  });
+});

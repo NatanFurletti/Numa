@@ -18,6 +18,8 @@
 Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scoring → generator → round → progression → feedback → streak → placement.
 **Pronto quando:** todas as regras de GAME_RULES e LEVELS cobertas, com engine ≥ 95% de cobertura.
 
+- [x] rng · carry · answer-input · scoring · generator · round · progression · feedback · streak · placement
+
 ### M2 · Rodada jogável
 - [ ] Teclado na tela + teclado físico
 - [ ] Fila de contas (atual + 2 próximas) com animação
