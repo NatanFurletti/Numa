@@ -194,3 +194,17 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Bug corrigido (vinha do M5):** trocar o idioma nas configurações voltava o app ao início. O layout escondia as telas até o idioma novo entrar, o que desmontava a navegação. Agora as telas só esperam na primeira abertura (`useAppReady`). Há um teste de unidade e um E2E para isso.
 - **Botão "Sair do teste"** no nivelamento, e não "Sair": dois botões com o mesmo nome confundiam o leitor de tela.
 
+### D-028 · Contas armadas antes das contas na linha, e níveis de 3 dígitos
+**Data:** 2026-10-27
+**Contexto:** ver a conta armada (um número em cima do outro, como no papel) é mais fácil do que lê-la numa linha (`14 + 27 =`). Faltava esse degrau entre os níveis, e faltavam contas de 3 algarismos.
+**Decisão:**
+- A partir de 2 dígitos (2+1, 2+2, 3+2 e 3+3), cada soma e cada subtração ganha uma **versão armada logo antes** da versão na linha, com as mesmas regras e os mesmos tempos. Os níveis de 1 dígito e os mistos ficam só na linha.
+- **Faixas novas:** 3 dígitos com 2 (L16–L20) e 3 dígitos com 3 (L21–L25), no mesmo ciclo das outras: soma e subtração, sem e com vai um/empresta, e um misto. Não entraram níveis 3+1: a versão armada de "Soma 3+2 sem vai um" já faz a ponte.
+- A tabela vai de 15 para **41 níveis** (123 etapas). `rulesVersion` sobe para 2. Os checkpoints do nivelamento ganham L17, L20, L22 e L25.
+- **Ids fixos:** os níveis que já existiam mantêm o id (`L07`), e a versão armada usa `L07V`. O número na tela é a posição na tabela. Assim o progresso salvo e o histórico continuam válidos sem migração de chaves.
+- **Quem já jogava:** ao carregar o progresso, os níveis inseridos antes da etapa mais avançada liberada entram liberados, com 0 estrelas, como no nivelamento.
+- **Na tela:** só a conta atual fica armada. A resposta entra embaixo da linha, alinhada pela unidade. O cursor da direita fica fora da coluna, para não empurrar os dígitos. As 2 próximas continuam na linha. A correção também mostra a conta armada. O aquecimento usa o formato da etapa atual.
+- **Gerador:** para 3 dígitos, sorteia operandos em vez de listar todas as contas, que seriam até 810 mil (lento no celular). Os níveis de 1 e 2 dígitos continuam com a lista, então as rodadas deles não mudam.
+- **Tempos de 3 dígitos:** estimativas iniciais, a calibrar.
+**Pendência encontrada:** o console da web mostra o erro #418 do React (hidratação) desde o M6. Ele vem do `react-native-safe-area-context`, usado pelo Expo Router, que renderiza diferente no build e no navegador. O app funciona (o React refaz a página no navegador), mas vale resolver depois.
+

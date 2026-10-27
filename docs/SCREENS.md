@@ -63,6 +63,7 @@ Primeiro acesso ──► Boas-vindas ──┬─► Nivelamento ──► Resu
 │   └──────┴──────┴──────┘     │
 └──────────────────────────────┘
 ```
+- **Níveis armados** (D-028): a conta atual aparece um número em cima do outro, alinhados pela unidade, com a resposta embaixo da linha. O resto da tela é igual, e as 2 próximas continuam na linha, pequenas.
 - Formato de teclado de celular: 1-2-3 em cima.
 - ✓ desativado com o campo vazio.
 - Cursor piscante à direita (esquerda → direita) ou à esquerda (direita → esquerda) da resposta.

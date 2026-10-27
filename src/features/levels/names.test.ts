@@ -22,10 +22,17 @@ describe('nomes dos níveis', () => {
     expect(levelName(t, 'L99')).toBe('L99');
   });
 
-  it('"L07" → "Nível 7"; "L07-B" → "Nível 7 · Etapa B"', () => {
-    expect(levelTitle(t, 'L07')).toBe('Nível 7');
-    expect(stageLabel(t, 'L07-B')).toBe('Nível 7 · Etapa B');
-    expect(stageLabel(t, 'L15-C')).toBe('Nível 15 · Etapa C');
-    expect(stageLabel(tEn, 'L07-B')).toBe('Level 7 · Stage B');
+  it('o número na tela é a posição na tabela, não o id', () => {
+    expect(levelTitle(t, 'L01')).toBe('Nível 1');
+    expect(levelTitle(t, 'L07V')).toBe('Nível 8');
+    expect(levelTitle(t, 'L07')).toBe('Nível 9');
+    expect(stageLabel(t, 'L07-B')).toBe('Nível 9 · Etapa B');
+    expect(stageLabel(t, 'L25-C')).toBe('Nível 41 · Etapa C');
+    expect(stageLabel(tEn, 'L07-B')).toBe('Level 9 · Stage B');
+  });
+
+  it('a versão armada leva "(armada)" no nome', () => {
+    expect(levelName(t, 'L12V')).toBe('Soma 2+2 com vai um (armada)');
+    expect(levelName(tEn, 'L12V')).toBe('Add 2+2, with carrying (stacked)');
   });
 });

@@ -128,7 +128,7 @@ describe('numa.progress', () => {
 
     const saved = JSON.parse(storage.dump()[PROGRESS_KEY]);
     expect(saved.placementDone).toBe(true);
-    expect(saved.stages['L06-A'].unlocked).toBe(true);
+    expect(saved.stages['L06V-A'].unlocked).toBe(true);
   });
 
   it('apagar o progresso volta ao início e salva', async () => {
@@ -163,6 +163,35 @@ describe('numa.progress', () => {
 
     expect(second.getState().stages['L01-B'].unlocked).toBe(true);
     expect(second.getState().streak.current).toBe(1);
+  });
+
+  it('níveis inseridos antes do ponto onde a pessoa está ficam liberados (versões armadas, D-028)', async () => {
+    const open = {
+      unlocked: true,
+      bestStars: 2,
+      attempts: 1,
+      consecutiveFails: 0,
+      pendingWarmup: false,
+    };
+    // Progresso salvo antes das versões armadas: liberado até o L07-A.
+    const old: Record<string, typeof open> = {};
+    for (const id of ['L01', 'L02', 'L03', 'L04', 'L05', 'L06']) {
+      for (const letter of ['A', 'B', 'C']) old[`${id}-${letter}`] = open;
+    }
+    old['L07-A'] = { ...open, bestStars: 0, attempts: 0 };
+    const storage = memoryStorage({
+      [PROGRESS_KEY]: JSON.stringify({ schemaVersion: 1, stages: old, placementDone: false }),
+    });
+    const store = createProgressStore(storage);
+    await store.persist.rehydrate();
+
+    const { stages } = store.getState();
+    expect(stages['L06V-A'].unlocked).toBe(true);
+    expect(stages['L07V-C'].unlocked).toBe(true);
+    expect(stages['L07V-C'].bestStars).toBe(0);
+    expect(stages['L06-C']).toMatchObject({ bestStars: 2, attempts: 1 });
+    expect(stages['L07-B'].unlocked).toBe(false);
+    expect(stages['L08V-A'].unlocked).toBe(false);
   });
 
   it('etapas faltando ou estragadas voltam ao padrão (ex.: níveis novos numa atualização)', async () => {

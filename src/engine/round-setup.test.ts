@@ -36,6 +36,19 @@ describe('setupRound', () => {
   });
 });
 
+describe('setupRound: formato das contas', () => {
+  it('etapa de nível armado → contas armadas, em qualquer modo', () => {
+    expect(setupRound({ stageId: 'L07V-A', mode: 'challenge', seed: 1 }).layout).toBe('vertical');
+    expect(setupRound({ stageId: 'L07V-A', mode: 'practice', seed: 1 }).layout).toBe('vertical');
+    expect(setupRound({ stageId: 'L07-A', mode: 'challenge', seed: 1 }).layout).toBe('inline');
+  });
+
+  it('aquecimento usa o formato da etapa atual (mesmo misturando contas da anterior)', () => {
+    // A etapa anterior de L07-A é L07V-C (armada).
+    expect(setupRound({ stageId: 'L07-A', mode: 'warmup', seed: 1 }).layout).toBe('inline');
+  });
+});
+
 describe('isKnownStage', () => {
   it('diz se a etapa existe', () => {
     expect(isKnownStage('L01-A')).toBe(true);

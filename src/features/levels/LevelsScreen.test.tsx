@@ -20,13 +20,14 @@ async function renderLevels() {
 }
 
 describe('LevelsScreen', () => {
-  it('lista os 15 níveis com o nome curto', async () => {
+  it('lista os 41 níveis com o nome curto', async () => {
     await renderLevels();
 
     expect(screen.getByText('Nível 1')).toBeOnTheScreen();
     expect(screen.getByText('Soma até 10')).toBeOnTheScreen();
-    expect(screen.getByText('Nível 15')).toBeOnTheScreen();
-    expect(screen.getByText('Misto 2 e 2 dígitos')).toBeOnTheScreen();
+    expect(screen.getByText('Nível 41')).toBeOnTheScreen();
+    expect(screen.getByText('Misto 3 e 3 dígitos')).toBeOnTheScreen();
+    expect(screen.getByText('Soma 2+1 sem vai um (armada)')).toBeOnTheScreen();
   });
 
   it('cada etapa desbloqueada mostra a melhor nota em estrelas', async () => {

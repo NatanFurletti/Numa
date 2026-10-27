@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { setupCheckpoint } from '@/engine/placement';
+import { levelNumber } from '@/engine/stages';
 import type { InputDirection } from '@/engine/types';
 import type { KeyTarget } from '@/features/keypad/usePhysicalKeyboard';
 import { levelName } from '@/features/levels/names';
@@ -63,7 +64,7 @@ export function PlacementScreen({ onDone, onExit, seed, keyboardTarget }: Placem
     const name = levelName(t, level);
     return (
       <Message
-        title={t('placement.doneTitle', { n: Number(level.slice(1)) })}
+        title={t('placement.doneTitle', { n: levelNumber(level) })}
         text={
           placement.startStageId === 'L01-A'
             ? t('placement.doneHintFirst', { name })

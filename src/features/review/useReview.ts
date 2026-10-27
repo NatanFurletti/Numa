@@ -10,6 +10,8 @@ import {
   reviewAttempts,
   reviewReducer,
 } from '@/engine/review';
+import { isKnownStage } from '@/engine/round-setup';
+import { stageLayout } from '@/engine/stages';
 import { useHistory } from '@/store/history';
 import { useSettings } from '@/store/settings';
 
@@ -62,6 +64,8 @@ export function useReview({ roundId, correctPauseMs = 700 }: UseReviewOptions) {
   const item = currentReviewItem(state);
   return {
     found: round !== undefined,
+    /** Mesmo formato da rodada: na linha ou armada. */
+    layout: round && isKnownStage(round.stageId) ? stageLayout(round.stageId) : 'inline',
     status: state.status,
     item,
     position: state.position,

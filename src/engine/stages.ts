@@ -1,4 +1,4 @@
-import { LEVELS, type LevelConfig, type StageLetter } from './config/levels';
+import { LEVELS, type LevelConfig, type ProblemLayout, type StageLetter } from './config/levels';
 
 export interface Stage {
   /** Ex.: 'L07-B'. */
@@ -44,4 +44,16 @@ export function nextStageId(stageId: string): string | null {
 
 export function previousStageId(stageId: string): string | null {
   return STAGES[stageIndex(stageId) - 1]?.id ?? null;
+}
+
+/** Número do nível na tela: a posição na tabela ('L06V' → 6, 'L06' → 7). */
+export function levelNumber(levelId: string): number {
+  const index = LEVELS.findIndex((level) => level.id === levelId);
+  if (index < 0) throw new Error(`Nível inexistente: ${levelId}`);
+  return index + 1;
+}
+
+/** Como as contas da etapa aparecem: na linha ou armadas. */
+export function stageLayout(stageId: string): ProblemLayout {
+  return getStage(stageId).level.layout ?? 'inline';
 }

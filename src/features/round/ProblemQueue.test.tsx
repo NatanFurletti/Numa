@@ -57,3 +57,48 @@ describe('ProblemQueue', () => {
     expect(screen.queryByTestId('answer')).not.toBeOnTheScreen();
   });
 });
+
+describe('ProblemQueue armada (D-028)', () => {
+  const stacked: Problem[] = [
+    { a: 432, b: 257, op: 'add' },
+    { a: 340, b: 120, op: 'sub' },
+  ];
+
+  it('mostra a conta atual armada: número de cima, sinal com o de baixo, linha e a resposta', async () => {
+    await render(
+      <ProblemQueue problems={stacked} answerText="68" direction="ltr" layout="vertical" />,
+    );
+
+    const current = screen.getByTestId('current-problem');
+    expect(current).toHaveAccessibleName('432 + 257 = 68');
+    expect(screen.getByText('432')).toBeOnTheScreen();
+    expect(screen.getByText('+')).toBeOnTheScreen();
+    expect(screen.getByText('257')).toBeOnTheScreen();
+    expect(screen.getByTestId('answer')).toHaveTextContent('68▌');
+  });
+
+  it('as próximas continuam na linha, pequenas', async () => {
+    await render(
+      <ProblemQueue problems={stacked} answerText="" direction="ltr" layout="vertical" />,
+    );
+
+    expect(screen.getByText('340 − 120 = ?')).toBeOnTheScreen();
+  });
+
+  it('na subtração armada, o sinal é o menos tipográfico', async () => {
+    await render(
+      <ProblemQueue problems={[stacked[1]]} answerText="" direction="ltr" layout="vertical" />,
+    );
+
+    expect(screen.getByText('−')).toBeOnTheScreen();
+    expect(screen.getByTestId('current-problem')).toHaveAccessibleName('340 − 120 =');
+  });
+
+  it('direita → esquerda: o cursor fica à esquerda da resposta', async () => {
+    await render(
+      <ProblemQueue problems={stacked} answerText="89" direction="rtl" layout="vertical" />,
+    );
+
+    expect(screen.getByTestId('answer')).toHaveTextContent('▌89');
+  });
+});

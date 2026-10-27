@@ -68,14 +68,14 @@ describe('PlacementScreen', () => {
     const { user } = await renderPlacement();
     await user.press(screen.getByRole('button', { name: 'Começar' }));
 
-    expect(screen.getByText('Nivelamento · bloco 1 de 6')).toBeOnTheScreen();
+    expect(screen.getByText('Nivelamento · bloco 1 de 10')).toBeOnTheScreen();
     await playBlock(user, 0, 'L02', true);
 
     expect(screen.getByText('Muito bem! ✓')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Continuar' }));
 
-    expect(screen.getByText('Nivelamento · bloco 2 de 6')).toBeOnTheScreen();
+    expect(screen.getByText('Nivelamento · bloco 2 de 10')).toBeOnTheScreen();
     expect(screen.getByLabelText('Começa em 3')).toBeOnTheScreen();
   });
 
@@ -106,8 +106,8 @@ describe('PlacementScreen', () => {
 
     expect(screen.getByText('Você começa no Nível 6!')).toBeOnTheScreen();
     const { stages } = useProgress.getState();
-    expect(stages['L06-A'].unlocked).toBe(true);
-    expect(stages['L06-B'].unlocked).toBe(false);
+    expect(stages['L06V-A'].unlocked).toBe(true);
+    expect(stages['L06V-B'].unlocked).toBe(false);
   });
 
   it('cada bloco vai para o histórico como nivelamento, sem contar na sequência de dias', async () => {

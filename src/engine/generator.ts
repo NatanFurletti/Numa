@@ -66,6 +66,7 @@ function newPool(seed: number): RoundPool {
  * Assim os resultados se espalham pela faixa possível.
  */
 function pickOne(spec: ProblemSpec, pool: RoundPool): Problem {
+  if (spaceSize(spec) > LIST_LIMIT) return sampleOne(spec, pool);
   const zeroUsed = (pool.resultCounts.get(0) ?? 0) > 0;
   const byResult = new Map<number, Problem[]>();
   for (const p of candidatesFor(spec)) {
@@ -90,6 +91,39 @@ function pickOne(spec: ProblemSpec, pool: RoundPool): Problem {
   pool.usedKeys.add(problemKey(problem));
   pool.resultCounts.set(result, usage(result) + 1);
   return problem;
+}
+
+/**
+ * Acima disso (3 dígitos: até 810 mil pares), listar todas as contas fica lento demais.
+ * Aí a conta é sorteada direto (D-028). Os níveis de 1 e 2 dígitos continuam com a lista.
+ */
+const LIST_LIMIT = 20_000;
+const SAMPLE_ATTEMPTS = 5_000;
+
+const spaceSize = (spec: ProblemSpec) =>
+  (spec.a.max - spec.a.min + 1) * (spec.b.max - spec.b.min + 1);
+
+/**
+ * Sorteia operandos nas faixas até achar uma conta da spec que ainda não saiu.
+ * Na primeira metade das tentativas, só aceita resultados ainda não usados na rodada,
+ * para espalhar os resultados como na lista.
+ */
+function sampleOne(spec: ProblemSpec, pool: RoundPool): Problem {
+  for (let attempt = 0; attempt < SAMPLE_ATTEMPTS; attempt++) {
+    const problem: Problem = {
+      a: randomInt(pool.rng, spec.a.min, spec.a.max),
+      b: randomInt(pool.rng, spec.b.min, spec.b.max),
+      op: spec.op,
+    };
+    if (!matchesSpec(problem, spec) || pool.usedKeys.has(problemKey(problem))) continue;
+    const result = solve(problem);
+    const used = pool.resultCounts.get(result) ?? 0;
+    if (used > 0 && attempt < SAMPLE_ATTEMPTS / 2) continue;
+    pool.usedKeys.add(problemKey(problem));
+    pool.resultCounts.set(result, used + 1);
+    return problem;
+  }
+  throw new Error(`Spec sem contas distintas suficientes: ${JSON.stringify(spec)}`);
 }
 
 /** Qual spec cada conta usa. Misto: metade soma, metade subtração, revezando as specs. */

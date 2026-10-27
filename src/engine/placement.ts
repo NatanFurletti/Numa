@@ -27,6 +27,7 @@ export function setupCheckpoint(levelId: string, seed: number): RoundSetup & { s
     stageId: checkpointStage(levelId).id,
     problems: generateCheckpointProblems(levelId, seed),
     timeLimitMs: checkpointTimeLimitMs(levelId),
+    layout: checkpointStage(levelId).level.layout ?? 'inline',
   };
 }
 
