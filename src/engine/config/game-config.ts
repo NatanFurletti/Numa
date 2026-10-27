@@ -45,7 +45,7 @@ export interface GameConfig {
 }
 
 export const GAME_CONFIG: GameConfig = {
-  rulesVersion: 1,
+  rulesVersion: 2,
   problemsPerRound: 10,
   maxAnswerDigits: 4,
   stars: {
@@ -67,7 +67,7 @@ export const GAME_CONFIG: GameConfig = {
     noPreviousStageTimeBonus: 0.5,
   },
   placement: {
-    checkpoints: ['L02', 'L05', 'L07', 'L10', 'L12', 'L15'],
+    checkpoints: ['L02', 'L05', 'L07', 'L10', 'L12', 'L15', 'L17', 'L20', 'L22', 'L25'],
     problemsPerCheckpoint: 5,
     minCorrect: 4,
     timeRatio: 0.5,

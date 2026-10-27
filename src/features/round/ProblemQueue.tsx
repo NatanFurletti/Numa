@@ -10,8 +10,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import type { ProblemLayout } from '@/engine/config/levels';
 import type { InputDirection, Problem } from '@/engine/types';
 import { colors, spacing } from '@/ui/theme';
+
+import { StackedProblem } from './StackedProblem';
 
 // Troca de conta curta (≤ 150 ms), sem bloquear a digitação (docs/SCREENS.md §3.4).
 const SWAP_MS = 150;
@@ -21,6 +24,8 @@ interface ProblemQueueProps {
   problems: Problem[];
   answerText: string;
   direction: InputDirection;
+  /** Conta atual na linha (padrão) ou armada. As próximas sempre aparecem na linha, pequenas. */
+  layout?: ProblemLayout;
 }
 
 export function formatProblem(problem: Problem): string {
@@ -39,10 +44,34 @@ function Cursor() {
   return <Animated.Text style={[styles.current, styles.cursor, style]}>▌</Animated.Text>;
 }
 
-export function ProblemQueue({ problems, answerText, direction }: ProblemQueueProps) {
+export function ProblemQueue({
+  problems,
+  answerText,
+  direction,
+  layout = 'inline',
+}: ProblemQueueProps) {
   const [current, ...next] = problems;
   if (!current) return null;
   const expression = formatProblem(current);
+  const label = `${expression} ${answerText}`.trim();
+  // Na conta armada, a unidade da resposta fica embaixo da unidade dos números: o cursor
+  // da direita "flutua" fora da coluna, sem empurrar os dígitos.
+  const stacked = layout === 'vertical';
+  const answer = (
+    <View testID="answer" style={stacked ? styles.answerStacked : styles.answer}>
+      {direction === 'rtl' ? <Cursor /> : null}
+      <Text style={styles.current}>{answerText}</Text>
+      {direction === 'ltr' ? (
+        stacked ? (
+          <View style={styles.cursorOutside}>
+            <Cursor />
+          </View>
+        ) : (
+          <Cursor />
+        )
+      ) : null}
+    </View>
+  );
 
   return (
     <View style={styles.queue}>
@@ -52,17 +81,24 @@ export function ProblemQueue({ problems, answerText, direction }: ProblemQueuePr
         exiting={FadeOutUp.duration(SWAP_MS)}
         layout={LinearTransition.duration(SWAP_MS)}
         style={styles.row}
-        accessible
-        accessibilityLabel={`${expression} ${answerText}`.trim()}
+        accessible={layout === 'inline'}
+        accessibilityLabel={label}
       >
-        <Text testID="current-problem" style={styles.current}>
-          {expression}
-        </Text>
-        <View testID="answer" style={styles.answer}>
-          {direction === 'rtl' ? <Cursor /> : null}
-          <Text style={styles.current}>{answerText}</Text>
-          {direction === 'ltr' ? <Cursor /> : null}
-        </View>
+        {layout === 'vertical' ? (
+          <StackedProblem
+            problem={current}
+            answer={answer}
+            accessibilityLabel={label}
+            testID="current-problem"
+          />
+        ) : (
+          <>
+            <Text testID="current-problem" style={styles.current}>
+              {expression}
+            </Text>
+            {answer}
+          </>
+        )}
       </Animated.View>
 
       {next.slice(0, 2).map((problem, i) => (
@@ -101,6 +137,14 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
+  },
+  answerStacked: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cursorOutside: {
+    position: 'absolute',
+    left: '100%',
   },
   cursor: {
     color: colors.accent,

@@ -122,6 +122,7 @@ export function useRound({
     answerText: displayAnswer(state.input, direction),
     canSubmit: state.status === 'running' && !isAnswerEmpty(state.input),
     timeLimitMs: setup.timeLimitMs,
+    layout: setup.layout,
     timeRatio: timeRemainingRatio(state, now),
     timeUp: isTimeUp(state, now),
     summary,

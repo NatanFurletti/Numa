@@ -1,6 +1,6 @@
 import * as fc from 'fast-check';
 
-import { hasCarry, problemKey, solve } from './carry';
+import { hasCarry, needsRegrouping, problemKey, solve } from './carry';
 import { LEVELS, type LevelConfig } from './config/levels';
 import { generateRound, generateWarmupRound, matchesSpec } from './generator';
 import { getStage, type Stage } from './stages';
@@ -155,6 +155,36 @@ describe('generateRound: regras específicas', () => {
     };
 
     expect(() => generateRound(tiny, 1)).toThrow();
+  });
+});
+
+describe('generateRound: 3 dígitos', () => {
+  it('gera rápido mesmo com milhares de contas possíveis (sorteio em vez de lista)', () => {
+    const start = performance.now();
+    for (let seed = 0; seed < 50; seed++) generateRound(getStage('L24-C'), seed);
+
+    expect(performance.now() - start).toBeLessThan(2000);
+  });
+
+  it('L22 (3+3 com vai um) sempre tem vai um; L23 (3−3 sem empresta) nunca empresta', () => {
+    fc.assert(
+      fc.property(fc.integer(), (seed) => {
+        const withCarry = generateRound(getStage('L22-A'), seed);
+        const noBorrow = generateRound(getStage('L23-A'), seed);
+        return withCarry.every(needsRegrouping) && !noBorrow.some(needsRegrouping);
+      }),
+      { numRuns: 30 },
+    );
+  });
+
+  it('não repete resultados numa rodada de 3 dígitos', () => {
+    fc.assert(
+      fc.property(fc.integer(), (seed) => {
+        const results = generateRound(getStage('L21-B'), seed).map(solve);
+        return new Set(results).size === results.length;
+      }),
+      { numRuns: 30 },
+    );
   });
 });
 

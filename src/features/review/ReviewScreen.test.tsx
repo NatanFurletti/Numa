@@ -159,6 +159,24 @@ describe('ReviewScreen', () => {
   });
 });
 
+describe('ReviewScreen de um nível armado', () => {
+  it('mostra a conta armada, como na rodada', async () => {
+    const { user } = await renderReview(
+      buildRecord({ id: 'stacked', stageId: 'L07V-A', correct: 9 }),
+    );
+
+    expect(screen.getByTestId('current-problem')).toHaveAccessibleName('10 + 1 =');
+    expect(screen.getByText('10')).toBeOnTheScreen();
+    expect(screen.getByText('+')).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: '1' }));
+    await user.press(screen.getByRole('button', { name: '1' }));
+    await user.press(screen.getByRole('button', { name: 'Confirmar' }));
+
+    expect(screen.getByLabelText('Certa!')).toBeOnTheScreen();
+  });
+});
+
 describe('dica da direção da digitação', () => {
   beforeEach(() => useSettings.setState(useSettings.getInitialState(), true));
 

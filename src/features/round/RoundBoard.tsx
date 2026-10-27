@@ -86,6 +86,7 @@ export function RoundBoard({
               problems={round.visible}
               answerText={round.answerText}
               direction={direction}
+              layout={round.layout}
             />
           )}
         </View>

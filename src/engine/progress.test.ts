@@ -112,13 +112,13 @@ describe('isStageUnlocked', () => {
 
 describe('applyPlacement', () => {
   it('desbloqueia tudo até a etapa inicial, com 0 estrelas, e marca o nivelamento como feito', () => {
-    // Passou L02 e L05, falhou no L07 → começa no L06-A.
+    // Passou L02 e L05, falhou no L07 → começa no nível seguinte ao L05: o L06V (armado).
     const progress = applyPlacement(createInitialProgress(), [true, true, false]);
 
     expect(progress.placementDone).toBe(true);
     expect(isStageUnlocked(progress, 'L05-C')).toBe(true);
-    expect(isStageUnlocked(progress, 'L06-A')).toBe(true);
-    expect(isStageUnlocked(progress, 'L06-B')).toBe(false);
+    expect(isStageUnlocked(progress, 'L06V-A')).toBe(true);
+    expect(isStageUnlocked(progress, 'L06V-B')).toBe(false);
     expect(progress.stages['L05-C'].bestStars).toBe(0);
   });
 
@@ -127,7 +127,7 @@ describe('applyPlacement', () => {
 
     const redone = applyPlacement(advanced, [false]);
 
-    expect(isStageUnlocked(redone, 'L08-A')).toBe(true);
+    expect(isStageUnlocked(redone, 'L08V-A')).toBe(true);
   });
 
   it('nivelamento não conta para a sequência de dias nem mexe nas etapas', () => {
