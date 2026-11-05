@@ -2,7 +2,8 @@
 
 import { generateRound, generateWarmupRound } from './generator';
 import { warmupTimeLimitMs } from './progression';
-import { allStageIds, getStage, previousStageId } from './stages';
+import type { ProblemLayout } from './config/levels';
+import { allStageIds, getStage, previousStageId, stageLayout } from './stages';
 import type { Problem } from './types';
 
 export type PlayMode = 'challenge' | 'practice' | 'warmup';
@@ -11,6 +12,8 @@ export interface RoundSetup {
   problems: Problem[];
   /** null = sem tempo-limite (treino livre). */
   timeLimitMs: number | null;
+  /** Como as contas aparecem: na linha ou armadas (a da etapa atual, inclusive no aquecimento). */
+  layout: ProblemLayout;
 }
 
 export function isKnownStage(stageId: string): boolean {
@@ -27,11 +30,13 @@ export function setupRound(options: { stageId: string; mode: PlayMode; seed: num
     return {
       problems: generateWarmupRound(stage, previous, seed),
       timeLimitMs: warmupTimeLimitMs(stageId),
+      layout: stageLayout(stageId),
     };
   }
 
   return {
     problems: generateRound(stage, seed),
     timeLimitMs: mode === 'practice' ? null : stage.timeLimitMs,
+    layout: stageLayout(stageId),
   };
 }

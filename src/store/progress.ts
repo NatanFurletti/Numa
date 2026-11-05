@@ -10,7 +10,12 @@ import {
   type FinishedRound,
   type Progress,
 } from '@/engine/progress';
-import { createInitialStages, type StageProgress } from '@/engine/progression';
+import {
+  continueStageId,
+  createInitialStages,
+  type StageProgress,
+  unlockThrough,
+} from '@/engine/progression';
 import type { Streak } from '@/engine/streak';
 import type { Stars } from '@/engine/types';
 import type { DocumentSpec } from '@/storage/document';
@@ -74,8 +79,10 @@ export const progressSpec: DocumentSpec<Progress> = {
       const stage = parseStage(saved[id]);
       if (stage) stages[id] = stage;
     }
+    // Níveis inseridos numa atualização antes do ponto onde a pessoa já está (ex.: as versões
+    // armadas, D-028) entram liberados, com 0 estrelas, como no nivelamento.
     return {
-      stages,
+      stages: unlockThrough(stages, continueStageId(stages)),
       placementDone: pick(doc.placementDone, isBoolean, false),
       streak: parseStreak(doc.streak),
     };

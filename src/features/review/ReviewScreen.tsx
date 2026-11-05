@@ -13,6 +13,7 @@ import Animated, {
 import { Keypad } from '@/features/keypad/Keypad';
 import { type KeyTarget, usePhysicalKeyboard } from '@/features/keypad/usePhysicalKeyboard';
 import { formatProblem } from '@/features/round/ProblemQueue';
+import { StackedProblem } from '@/features/round/StackedProblem';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
@@ -61,6 +62,13 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
   }
 
   const { item } = review;
+  const answer = (
+    <Answer
+      status={review.status}
+      text={review.status === 'revealed' ? String(item.expected) : review.answerText}
+      direction={review.direction}
+    />
+  );
 
   return (
     <View style={styles.screen}>
@@ -86,14 +94,21 @@ export function ReviewScreen({ roundId, onBack, onHome, keyboardTarget }: Review
         <View style={styles.middle}>
           <Shake trigger={review.wrongCount}>
             <View style={styles.row}>
-              <Text testID="current-problem" style={styles.expression}>
-                {formatProblem(item.problem)}
-              </Text>
-              <Answer
-                status={review.status}
-                text={review.status === 'revealed' ? String(item.expected) : review.answerText}
-                direction={review.direction}
-              />
+              {review.layout === 'vertical' ? (
+                <StackedProblem
+                  problem={item.problem}
+                  answer={answer}
+                  accessibilityLabel={formatProblem(item.problem)}
+                  testID="current-problem"
+                />
+              ) : (
+                <>
+                  <Text testID="current-problem" style={styles.expression}>
+                    {formatProblem(item.problem)}
+                  </Text>
+                  {answer}
+                </>
+              )}
               {review.status === 'correct' ? (
                 <Text
                   style={[styles.expression, styles.correct]}

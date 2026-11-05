@@ -14,7 +14,7 @@ import {
 } from './placement';
 import { getStage } from './stages';
 
-const checkpoints = GAME_CONFIG.placement.checkpoints; // L02, L05, L07, L10, L12, L15
+const checkpoints = GAME_CONFIG.placement.checkpoints; // L02, L05, L07, L10, L12, L15, L17, L20, L22, L25
 
 describe('contas de cada checkpoint', () => {
   it('são 5 contas com as regras da etapa B do nível', () => {
@@ -109,11 +109,12 @@ describe('placementStartStageId', () => {
 
   it('começa na etapa A do nível seguinte ao último checkpoint aprovado', () => {
     expect(placementStartStageId([true, false])).toBe('L03-A');
-    expect(placementStartStageId([true, true, true, false])).toBe('L08-A');
+    // Passou o L07: o nível seguinte é a subtração 2−1 armada (L08V).
+    expect(placementStartStageId([true, true, true, false])).toBe('L08V-A');
   });
 
-  it('aprovado em todos os checkpoints, começa na última etapa (L15-C)', () => {
-    expect(placementStartStageId(checkpoints.map(() => true))).toBe('L15-C');
+  it('aprovado em todos os checkpoints, começa na última etapa (L25-C)', () => {
+    expect(placementStartStageId(checkpoints.map(() => true))).toBe('L25-C');
   });
 
   it('ignora resultados depois da primeira falha', () => {
@@ -128,5 +129,6 @@ describe('setupCheckpoint', () => {
     expect(setup.problems).toHaveLength(5);
     expect(setup.timeLimitMs).toBe(checkpointTimeLimitMs('L05'));
     expect(setup.stageId).toBe('L05-B');
+    expect(setup.layout).toBe('inline');
   });
 });
