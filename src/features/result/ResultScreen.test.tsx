@@ -119,11 +119,11 @@ describe('ResultScreen', () => {
   });
 
   it('última etapa concluída: "Jogar de novo" no lugar de "Próxima etapa"', async () => {
-    const { onPlay, user } = await renderResult(buildRecord({ stageId: 'L25-C', correct: 10 }));
+    const { onPlay, user } = await renderResult(buildRecord({ stageId: 'L35-C', correct: 10 }));
 
     await user.press(screen.getByRole('button', { name: 'Jogar de novo' }));
 
-    expect(onPlay).toHaveBeenCalledWith('L25-C', 'challenge');
+    expect(onPlay).toHaveBeenCalledWith('L35-C', 'challenge');
   });
 
   it('aquecimento: sem estrelas nem mensagem; volta para o desafio', async () => {

@@ -219,3 +219,21 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Acessibilidade:** o mascote é decorativo e fica fora da leitura de tela. A mensagem continua sendo um texto.
 - **Ícones:** `scripts/generate-icons.js` desenha o mesmo mascote, parado, e gera os ícones do PWA, o favicon, o ícone do app, o ícone adaptativo do Android e a tela de abertura. Ele substitui o `generate-pwa-icons.js` e o ícone provisório do D-027. O desenho está repetido no script e no componente: ao mudar um, mudar o outro.
 **Pendências:** o ícone do iOS (`assets/expo.icon`) continua o padrão do Expo até a Fase 3. As mensagens ainda têm emojis (🔥 🎯 💪), que podem sair agora que o mascote mostra o humor. Mascote no início e no nivelamento, e a versão com volume 3D, ficam em "Ideias futuras".
+
+### D-030 · Níveis de multiplicação e divisão
+**Data:** 2026-11-11
+**Contexto:** o jogo só tinha soma e subtração. Multiplicação e divisão estavam em "Ideias futuras".
+**Decisão:**
+- **10 níveis novos no fim da tabela** (L26–L35), em duas faixas, no mesmo ciclo das outras (duas de uma operação, duas da outra e um misto):
+  - **Tabuada:** L26 (do 2 ao 5), L27 (do 6 ao 9), L28 e L29 (as divisões que desfazem essas tabuadas) e L30 (misto).
+  - **2 dígitos por 1:** L31 (multiplicação sem vai um), L32 (com vai um), L33 (2d ÷ 1d) e L34 (3d ÷ 1d), as duas divisões com quociente de 2 dígitos, e L35 (misto).
+- **No fim, e não intercalados:** a tabuada é mais fácil que a subtração de 3 dígitos, mas colocar os níveis no meio mudaria o caminho de quem já está jogando, e operação nova é um assunto novo. Rever a ordem quando houver dados de uso (Fase 2).
+- **Divisão sempre exata.** Divisão com resto pede outra forma de resposta (dois números) e fica para depois.
+- **Sem 1** como fator, divisor ou quociente.
+- **Vai um na multiplicação** (por 1 dígito): alguma coluna, fora a mais alta, passa de 9. `72 × 3 = 216` conta como "sem vai um": nada é levado de uma coluna para outra.
+- **Só na linha.** A conta armada (D-028) continua só para soma e subtração. A multiplicação armada pode vir depois; a divisão armada (na chave) é outro desenho.
+- **Misto:** metade multiplicação, metade divisão. A regra do gerador ficou geral: divide as contas por igual entre as operações do nível. Os mistos de soma e subtração geram as mesmas rodadas de antes.
+- **Engine:** `Operation` ganha `'mul'` e `'div'`. Na spec da divisão, `a` é o dividendo, `b` é o divisor e `result` é o quociente. Sinais na tela: `×` e `÷`.
+- A tabela vai de 41 para **51 níveis** (153 etapas). `rulesVersion` sobe para 3. Os checkpoints do nivelamento ganham L27, L30, L32 e L35 (o nivelamento completo passa de 10 para 14 blocos).
+- **Quem já tinha terminado a tabela antiga** (2+ estrelas no L25-C): ao carregar o progresso, a etapa seguinte à mais avançada entra liberada quando a mais avançada já foi aprovada. Sem isso, a pessoa teria que jogar o L25-C de novo para liberar o L26-A.
+- **Tempos:** estimativas iniciais, a calibrar.

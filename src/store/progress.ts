@@ -14,6 +14,7 @@ import {
   continueStageId,
   createInitialStages,
   type StageProgress,
+  unlockAfterPassed,
   unlockThrough,
 } from '@/engine/progression';
 import type { Streak } from '@/engine/streak';
@@ -80,9 +81,10 @@ export const progressSpec: DocumentSpec<Progress> = {
       if (stage) stages[id] = stage;
     }
     // Níveis inseridos numa atualização antes do ponto onde a pessoa já está (ex.: as versões
-    // armadas, D-028) entram liberados, com 0 estrelas, como no nivelamento.
+    // armadas, D-028) entram liberados, com 0 estrelas, como no nivelamento. E quem já tinha
+    // passado da última etapa da tabela antiga ganha a primeira dos níveis novos (D-030).
     return {
-      stages: unlockThrough(stages, continueStageId(stages)),
+      stages: unlockAfterPassed(unlockThrough(stages, continueStageId(stages))),
       placementDone: pick(doc.placementDone, isBoolean, false),
       streak: parseStreak(doc.streak),
     };

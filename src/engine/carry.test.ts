@@ -1,4 +1,4 @@
-import { hasBorrow, hasCarry, needsRegrouping, problemKey, solve } from './carry';
+import { hasBorrow, hasCarry, hasMultiplyCarry, needsRegrouping, problemKey, solve } from './carry';
 
 describe('hasCarry (soma)', () => {
   it.each([
@@ -31,11 +31,35 @@ describe('hasBorrow (subtração)', () => {
   });
 });
 
+describe('hasMultiplyCarry (multiplicação por 1 dígito)', () => {
+  it.each([
+    [23, 3, false], // 3×3 = 9
+    [12, 4, false],
+    [47, 6, true], // 7×6 = 42, vai 4
+    [15, 2, true],
+    [72, 3, false], // 216: o 21 da dezena não é vai um, é só o resultado com 3 dígitos
+    [91, 9, false],
+    [3, 23, false], // a ordem dos fatores não importa
+    [6, 47, true],
+    [7, 8, false], // tabuada: não tem coluna para onde levar
+    [204, 3, true], // 4×3 = 12
+    [12, 34, true], // multiplicador de 2 dígitos sempre reagrupa
+  ])('%i × %i → %s', (a, b, expected) => {
+    expect(hasMultiplyCarry(a, b)).toBe(expected);
+  });
+});
+
 describe('needsRegrouping', () => {
   it('usa vai um na soma e empresta na subtração', () => {
     expect(needsRegrouping({ a: 17, b: 38, op: 'add' })).toBe(true);
     expect(needsRegrouping({ a: 52, b: 17, op: 'sub' })).toBe(true);
     expect(needsRegrouping({ a: 57, b: 12, op: 'sub' })).toBe(false);
+  });
+
+  it('usa o vai um da multiplicação; a divisão nunca reagrupa', () => {
+    expect(needsRegrouping({ a: 47, b: 6, op: 'mul' })).toBe(true);
+    expect(needsRegrouping({ a: 23, b: 3, op: 'mul' })).toBe(false);
+    expect(needsRegrouping({ a: 84, b: 4, op: 'div' })).toBe(false);
   });
 });
 
@@ -43,12 +67,20 @@ describe('solve', () => {
   it('calcula o resultado da conta', () => {
     expect(solve({ a: 24, b: 73, op: 'add' })).toBe(97);
     expect(solve({ a: 15, b: 7, op: 'sub' })).toBe(8);
+    expect(solve({ a: 7, b: 8, op: 'mul' })).toBe(56);
+    expect(solve({ a: 56, b: 8, op: 'div' })).toBe(7);
   });
 });
 
 describe('problemKey', () => {
   it('trata 3 + 5 e 5 + 3 como a mesma conta', () => {
     expect(problemKey({ a: 3, b: 5, op: 'add' })).toBe(problemKey({ a: 5, b: 3, op: 'add' }));
+  });
+
+  it('trata 3 × 5 e 5 × 3 como a mesma conta, mas não 8 ÷ 2 e 2 ÷ 8', () => {
+    expect(problemKey({ a: 3, b: 5, op: 'mul' })).toBe(problemKey({ a: 5, b: 3, op: 'mul' }));
+    expect(problemKey({ a: 8, b: 2, op: 'div' })).not.toBe(problemKey({ a: 2, b: 8, op: 'div' }));
+    expect(problemKey({ a: 3, b: 5, op: 'mul' })).not.toBe(problemKey({ a: 3, b: 5, op: 'add' }));
   });
 
   it('diferencia subtrações e operações diferentes', () => {

@@ -42,7 +42,7 @@ interface Progress {
 interface ProblemAttempt {
   a: number;
   b: number;
-  op: 'add' | 'sub';
+  op: 'add' | 'sub' | 'mul' | 'div';
   expected: number;
   answer: number | null;                // null = não respondida (abandono)
   correct: boolean;

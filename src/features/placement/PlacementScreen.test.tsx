@@ -68,14 +68,14 @@ describe('PlacementScreen', () => {
     const { user } = await renderPlacement();
     await user.press(screen.getByRole('button', { name: 'Começar' }));
 
-    expect(screen.getByText('Nivelamento · bloco 1 de 10')).toBeOnTheScreen();
+    expect(screen.getByText('Nivelamento · bloco 1 de 14')).toBeOnTheScreen();
     await playBlock(user, 0, 'L02', true);
 
     expect(screen.getByText('Muito bem! ✓')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Continuar' }));
 
-    expect(screen.getByText('Nivelamento · bloco 2 de 10')).toBeOnTheScreen();
+    expect(screen.getByText('Nivelamento · bloco 2 de 14')).toBeOnTheScreen();
     expect(screen.getByLabelText('Começa em 3')).toBeOnTheScreen();
   });
 

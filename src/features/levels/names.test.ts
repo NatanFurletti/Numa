@@ -28,6 +28,7 @@ describe('nomes dos níveis', () => {
     expect(levelTitle(t, 'L07')).toBe('Nível 9');
     expect(stageLabel(t, 'L07-B')).toBe('Nível 9 · Etapa B');
     expect(stageLabel(t, 'L25-C')).toBe('Nível 41 · Etapa C');
+    expect(stageLabel(t, 'L35-C')).toBe('Nível 51 · Etapa C');
     expect(stageLabel(tEn, 'L07-B')).toBe('Level 9 · Stage B');
   });
 

@@ -77,7 +77,8 @@ Anote aqui tudo que surgir e não couber na fase atual.
 
 **Jogo**
 - Opção de **confirmação automática** ao completar a quantidade de dígitos (D-007)
-- ~~Níveis de **3 dígitos**~~ (feito: 3+2 e 3+3, D-028). Depois, **multiplicação** e **divisão**
+- ~~Níveis de **3 dígitos**~~ (feito: 3+2 e 3+3, D-028)
+- ~~**Multiplicação** e **divisão**~~ (feito: tabuada e 2 dígitos por 1, L26–L35, D-030). Depois: multiplicação por 2 dígitos, divisão com resto e conta armada de multiplicação
 - Números negativos
 - ~~Conta em formato **vertical (armada)**~~ (feito: nível armado antes de cada conta na linha, D-028)
 - Dificuldade **adaptativa por pessoa**, além da média por idade

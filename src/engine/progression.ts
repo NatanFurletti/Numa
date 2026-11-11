@@ -101,6 +101,17 @@ export function continueStageId(stages: StageProgressMap): string {
   return unlocked[unlocked.length - 1] ?? 'L01-A';
 }
 
+/**
+ * Quem já passou da etapa mais avançada ganha a seguinte. Só faz diferença quando a tabela
+ * cresce no fim: a etapa que era a última passa a ter uma próxima (D-030).
+ */
+export function unlockAfterPassed(stages: StageProgressMap): StageProgressMap {
+  const last = continueStageId(stages);
+  const nextId = nextStageId(last);
+  const passed = (stages[last]?.bestStars ?? 0) >= PASSING_STARS;
+  return passed && nextId ? unlock(stages, nextId) : stages;
+}
+
 /** Desbloqueia todas as etapas até `stageId`, incluindo ela. Usado pelo nivelamento. */
 export function unlockThrough(stages: StageProgressMap, stageId: string): StageProgressMap {
   const last = stageIndex(stageId);
