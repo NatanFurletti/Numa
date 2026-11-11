@@ -1,12 +1,12 @@
 // Gera as contas de uma rodada (docs/LEVELS.md §5).
 // Determinístico: a mesma etapa com a mesma seed gera sempre a mesma lista.
 
-import { needsRegrouping, problemKey, solve } from './carry';
+import { isCommutative, needsRegrouping, problemKey, solve } from './carry';
 import { GAME_CONFIG } from './config/game-config';
 import type { LevelConfig, ProblemSpec, Range } from './config/levels';
 import { createRng, randomInt, type Rng, shuffle } from './rng';
 import type { Stage } from './stages';
-import type { Problem } from './types';
+import type { Operation, Problem } from './types';
 
 const inRange = (n: number, r: Range) => n >= r.min && n <= r.max;
 
@@ -14,13 +14,15 @@ function fitsOperands(a: number, b: number, spec: ProblemSpec): boolean {
   return inRange(a, spec.a) && inRange(b, spec.b);
 }
 
-/** A conta obedece à spec? Na soma, aceita os operandos em qualquer ordem. */
+/** A conta obedece à spec? Na soma e na multiplicação, aceita os operandos em qualquer ordem. */
 export function matchesSpec(problem: Problem, spec: ProblemSpec): boolean {
   const { a, b, op } = problem;
   if (op !== spec.op || a === 0 || b === 0) return false;
-  const operandsOk = fitsOperands(a, b, spec) || (op === 'add' && fitsOperands(b, a, spec));
+  const operandsOk = fitsOperands(a, b, spec) || (isCommutative(op) && fitsOperands(b, a, spec));
   if (!operandsOk) return false;
   if (op === 'sub' && a < b) return false;
+  // Só divisão exata (sem resto).
+  if (op === 'div' && a % b !== 0) return false;
   if (spec.carry === 'required' && !needsRegrouping(problem)) return false;
   if (spec.carry === 'none' && needsRegrouping(problem)) return false;
   const result = solve(problem);
@@ -126,23 +128,26 @@ function sampleOne(spec: ProblemSpec, pool: RoundPool): Problem {
   throw new Error(`Spec sem contas distintas suficientes: ${JSON.stringify(spec)}`);
 }
 
-/** Qual spec cada conta usa. Misto: metade soma, metade subtração, revezando as specs. */
+/**
+ * Qual spec cada conta usa. Misto: as contas são divididas por igual entre as operações do nível
+ * (soma e subtração, ou multiplicação e divisão), revezando as specs de cada uma. Com quantidade
+ * ímpar, a primeira operação fica com a conta a mais.
+ */
 function planSpecs(level: LevelConfig, count: number): ProblemSpec[] {
   if (level.kind !== 'mixed') {
     return Array.from({ length: count }, (_, i) => level.specs[i % level.specs.length]);
   }
-  const adds = level.specs.filter((s) => s.op === 'add');
-  const subs = level.specs.filter((s) => s.op === 'sub');
-  const addCount = Math.ceil(count / 2);
-  return [
-    ...Array.from({ length: addCount }, (_, i) => adds[i % adds.length]),
-    ...Array.from({ length: count - addCount }, (_, i) => subs[i % subs.length]),
-  ];
+  const ops: Operation[] = [...new Set(level.specs.map((s) => s.op))];
+  return ops.flatMap((op, index) => {
+    const specs = level.specs.filter((s) => s.op === op);
+    const share = Math.floor(count / ops.length) + (index < count % ops.length ? 1 : 0);
+    return Array.from({ length: share }, (_, i) => specs[i % specs.length]);
+  });
 }
 
-/** Na soma, sorteia a ordem dos operandos (2d + 1d ou 1d + 2d), meio a meio. */
+/** Na soma e na multiplicação, sorteia a ordem dos operandos (2d + 1d ou 1d + 2d), meio a meio. */
 function randomizeOrder(problem: Problem, rng: Rng): Problem {
-  if (problem.op === 'add' && rng() < 0.5) return { ...problem, a: problem.b, b: problem.a };
+  if (isCommutative(problem.op) && rng() < 0.5) return { ...problem, a: problem.b, b: problem.a };
   return problem;
 }
 

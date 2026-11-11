@@ -11,9 +11,9 @@ import {
 } from './stages';
 
 describe('tabela de níveis', () => {
-  it('tem 41 níveis com 3 etapas cada (123 etapas)', () => {
-    expect(LEVELS).toHaveLength(41);
-    expect(allStageIds()).toHaveLength(123);
+  it('tem 51 níveis com 3 etapas cada (153 etapas)', () => {
+    expect(LEVELS).toHaveLength(51);
+    expect(allStageIds()).toHaveLength(153);
   });
 
   it('a partir de 2 dígitos, cada soma e subtração tem a versão armada logo antes (D-028)', () => {
@@ -38,8 +38,22 @@ describe('tabela de níveis', () => {
   });
 
   it('os níveis de 3 dígitos vêm depois dos de 2 e terminam no L25', () => {
-    expect(LEVELS.at(-1)?.id).toBe('L25');
+    expect(LEVELS[40].id).toBe('L25');
     expect(getStage('L16-A').level.specs[0].a).toEqual({ min: 100, max: 999 });
+  });
+
+  it('multiplicação e divisão vêm no fim (L26–L35), só na linha (D-030)', () => {
+    const added = LEVELS.slice(41);
+
+    expect(added.map((l) => l.id).join(' ')).toBe('L26 L27 L28 L29 L30 L31 L32 L33 L34 L35');
+    expect(added.map((l) => l.kind).join(' ')).toBe('mul mul div div mixed mul mul div div mixed');
+    expect(added.every((l) => (l.layout ?? 'inline') === 'inline')).toBe(true);
+  });
+
+  it('os níveis de uma operação só têm specs dessa operação', () => {
+    for (const level of LEVELS.filter((l) => l.kind !== 'mixed')) {
+      expect(level.specs.every((s) => s.op === level.kind)).toBe(true);
+    }
   });
 
   it('cada nível tem as etapas A, B e C com tempo cada vez mais curto', () => {
@@ -56,6 +70,8 @@ describe('tabela de níveis', () => {
     expect(getStage('L01-A').timeLimitMs).toBe(60_000);
     expect(getStage('L07-B').timeLimitMs).toBe(65_000);
     expect(getStage('L15-C').timeLimitMs).toBe(70_000);
+    expect(getStage('L26-A').timeLimitMs).toBe(60_000);
+    expect(getStage('L32-C').timeLimitMs).toBe(80_000);
   });
 
   it('todos os checkpoints do nivelamento existem', () => {
@@ -64,12 +80,12 @@ describe('tabela de níveis', () => {
     expect(GAME_CONFIG.placement.checkpoints.every((c) => ids.includes(c))).toBe(true);
   });
 
-  it('os níveis mistos têm specs de soma e de subtração', () => {
-    for (const level of LEVELS.filter((l) => l.kind === 'mixed')) {
-      const ops = new Set(level.specs.map((s) => s.op));
+  it('os níveis mistos juntam soma com subtração, ou multiplicação com divisão', () => {
+    const ops = (id: string) => [...new Set(getStage(`${id}-A`).level.specs.map((s) => s.op))];
 
-      expect(ops).toEqual(new Set(['add', 'sub']));
-    }
+    for (const id of ['L05', 'L10', 'L15', 'L20', 'L25']) expect(ops(id)).toEqual(['add', 'sub']);
+    for (const id of ['L30', 'L35']) expect(ops(id)).toEqual(['mul', 'div']);
+    expect(LEVELS.filter((l) => l.kind === 'mixed')).toHaveLength(7);
   });
 });
 
@@ -97,7 +113,8 @@ describe('ordem das etapas', () => {
     expect(nextStageId('L01-A')).toBe('L01-B');
     expect(nextStageId('L01-C')).toBe('L02-A');
     expect(nextStageId('L15-C')).toBe('L16V-A');
-    expect(nextStageId('L25-C')).toBeNull();
+    expect(nextStageId('L25-C')).toBe('L26-A');
+    expect(nextStageId('L35-C')).toBeNull();
   });
 
   it('previousStageId volta uma etapa e não existe antes de L01-A', () => {
@@ -110,6 +127,7 @@ describe('ordem das etapas', () => {
     expect(stageIndex('L01-A')).toBe(0);
     expect(stageIndex('L02-A')).toBe(3);
     expect(stageIndex('L25-C')).toBe(122);
+    expect(stageIndex('L35-C')).toBe(152);
   });
 });
 
@@ -120,6 +138,8 @@ describe('levelNumber', () => {
     expect(levelNumber('L06')).toBe(7);
     expect(levelNumber('L15')).toBe(23);
     expect(levelNumber('L25')).toBe(41);
+    expect(levelNumber('L26')).toBe(42);
+    expect(levelNumber('L35')).toBe(51);
   });
 
   it('lança erro para nível inexistente', () => {

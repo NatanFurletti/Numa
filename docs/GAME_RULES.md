@@ -6,7 +6,7 @@ Este documento é a **especificação de comportamento** do jogo. Cada regra aqu
 
 | Termo | Significado |
 |---|---|
-| **Conta** (`Problem`) | Uma operação: `a op b`, com `op` ∈ {`+`, `−`} no MVP |
+| **Conta** (`Problem`) | Uma operação: `a op b`, com `op` ∈ {`+`, `−`, `×`, `÷`}. A divisão é sempre exata (D-030) |
 | **Rodada** (`Round`) | Sequência de contas resolvidas de uma vez, com tempo-limite |
 | **Nível** (`Level`) | Um tipo de conta (ex.: "2 dígitos + 1 dígito, com vai um") |
 | **Etapa** (`Stage`) | Subdivisão do nível (A, B, C), com tempo cada vez mais curto |

@@ -78,6 +78,8 @@ describe('problemLine', () => {
   it('a conta com a resposta certa', () => {
     expect(problemLine({ a: 24, b: 73, op: 'add', expected: 97 })).toBe('24 + 73 = 97');
     expect(problemLine({ a: 52, b: 17, op: 'sub', expected: 35 })).toBe('52 − 17 = 35');
+    expect(problemLine({ a: 7, b: 8, op: 'mul', expected: 56 })).toBe('7 × 8 = 56');
+    expect(problemLine({ a: 56, b: 8, op: 'div', expected: 7 })).toBe('56 ÷ 8 = 7');
   });
 });
 

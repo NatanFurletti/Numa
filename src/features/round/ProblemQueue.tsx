@@ -14,6 +14,7 @@ import type { ProblemLayout } from '@/engine/config/levels';
 import type { InputDirection, Problem } from '@/engine/types';
 import { colors, spacing } from '@/ui/theme';
 
+import { operationSign } from './operation-sign';
 import { StackedProblem } from './StackedProblem';
 
 // Troca de conta curta (≤ 150 ms), sem bloquear a digitação (docs/SCREENS.md §3.4).
@@ -29,8 +30,7 @@ interface ProblemQueueProps {
 }
 
 export function formatProblem(problem: Problem): string {
-  const sign = problem.op === 'add' ? '+' : '−';
-  return `${problem.a} ${sign} ${problem.b} =`;
+  return `${problem.a} ${operationSign(problem.op)} ${problem.b} =`;
 }
 
 const problemId = (p: Problem) => `${p.a}${p.op}${p.b}`;

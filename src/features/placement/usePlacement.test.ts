@@ -11,7 +11,7 @@ describe('usePlacement', () => {
       phase: 'intro',
       levelId: 'L02',
       blockNumber: 1,
-      totalBlocks: 10,
+      totalBlocks: 14,
       startStageId: 'L01-A',
     });
 

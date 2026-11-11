@@ -7,17 +7,19 @@ A configuração tem um `rulesVersion` (inteiro). Ele sobe sempre que níveis, t
 ## 1. Princípios de dificuldade
 
 A dificuldade depende de quatro fatores, nesta ordem de impacto:
-1. **Operação:** soma é mais fácil que subtração.
-2. **"Vai um" / "empresta":** 23+14 é bem mais fácil que 17+38.
+1. **Operação:** soma é mais fácil que subtração, e multiplicação é mais fácil que divisão.
+2. **"Vai um" / "empresta":** 23+14 é bem mais fácil que 17+38, e 23×3 é bem mais fácil que 47×6.
 3. **Quantidade de dígitos** dos operandos.
 4. **Tempo** disponível por conta.
 
-As operações são **intercaladas por faixa de dificuldade** (espiral): soma → subtração → misto em cada faixa, para que a subtração não chegue como um choque depois de muitos níveis só de soma.
+As operações são **intercaladas por faixa de dificuldade** (espiral): soma → subtração → misto em cada faixa, para que a subtração não chegue como um choque depois de muitos níveis só de soma. A multiplicação e a divisão seguem o mesmo ciclo (multiplicação → divisão → misto), depois das faixas de soma e subtração (D-030).
 
 ## 2. Definições
 
 - **Vai um** (soma): pelo menos uma coluna (unidade, dezena…) soma ≥ 10.
 - **Empresta** (subtração): em pelo menos uma coluna, o dígito de cima é menor que o de baixo (dígitos ausentes contam como 0).
+- **Vai um** (multiplicação por 1 dígito): alguma coluna, fora a mais alta, passa de 9 (47 × 6: 7 × 6 = 42, vai 4). A coluna mais alta não conta: 72 × 3 = 216 **não** tem vai um.
+- **Divisão exata:** sem resto. Todas as divisões do jogo são exatas.
 - `nd` = número com *n* dígitos (1d: 1–9, 2d: 10–99, 3d: 100–999).
 
 ## 3. Tabela de níveis
@@ -30,7 +32,7 @@ A partir de 2 dígitos, cada soma e cada subtração aparece **duas vezes seguid
 1. **Armada:** um número em cima do outro, alinhados pela unidade, com a resposta embaixo da linha (como no papel). É mais fácil de visualizar.
 2. **Na linha:** `24 + 73 =`, como antes.
 
-As duas versões têm as mesmas regras de conta e os mesmos tempos. Os níveis de 1 dígito e os mistos só existem na linha.
+As duas versões têm as mesmas regras de conta e os mesmos tempos. Os níveis de 1 dígito, os mistos e os de multiplicação e divisão só existem na linha.
 
 ### 3.2 Ids e números na tela
 
@@ -67,31 +69,46 @@ As duas versões têm as mesmas regras de conta e os mesmos tempos. Os níveis d
 | 37–38 | L23V, L23 | Subtração | 3d − 3d, **sem** empresta | 100s | 80s | 65s |
 | 39–40 | L24V, L24 | Subtração | 3d − 3d, **com** empresta | 140s | 115s | 90s |
 | 41 | L25 | Misto | Contas de L21–L24 | 130s | 110s | 90s |
+| 42 | L26 | Multiplicação | Tabuada do 2 ao 5: (2–5) × (2–9) | 60s | 45s | 35s |
+| 43 | L27 | Multiplicação | Tabuada do 6 ao 9: (6–9) × (2–9) | 70s | 55s | 40s |
+| 44 | L28 | Divisão | Divisor 2–5, quociente 2–9 (ex.: 28 ÷ 4) | 70s | 55s | 40s |
+| 45 | L29 | Divisão | Divisor 6–9, quociente 2–9 (ex.: 56 ÷ 8) | 80s | 65s | 50s |
+| 46 | L30 | Misto | Contas de L26–L29 | 80s | 65s | 50s |
+| 47 | L31 | Multiplicação | 2d × (2–9), **sem** vai um (ex.: 23 × 3, 72 × 3) | 90s | 75s | 60s |
+| 48 | L32 | Multiplicação | 2d × (2–9), **com** vai um (ex.: 47 × 6) | 120s | 100s | 80s |
+| 49 | L33 | Divisão | 2d ÷ (2–9), quociente de 2 dígitos (ex.: 96 ÷ 3) | 110s | 90s | 70s |
+| 50 | L34 | Divisão | 3d ÷ (2–9), quociente de 2 dígitos (ex.: 264 ÷ 8) | 130s | 110s | 90s |
+| 51 | L35 | Misto | Contas de L31–L34 | 130s | 110s | 90s |
 
-Total: **41 níveis × 3 etapas = 123 etapas**. Os tempos de 3 dígitos são estimativas iniciais ⚙️, a calibrar com o teste com pessoas.
+Total: **51 níveis × 3 etapas = 153 etapas**. Os tempos de 3 dígitos e os de multiplicação e divisão são estimativas iniciais ⚙️, a calibrar com o teste com pessoas.
 
-**Depois:** multiplicação e divisão. Ver "Ideias futuras" em [ROADMAP.md](ROADMAP.md).
+**Multiplicação e divisão (D-030):**
+- Ficam no fim da tabela, só na linha (sem versão armada).
+- Não usam 1 como fator, divisor nem quociente (`7 × 1`, `8 ÷ 1` e `8 ÷ 8` não ensinam nada).
+- A divisão é o inverso da multiplicação da mesma faixa: L28 e L29 desfazem a tabuada; L33 e L34 têm quociente de 2 dígitos.
+
+**Depois:** multiplicação por 2 dígitos, divisão com resto e conta armada de multiplicação. Ver "Ideias futuras" em [ROADMAP.md](ROADMAP.md).
 
 ### Níveis-checkpoint do nivelamento ⚙️
-`L02, L05, L07, L10, L12, L15, L17, L20, L22, L25`. Os checkpoints são sempre a versão na linha. Ver [GAME_RULES.md §10](GAME_RULES.md).
+`L02, L05, L07, L10, L12, L15, L17, L20, L22, L25, L27, L30, L32, L35`. Os checkpoints são sempre a versão na linha. Ver [GAME_RULES.md §10](GAME_RULES.md).
 
 ## 4. Formato da configuração (rascunho)
 
 ```ts
-type Operation = 'add' | 'sub';
+type Operation = 'add' | 'sub' | 'mul' | 'div';
 type Carry = 'none' | 'required' | 'any';
 
 interface ProblemSpec {
   op: Operation;
-  a: { min: number; max: number };      // faixa do 1º operando
-  b: { min: number; max: number };      // faixa do 2º operando
-  carry: Carry;                         // vai um / empresta
-  result?: { min?: number; max?: number };
+  a: { min: number; max: number };      // faixa do 1º operando (na divisão, o dividendo)
+  b: { min: number; max: number };      // faixa do 2º operando (na divisão, o divisor)
+  carry: Carry;                         // vai um / empresta (na divisão, sempre 'any')
+  result?: { min?: number; max?: number }; // na divisão, o quociente
 }
 
 interface LevelConfig {
   id: string;                           // 'L07'
-  kind: 'add' | 'sub' | 'mixed';
+  kind: Operation | 'mixed';
   specs: ProblemSpec[];                 // misto = várias specs
   stages: { id: 'A' | 'B' | 'C'; timeLimitMs: number }[];
 }
@@ -117,12 +134,13 @@ O gerador recebe `(stage, seed)` e devolve sempre a **mesma** lista de contas pa
 2. **Respeita a spec:** faixas de operandos, vai um / empresta e faixa de resultado.
 3. **Subtração:** `a ≥ b` sempre. Nada de resultado negativo no MVP.
 4. **Sem 0 como operando.** O resultado 0 só é permitido na subtração, no máximo 1 vez por rodada.
-5. **Sem repetição** na mesma rodada. `3 + 5` e `5 + 3` contam como repetidas.
-6. **Soma:** a ordem dos operandos é sorteada (2d + 1d ou 1d + 2d), meio a meio.
-7. **Misto:** metade de soma e metade de subtração, embaralhadas, distribuídas entre as specs do nível.
+5. **Sem repetição** na mesma rodada. `3 + 5` e `5 + 3` contam como repetidas, e `3 × 5` e `5 × 3` também.
+6. **Soma e multiplicação:** a ordem dos operandos é sorteada (2d + 1d ou 1d + 2d), meio a meio.
+7. **Misto:** metade de cada operação do nível (soma e subtração, ou multiplicação e divisão), embaralhadas, distribuídas entre as specs do nível. Com quantidade ímpar, a primeira operação (soma ou multiplicação) fica com a conta a mais.
 8. **Variedade:** os resultados devem se espalhar pela faixa possível, sem concentrar em poucos valores.
 9. **Aquecimento:** 5 contas da etapa anterior + 5 da atual, intercaladas, começando pela anterior.
 10. **Contas de 3 dígitos:** com até 810 mil pares possíveis, o gerador sorteia operandos até achar uma conta da spec (em vez de listar todas). Ele dá preferência a resultados ainda não usados na rodada (D-028).
-11. Se a spec não permite contas distintas suficientes, o gerador **lança erro**. Isso é um bug de configuração e é coberto por teste para todos os níveis.
+11. **Divisão:** sempre exata (`a` é múltiplo de `b`). O dividendo é `a`, o divisor é `b` e a faixa de resultado é a do quociente.
+12. Se a spec não permite contas distintas suficientes, o gerador **lança erro**. Isso é um bug de configuração e é coberto por teste para todos os níveis.
 
 Essas regras são ideais para **testes baseados em propriedades** (fast-check): "para qualquer seed, nenhuma conta de L06 tem vai um". Ver [TESTING.md](TESTING.md).

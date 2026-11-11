@@ -3,12 +3,19 @@ import { expect, type Page } from '@playwright/test';
 /** Botão pelo nome exato (o Playwright procura por trecho, e "1" casaria com "10"). */
 export const button = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
 
-/** "24 + 73 =" → 97; "52 − 17 =" → 35. */
+const SOLVERS: Record<string, (a: number, b: number) => number> = {
+  '+': (a, b) => a + b,
+  '−': (a, b) => a - b,
+  '×': (a, b) => a * b,
+  '÷': (a, b) => a / b,
+};
+
+/** "24 + 73 =" → 97; "52 − 17 =" → 35; "7 × 8 =" → 56; "56 ÷ 8 =" → 7. */
 function solveText(text: string): number {
-  const match = /(\d+)\s*([+−])\s*(\d+)/.exec(text);
+  const match = /(\d+)\s*([+−×÷])\s*(\d+)/.exec(text);
   if (!match) throw new Error(`Conta não reconhecida: ${text}`);
   const [, a, op, b] = match;
-  return op === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
+  return SOLVERS[op](Number(a), Number(b));
 }
 
 /** Lê a conta atual na tela e responde pelo teclado físico (certa, ou errada de propósito). */

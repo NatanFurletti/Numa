@@ -2,7 +2,7 @@
 
 # Numa
 
-App de treino de cálculo mental (soma e subtração no MVP). Expo + Expo Router + TypeScript, web primeiro, lojas depois.
+App de treino de cálculo mental (soma, subtração, multiplicação e divisão). Expo + Expo Router + TypeScript, web primeiro, lojas depois.
 
 ## Documentação (leia antes de mudar comportamento)
 
