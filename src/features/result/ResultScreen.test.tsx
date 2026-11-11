@@ -42,6 +42,18 @@ describe('ResultScreen', () => {
     expect(screen.getByText('Perfeito! Rápido e certeiro. 🔥')).toBeOnTheScreen();
   });
 
+  it('o mascote acompanha a mensagem, com o humor do resultado', async () => {
+    await renderResult(buildRecord({ correct: 10, elapsedMs: 40_000 }));
+
+    expect(screen.getByTestId('mascot-party', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('acerto baixo dentro do tempo: o mascote se concentra', async () => {
+    await renderResult(buildRecord({ correct: 5, elapsedMs: 40_000 }));
+
+    expect(screen.getByTestId('mascot-focus', { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it('mostra a comparação com a tentativa anterior na mesma etapa', async () => {
     await renderResult(
       buildRecord({ id: 'prev', correct: 6 }),
@@ -120,6 +132,7 @@ describe('ResultScreen', () => {
     expect(screen.getByText('Aquecimento')).toBeOnTheScreen();
     expect(screen.queryByLabelText(/estrelas/)).not.toBeOnTheScreen();
     expect(screen.queryByText('Perfeito! Rápido e certeiro. 🔥')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId(/^mascot-/, { includeHiddenElements: true })).toBeNull();
 
     await user.press(screen.getByRole('button', { name: 'Voltar ao desafio' }));
 

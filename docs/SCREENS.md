@@ -76,7 +76,7 @@ Primeiro acesso ──► Boas-vindas ──┬─► Nivelamento ──► Resu
 - "3, 2, 1" em tela cheia antes da rodada (~1 s cada). As contas só aparecem depois.
 
 ### 3.6 Resultado
-Ver a ordem dos elementos em [GAME_RULES.md §5](GAME_RULES.md). Lista das contas: certas com ✓ discreto, erradas destacadas com ✗ e "você respondeu 85".
+Ver a ordem dos elementos em [GAME_RULES.md §5](GAME_RULES.md). O mascote (um ábaco com bracinhos) diz a mensagem em um balão: comemora, sorri, se concentra ou dá apoio, conforme o resultado. Lista das contas: certas com ✓ discreto, erradas destacadas com ✗ e "você respondeu 85".
 
 ### 3.7 Correção
 - Uma conta errada por vez, com o mesmo teclado. Indicador "2 de 3".

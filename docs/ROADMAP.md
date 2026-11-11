@@ -45,7 +45,7 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 
 ### M6 · Nivelamento, PWA e publicação
 - [x] Boas-vindas + teste de nivelamento, com "Refazer nivelamento" nas configurações
-- [x] Manifest, ícones e service worker (offline). Ícone provisório até existir um logo
+- [x] Manifest, ícones e service worker (offline). O ícone provisório foi trocado pelo mascote (D-029)
 - [x] Testes E2E dos fluxos críticos (TESTING §3.6)
 - [x] Deploy na Vercel, com produção (`main`) e homologação (`homolog`) (D-025)
 - [ ] Teste com 5–10 pessoas de idades diferentes e ajuste dos tempos ⚙️
@@ -86,7 +86,7 @@ Anote aqui tudo que surgir e não couber na fase atual.
 
 **Engajamento**
 - Conquistas e medalhas
-- Mascote do Numa
+- ~~Mascote do Numa~~ (feito: ábaco com bracinhos no resultado e nos ícones, D-029). Depois: mascote no início e no nivelamento, e versão com volume 3D
 - Compartilhar resultado (imagem)
 - Estatísticas pessoais (evolução de tempo por etapa, contas que mais erra)
 - Perfis de família (vários jogadores no mesmo aparelho)
