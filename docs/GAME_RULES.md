@@ -72,7 +72,7 @@ Sejam `accuracy = corretas / total` e `limit` = tempo-limite da etapa.
 Ordem dos elementos na tela:
 1. **Placar**: `7/10` e o tempo total (ex.: `52s de 60s`, ou `68s, passou 8s`).
 2. **Estrelas** (animação simples).
-3. **Mensagem** (seção 6).
+3. **Mensagem** (seção 6), dita pelo mascote em um balão. O humor do mascote acompanha a mensagem (D-029).
 4. **Comparação pessoal** com a tentativa anterior **na mesma etapa** (seção 6.2), quando houver.
 5. **Lista das 10 contas**, com as erradas em destaque e a resposta dada.
 6. Botões: **Corrigir erradas** (se houver), **Próxima etapa** (se passou) ou **Tentar de novo** (se não passou), **Início**.

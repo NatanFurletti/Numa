@@ -208,3 +208,14 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Tempos de 3 dígitos:** estimativas iniciais, a calibrar.
 **Pendência encontrada:** o console da web mostra o erro #418 do React (hidratação) desde o M6. Ele vem do `react-native-safe-area-context`, usado pelo Expo Router, que renderiza diferente no build e no navegador. O app funciona (o React refaz a página no navegador), mas vale resolver depois.
 
+### D-029 · Mascote: ábaco de brinquedo com bracinhos
+**Data:** 2026-11-11
+**Contexto:** o app precisava de um logo e de um ícone definitivos. A ideia foi um mascote que servisse de logo, de ícone e de assistente dentro do app, dizendo as mensagens de apoio que já existiam.
+**Decisão:**
+- O mascote é um **ábaco de brinquedo com rosto, bracinhos e pés**, nas cores do tema. Foram comparadas outras formas (só a moldura com olhos de conta, uma conta sozinha, ábaco de pinos, versão com volume 3D) e esta foi a escolhida.
+- **Desenho em código** (`src/ui/Mascot.tsx`, com `react-native-svg`), animado com o Reanimated. Sem arquivo de animação externo (Lottie, Rive) e sem modelo 3D: é leve, funciona offline e em qualquer tamanho.
+- **Humores:** `party` (pula, braços para cima), `happy` (balança e acena), `focus` (olha de um lado para o outro) e `support` (inclina, um braço para cima). Ele também pisca. Os olhos ficam em uma camada separada do corpo, para piscar e olhar de lado sem animar atributos do SVG.
+- **No resultado**, o mascote diz a mensagem em um balão. Cada mensagem tem um humor (`src/features/result/mascot-mood.ts`): ⭐⭐⭐ comemora; ⭐⭐ e "certo, mas devagar" sorriem; "rápido, com erros" se concentra; "errou e estourou o tempo" dá apoio. Sem mensagem (aquecimento, treino livre), sem mascote.
+- **Acessibilidade:** o mascote é decorativo e fica fora da leitura de tela. A mensagem continua sendo um texto.
+- **Ícones:** `scripts/generate-icons.js` desenha o mesmo mascote, parado, e gera os ícones do PWA, o favicon, o ícone do app, o ícone adaptativo do Android e a tela de abertura. Ele substitui o `generate-pwa-icons.js` e o ícone provisório do D-027. O desenho está repetido no script e no componente: ao mudar um, mudar o outro.
+**Pendências:** o ícone do iOS (`assets/expo.icon`) continua o padrão do Expo até a Fase 3. As mensagens ainda têm emojis (🔥 🎯 💪), que podem sair agora que o mascote mostra o humor. Mascote no início e no nivelamento, e a versão com volume 3D, ficam em "Ideias futuras".

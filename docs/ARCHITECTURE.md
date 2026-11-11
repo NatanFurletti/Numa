@@ -28,6 +28,7 @@ Na Fase 2, o `src/storage/` ganha uma implementação que também sincroniza com
 | Persistência | **@react-native-async-storage/async-storage** | Usa `localStorage` na web |
 | i18n | **i18next** + **react-i18next** + **expo-localization** | PT e EN, detectando o idioma do aparelho |
 | Animação | **react-native-reanimated** | Fila de contas subindo, tremida e barra de tempo |
+| Desenho vetorial | **react-native-svg** | Mascote (`src/ui/Mascot.tsx`) |
 | Testes | **Jest** (`jest-expo`), **React Native Testing Library**, **fast-check** | Unidade, componentes e propriedades |
 | E2E | **Playwright** (web) | Fluxos completos no navegador |
 | Qualidade | **ESLint** + **Prettier** | Padrão de código |

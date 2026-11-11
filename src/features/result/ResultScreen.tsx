@@ -13,6 +13,8 @@ import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
+import { moodForMessage } from './mascot-mood';
+import { MascotMessage } from './MascotMessage';
 import { Stars } from './Stars';
 import { comparisonText, messageText, problemLine, scoreTimeText } from './texts';
 
@@ -62,7 +64,10 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
 
         {outcome.stars !== null ? <Stars count={outcome.stars} /> : null}
         {outcome.message ? (
-          <Text style={styles.message}>{messageText(t, outcome.message)}</Text>
+          <MascotMessage
+            text={messageText(t, outcome.message)}
+            mood={moodForMessage(outcome.message.key)}
+          />
         ) : null}
         {comparison ? <Text style={styles.comparison}>{comparison}</Text> : null}
         {warmupAhead ? <Text style={styles.warmup}>{t('result.warmupAhead')}</Text> : null}
