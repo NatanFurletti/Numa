@@ -41,6 +41,7 @@ module.exports = defineConfig([
             layer('features'),
             layer('ui'),
             layer('lib'),
+            layer('services'),
             layer('app'),
           ],
         },
@@ -60,7 +61,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [layer('features'), layer('app'), layer('ui')] },
+        { patterns: [layer('features'), layer('app'), layer('ui'), layer('services')] },
       ],
     },
   },
@@ -76,7 +77,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [layer('engine'), layer('store'), layer('storage')] },
+        { patterns: [layer('engine'), layer('store'), layer('storage'), layer('services')] },
       ],
     },
   },

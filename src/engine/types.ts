@@ -1,4 +1,4 @@
-export type Operation = 'add' | 'sub';
+export type Operation = 'add' | 'sub' | 'mul' | 'div';
 
 /** Uma conta: `a op b`. */
 export interface Problem {

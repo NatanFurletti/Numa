@@ -14,9 +14,10 @@ import {
   continueStageId,
   createInitialStages,
   type StageProgress,
+  unlockAfterPassed,
   unlockThrough,
 } from '@/engine/progression';
-import type { Streak } from '@/engine/streak';
+import { recordPlay, type Streak } from '@/engine/streak';
 import type { Stars } from '@/engine/types';
 import type { DocumentSpec } from '@/storage/document';
 import { deviceStorage } from '@/storage/device-storage';
@@ -27,6 +28,8 @@ import { documentStorage, isBoolean, isCount, isRecord, isString, pick } from '.
 interface ProgressState extends Progress {
   /** Aplica uma rodada terminada. `today` é a data local, 'YYYY-MM-DD'. */
   recordRound: (round: FinishedRound, today: string) => void;
+  /** Conta `today` como dia jogado na sequência (teste do dia concluído). */
+  recordPlayedDay: (today: string) => void;
   /** Resultado do nivelamento: aprovado ou não em cada checkpoint, na ordem. */
   completePlacement: (results: readonly boolean[]) => void;
   /** Apagar progresso (configurações): volta ao início, como no primeiro acesso. */
@@ -80,9 +83,10 @@ export const progressSpec: DocumentSpec<Progress> = {
       if (stage) stages[id] = stage;
     }
     // Níveis inseridos numa atualização antes do ponto onde a pessoa já está (ex.: as versões
-    // armadas, D-028) entram liberados, com 0 estrelas, como no nivelamento.
+    // armadas, D-028) entram liberados, com 0 estrelas, como no nivelamento. E quem já tinha
+    // passado da última etapa da tabela antiga ganha a primeira dos níveis novos (D-030).
     return {
-      stages: unlockThrough(stages, continueStageId(stages)),
+      stages: unlockAfterPassed(unlockThrough(stages, continueStageId(stages))),
       placementDone: pick(doc.placementDone, isBoolean, false),
       streak: parseStreak(doc.streak),
     };
@@ -95,6 +99,7 @@ export function createProgressStore(storage: KeyValueStorage = deviceStorage) {
       (set) => ({
         ...createInitialProgress(),
         recordRound: (round, today) => set((state) => applyRound(state, round, today)),
+        recordPlayedDay: (today) => set((state) => ({ streak: recordPlay(state.streak, today) })),
         completePlacement: (results) => set((state) => applyPlacement(state, results)),
         resetProgress: () => set(createInitialProgress()),
       }),

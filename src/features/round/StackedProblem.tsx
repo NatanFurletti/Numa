@@ -14,6 +14,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { Problem } from '@/engine/types';
 import { colors, spacing } from '@/ui/theme';
 
+import { operationSign } from './operation-sign';
+
 interface StackedProblemProps {
   problem: Problem;
   /** O que aparece embaixo da linha (a resposta, com cursor ou cor). */
@@ -29,7 +31,7 @@ export function StackedProblem({
   accessibilityLabel,
   testID,
 }: StackedProblemProps) {
-  const sign = problem.op === 'add' ? '+' : '−';
+  const sign = operationSign(problem.op);
   return (
     <View style={styles.stack} accessible accessibilityLabel={accessibilityLabel} testID={testID}>
       <Text style={[styles.number, styles.top]}>{problem.a}</Text>

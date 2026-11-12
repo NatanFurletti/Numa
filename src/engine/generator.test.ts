@@ -1,6 +1,6 @@
 import * as fc from 'fast-check';
 
-import { hasCarry, needsRegrouping, problemKey, solve } from './carry';
+import { hasCarry, hasMultiplyCarry, needsRegrouping, problemKey, solve } from './carry';
 import { LEVELS, type LevelConfig } from './config/levels';
 import { generateRound, generateWarmupRound, matchesSpec } from './generator';
 import { getStage, type Stage } from './stages';
@@ -115,6 +115,26 @@ describe('generateRound: regras específicas', () => {
     );
   });
 
+  it('mistos de multiplicação e divisão têm metade de cada (D-030)', () => {
+    fc.assert(
+      fc.property(fc.constantFrom('L30', 'L35'), seed, (id, sd) => {
+        const problems = generateRound(getStage(`${id}-A`), sd);
+        return (
+          problems.filter((p) => p.op === 'mul').length === 5 &&
+          problems.filter((p) => p.op === 'div').length === 5
+        );
+      }),
+    );
+  });
+
+  it('misto com quantidade ímpar: a primeira operação fica com a conta a mais', () => {
+    const count = (id: string, op: Problem['op']) =>
+      generateRound(getStage(`${id}-B`), 9, 5).filter((p) => p.op === op).length;
+
+    expect(count('L10', 'add')).toBe(3);
+    expect(count('L30', 'mul')).toBe(3);
+  });
+
   it('níveis mistos usam todas as specs do nível', () => {
     const problems = generateRound(getStage('L10-A'), 123);
 
@@ -188,6 +208,82 @@ describe('generateRound: 3 dígitos', () => {
   });
 });
 
+describe('generateRound: multiplicação e divisão (D-030)', () => {
+  const mulDiv = ['L26', 'L27', 'L28', 'L29', 'L30', 'L31', 'L32', 'L33', 'L34', 'L35'];
+  const rounds = (id: string, sd: number) => generateRound(getStage(`${id}-A`), sd);
+
+  it('a divisão é sempre exata', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...mulDiv), seed, (id, sd) =>
+        rounds(id, sd)
+          .filter((p) => p.op === 'div')
+          .every((p) => p.a % p.b === 0),
+      ),
+    );
+  });
+
+  it('nunca usa 1 como fator, divisor ou quociente (conta sem graça)', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...mulDiv), seed, (id, sd) =>
+        rounds(id, sd).every((p) => p.a > 1 && p.b > 1 && solve(p) > 1),
+      ),
+    );
+  });
+
+  it('L26 é a tabuada do 2 ao 5; L27, do 6 ao 9', () => {
+    fc.assert(
+      fc.property(seed, (sd) => {
+        const easy = rounds('L26', sd).every(
+          (p) => Math.min(p.a, p.b) <= 5 && p.a <= 9 && p.b <= 9,
+        );
+        const hard = rounds('L27', sd).every(
+          (p) => Math.max(p.a, p.b) >= 6 && p.a <= 9 && p.b <= 9,
+        );
+        return easy && hard;
+      }),
+    );
+  });
+
+  it('L28 e L29 são o inverso da tabuada: divisor e quociente de 1 dígito', () => {
+    fc.assert(
+      fc.property(seed, (sd) => {
+        const easy = rounds('L28', sd).every((p) => p.b >= 2 && p.b <= 5 && solve(p) <= 9);
+        const hard = rounds('L29', sd).every((p) => p.b >= 6 && p.b <= 9 && solve(p) <= 9);
+        return easy && hard;
+      }),
+    );
+  });
+
+  it('L31 (2d × 1d) nunca tem vai um; L32 sempre tem', () => {
+    fc.assert(
+      fc.property(seed, (sd) => {
+        const none = rounds('L31', sd).every((p) => !hasMultiplyCarry(p.a, p.b));
+        const all = rounds('L32', sd).every((p) => hasMultiplyCarry(p.a, p.b));
+        return none && all;
+      }),
+    );
+  });
+
+  it('na multiplicação 2d × 1d, a ordem dos fatores varia', () => {
+    const problems = Array.from({ length: 20 }, (_, sd) => rounds('L32', sd)).flat();
+
+    expect(problems.some((p) => p.a >= 10)).toBe(true);
+    expect(problems.some((p) => p.a < 10)).toBe(true);
+  });
+
+  it('L33 divide 2 dígitos e L34 divide 3 dígitos, com quociente de 2 dígitos', () => {
+    fc.assert(
+      fc.property(seed, (sd) => {
+        const two = rounds('L33', sd).every((p) => p.a <= 99 && p.b <= 9 && solve(p) >= 10);
+        const three = rounds('L34', sd).every(
+          (p) => p.a >= 100 && p.b <= 9 && solve(p) >= 10 && solve(p) <= 99,
+        );
+        return two && three;
+      }),
+    );
+  });
+});
+
 describe('generateWarmupRound', () => {
   it('mistura 5 contas da etapa anterior e 5 da atual, intercaladas, começando pela anterior', () => {
     fc.assert(
@@ -239,6 +335,23 @@ describe('matchesSpec', () => {
     expect(matchesSpec({ a: 142, b: 5, op: 'add' }, spec)).toBe(false);
     expect(matchesSpec({ a: 45, b: 7, op: 'add' }, spec)).toBe(false);
     expect(matchesSpec({ a: 42, b: 5, op: 'sub' }, spec)).toBe(false);
+  });
+
+  it('multiplicação: aceita os fatores nas duas ordens', () => {
+    const l32 = getStage('L32-A').level.specs[0];
+
+    expect(matchesSpec({ a: 47, b: 6, op: 'mul' }, l32)).toBe(true);
+    expect(matchesSpec({ a: 6, b: 47, op: 'mul' }, l32)).toBe(true);
+    expect(matchesSpec({ a: 23, b: 3, op: 'mul' }, l32)).toBe(false);
+  });
+
+  it('divisão: só aceita a conta exata, na ordem dividendo ÷ divisor', () => {
+    const l28 = getStage('L28-A').level.specs[0];
+
+    expect(matchesSpec({ a: 12, b: 4, op: 'div' }, l28)).toBe(true);
+    expect(matchesSpec({ a: 13, b: 4, op: 'div' }, l28)).toBe(false);
+    expect(matchesSpec({ a: 4, b: 12, op: 'div' }, l28)).toBe(false);
+    expect(matchesSpec({ a: 4, b: 4, op: 'div' }, l28)).toBe(false);
   });
 
   it('respeita a faixa de resultado', () => {

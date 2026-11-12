@@ -1,7 +1,7 @@
 // Tabela de níveis (docs/LEVELS.md §3). É configuração, não código.
 // Mudou algo aqui? Suba o rulesVersion em game-config.ts.
 //
-// Os ids (L01…L25, e L06V… para as versões armadas) ficam fixos: o progresso salvo usa eles.
+// Os ids (L01…L35, e L06V… para as versões armadas) ficam fixos: o progresso salvo usa eles.
 // O número que aparece na tela é a posição na tabela (levelNumber em stages.ts).
 
 import type { Operation } from '../types';
@@ -16,12 +16,16 @@ export interface Range {
 
 export interface ProblemSpec {
   op: Operation;
-  /** Faixa do 1º operando (na soma, a ordem é sorteada na hora de mostrar). */
+  /**
+   * Faixa do 1º operando. Na soma e na multiplicação, a ordem é sorteada na hora de mostrar.
+   * Na divisão, é o dividendo.
+   */
   a: Range;
-  /** Faixa do 2º operando. */
+  /** Faixa do 2º operando. Na divisão, é o divisor. */
   b: Range;
-  /** Vai um (soma) ou empresta (subtração). */
+  /** Vai um (soma e multiplicação) ou empresta (subtração). Na divisão, sempre 'any'. */
   carry: Carry;
+  /** Faixa do resultado. Na divisão, é o quociente (a divisão é sempre exata). */
   result?: { min?: number; max?: number };
 }
 
@@ -84,6 +88,37 @@ const L22: ProblemSpec = { op: 'add', a: D3, b: D3, carry: 'required' };
 const L23: ProblemSpec = { op: 'sub', a: D3, b: D3, carry: 'none' };
 const L24: ProblemSpec = { op: 'sub', a: D3, b: D3, carry: 'required' };
 
+// Multiplicação e divisão (D-030). Sem 1 como fator, divisor ou quociente: é conta sem graça.
+const TABLES_LOW: Range = { min: 2, max: 5 };
+const TABLES_HIGH: Range = { min: 6, max: 9 };
+const FACTOR: Range = { min: 2, max: 9 };
+const QUOTIENT_1D = { min: 2, max: 9 };
+const QUOTIENT_2D = { min: 10, max: 99 };
+
+// Faixa 6: tabuada e o inverso dela
+const L26: ProblemSpec = { op: 'mul', a: TABLES_LOW, b: FACTOR, carry: 'any' };
+const L27: ProblemSpec = { op: 'mul', a: TABLES_HIGH, b: FACTOR, carry: 'any' };
+const L28: ProblemSpec = {
+  op: 'div',
+  a: { min: 4, max: 45 },
+  b: TABLES_LOW,
+  carry: 'any',
+  result: QUOTIENT_1D,
+};
+const L29: ProblemSpec = {
+  op: 'div',
+  a: { min: 12, max: 81 },
+  b: TABLES_HIGH,
+  carry: 'any',
+  result: QUOTIENT_1D,
+};
+
+// Faixa 7: 2 dígitos por 1 dígito
+const L31: ProblemSpec = { op: 'mul', a: D2, b: FACTOR, carry: 'none' };
+const L32: ProblemSpec = { op: 'mul', a: D2, b: FACTOR, carry: 'required' };
+const L33: ProblemSpec = { op: 'div', a: D2, b: FACTOR, carry: 'any', result: QUOTIENT_2D };
+const L34: ProblemSpec = { op: 'div', a: D3, b: FACTOR, carry: 'any', result: QUOTIENT_2D };
+
 /** A versão armada (mesmas contas e tempos) entra logo antes da versão na linha. */
 const stackedFirst = (level: LevelConfig): LevelConfig[] => [
   { ...level, id: `${level.id}V`, layout: 'vertical' },
@@ -121,4 +156,16 @@ export const LEVELS: LevelConfig[] = [
   ...stackedFirst({ id: 'L23', kind: 'sub', specs: [L23], stages: stages(100, 80, 65) }),
   ...stackedFirst({ id: 'L24', kind: 'sub', specs: [L24], stages: stages(140, 115, 90) }),
   { id: 'L25', kind: 'mixed', specs: [L21, L22, L23, L24], stages: stages(130, 110, 90) },
+  // Faixa 6: tabuada e divisão pela tabuada (tempos iniciais, a calibrar). Só na linha.
+  { id: 'L26', kind: 'mul', specs: [L26], stages: stages(60, 45, 35) },
+  { id: 'L27', kind: 'mul', specs: [L27], stages: stages(70, 55, 40) },
+  { id: 'L28', kind: 'div', specs: [L28], stages: stages(70, 55, 40) },
+  { id: 'L29', kind: 'div', specs: [L29], stages: stages(80, 65, 50) },
+  { id: 'L30', kind: 'mixed', specs: [L26, L27, L28, L29], stages: stages(80, 65, 50) },
+  // Faixa 7: 2 dígitos por 1 dígito (tempos iniciais, a calibrar). Só na linha.
+  { id: 'L31', kind: 'mul', specs: [L31], stages: stages(90, 75, 60) },
+  { id: 'L32', kind: 'mul', specs: [L32], stages: stages(120, 100, 80) },
+  { id: 'L33', kind: 'div', specs: [L33], stages: stages(110, 90, 70) },
+  { id: 'L34', kind: 'div', specs: [L34], stages: stages(130, 110, 90) },
+  { id: 'L35', kind: 'mixed', specs: [L31, L32, L33, L34], stages: stages(130, 110, 90) },
 ];

@@ -42,10 +42,22 @@ export interface GameConfig {
     /** No primeiro bloco, ignora o tempo da 1ª conta (a pessoa ainda está conhecendo o teclado). */
     ignoreFirstProblemTime: boolean;
   };
+  daily: {
+    /** Teste do dia: uma conta de cada nível, na ordem (do mais fácil ao mais difícil). */
+    levels: string[];
+    /** Dias de tentativas guardados no aparelho. */
+    keepDays: number;
+    nickname: {
+      minLength: number;
+      maxLength: number;
+      /** Palavras recusadas no apelido (comparadas sem acento e sem maiúsculas). */
+      blockedWords: string[];
+    };
+  };
 }
 
 export const GAME_CONFIG: GameConfig = {
-  rulesVersion: 2,
+  rulesVersion: 3,
   problemsPerRound: 10,
   maxAnswerDigits: 4,
   stars: {
@@ -67,10 +79,28 @@ export const GAME_CONFIG: GameConfig = {
     noPreviousStageTimeBonus: 0.5,
   },
   placement: {
-    checkpoints: ['L02', 'L05', 'L07', 'L10', 'L12', 'L15', 'L17', 'L20', 'L22', 'L25'],
+    // prettier-ignore
+    checkpoints: [
+      'L02', 'L05', 'L07', 'L10', 'L12', 'L15', 'L17', 'L20', 'L22', 'L25',
+      'L27', 'L30', 'L32', 'L35',
+    ],
     problemsPerCheckpoint: 5,
     minCorrect: 4,
     timeRatio: 0.5,
     ignoreFirstProblemTime: true,
+  },
+  daily: {
+    // Soma, subtração, tabuada, divisão; depois as mesmas quatro, mais difíceis.
+    levels: ['L02', 'L04', 'L07', 'L09', 'L27', 'L29', 'L12', 'L14', 'L32', 'L33'],
+    keepDays: 7,
+    nickname: {
+      minLength: 2,
+      maxLength: 16,
+      // prettier-ignore
+      blockedWords: [
+        'merda', 'porra', 'caralho', 'puta', 'puto', 'buceta', 'cu', 'viado', 'foda', 'fodase',
+        'fuck', 'shit', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'nigga', 'fag',
+      ],
+    },
   },
 };

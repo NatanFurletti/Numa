@@ -36,7 +36,7 @@ Primeiro acesso ──► Boas-vindas ──┬─► Nivelamento ──► Resu
 ### 3.2 Início
 - Sequência de dias: "🔥 5 dias".
 - Botão grande: **Continuar — Nível 7 · Etapa B**.
-- Botões secundários: **Níveis**, **Treino livre** e ⚙️ **Configurações**.
+- Botões secundários: **Teste do dia** (com ✓ depois de feito no dia), **Níveis**, **Treino livre** e ⚙️ **Configurações**.
 
 ### 3.3 Níveis
 - Lista vertical de níveis. Cada um mostra o nome curto (ex.: "Soma 2+1 com vai um") e as 3 etapas com estrelas.
@@ -76,7 +76,7 @@ Primeiro acesso ──► Boas-vindas ──┬─► Nivelamento ──► Resu
 - "3, 2, 1" em tela cheia antes da rodada (~1 s cada). As contas só aparecem depois.
 
 ### 3.6 Resultado
-Ver a ordem dos elementos em [GAME_RULES.md §5](GAME_RULES.md). Lista das contas: certas com ✓ discreto, erradas destacadas com ✗ e "você respondeu 85".
+Ver a ordem dos elementos em [GAME_RULES.md §5](GAME_RULES.md). O mascote (um ábaco com bracinhos) diz a mensagem em um balão: comemora, sorri, se concentra ou dá apoio, conforme o resultado. Lista das contas: certas com ✓ discreto, erradas destacadas com ✗ e "você respondeu 85".
 
 ### 3.7 Correção
 - Uma conta errada por vez, com o mesmo teclado. Indicador "2 de 3".
@@ -91,6 +91,14 @@ Ver a ordem dos elementos em [GAME_RULES.md §5](GAME_RULES.md). Lista das conta
 ### 3.9 Configurações
 Ver [GAME_RULES.md §12](GAME_RULES.md).
 
+### 3.10 Teste do dia
+Regras em [GAME_RULES.md §13](GAME_RULES.md). Uma tela só, que muda conforme a tentativa do dia:
+- **Antes de jogar:** explicação curta, campo do apelido (com o aviso de que ele é público) e o botão **Começar o teste**. Embaixo, o ranking de hoje.
+- **Depois de jogar:** placar grande, tempo, "Você ficou em 12º de 340.", o ranking (a linha da pessoa em destaque, com "(você)") e a lista das contas com as respostas.
+- **Teste interrompido:** aviso de que a tentativa de hoje acabou, e o ranking.
+- Ranking: posição, apelido, acertos e tempo com décimos (`41.5s`). Estados: carregando, erro com "Tentar de novo", vazio e indisponível.
+- A rodada do teste (`/daily-play`) é a tela da rodada, sem barra de tempo, com o rótulo "Teste do dia".
+
 ## 4. Rotas (Expo Router)
 
 | Rota | Tela |
@@ -104,3 +112,5 @@ Ver [GAME_RULES.md §12](GAME_RULES.md).
 | `/result/[roundId]` | Resultado |
 | `/review/[roundId]` | Correção |
 | `/settings` | Configurações |
+| `/daily` | Teste do dia: entrada, resultado e ranking |
+| `/daily-play` | Rodada do teste do dia |

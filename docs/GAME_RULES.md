@@ -6,12 +6,13 @@ Este documento é a **especificação de comportamento** do jogo. Cada regra aqu
 
 | Termo | Significado |
 |---|---|
-| **Conta** (`Problem`) | Uma operação: `a op b`, com `op` ∈ {`+`, `−`} no MVP |
+| **Conta** (`Problem`) | Uma operação: `a op b`, com `op` ∈ {`+`, `−`, `×`, `÷`}. A divisão é sempre exata (D-030) |
 | **Rodada** (`Round`) | Sequência de contas resolvidas de uma vez, com tempo-limite |
 | **Nível** (`Level`) | Um tipo de conta (ex.: "2 dígitos + 1 dígito, com vai um") |
 | **Etapa** (`Stage`) | Subdivisão do nível (A, B, C), com tempo cada vez mais curto |
 | **Estrelas** | Nota de 0 a 3 de uma rodada |
 | **Modo** | `challenge` (desafio), `practice` (treino livre), `warmup` (aquecimento), `placement` (nivelamento) |
+| **Teste do dia** | As mesmas contas para todo mundo, uma tentativa por dia, com ranking (seção 13) |
 
 Tabela de níveis e regras de geração: [LEVELS.md](LEVELS.md).
 
@@ -72,7 +73,7 @@ Sejam `accuracy = corretas / total` e `limit` = tempo-limite da etapa.
 Ordem dos elementos na tela:
 1. **Placar**: `7/10` e o tempo total (ex.: `52s de 60s`, ou `68s, passou 8s`).
 2. **Estrelas** (animação simples).
-3. **Mensagem** (seção 6).
+3. **Mensagem** (seção 6), dita pelo mascote em um balão. O humor do mascote acompanha a mensagem (D-029).
 4. **Comparação pessoal** com a tentativa anterior **na mesma etapa** (seção 6.2), quando houver.
 5. **Lista das 10 contas**, com as erradas em destaque e a resposta dada.
 6. Botões: **Corrigir erradas** (se houver), **Próxima etapa** (se passou) ou **Tentar de novo** (se não passou), **Início**.
@@ -155,3 +156,27 @@ Mostre **uma** frase, na ordem de prioridade:
 - **Direita → esquerda:** digitando `2`, `1`, `1`, aparece `2` → `12` → `112`. Cada dígito novo entra à esquerda. O cursor fica à **esquerda** do número.
 - **Nenhum indicador revela a quantidade de dígitos da resposta** (sem tracinhos por dígito).
 - O "apagar" sempre remove o **último dígito digitado**, qualquer que seja a direção.
+
+## 13. Teste do dia e ranking (D-031)
+
+### 13.1 O teste
+- **Todo mundo faz as mesmas contas no mesmo dia.** A seed sai da data (`dailySeed('2026-11-11')`), então o teste é gerado no aparelho, sem servidor, e funciona offline.
+- O dia é o do **horário local** do aparelho, como na sequência de dias.
+- São **10 contas** ⚙️, uma de cada nível da lista `daily.levels` ⚙️, em **dificuldade crescente**, misturando as quatro operações: soma, subtração, tabuada e divisão de 1 dígito, e depois as mesmas quatro com 2 dígitos.
+- **Sem tempo-limite e sem barra de tempo.** O tempo é medido e vale para o ranking. Sem estrelas e sem tela de correção.
+- Mesma tela da rodada (contagem 3-2-1, sem retorno de certo ou errado), com o rótulo "Teste do dia".
+
+### 13.2 Uma tentativa por dia
+- A tentativa está **usada quando a primeira conta aparece**. Sair durante a contagem não usa a tentativa.
+- **Sair no meio** (com confirmação) encerra a tentativa com as contas já respondidas. As outras contam como erradas.
+- Se o app fechar no meio do teste, a tentativa do dia fica como **interrompida**: sem resultado e sem nova chance. Sem isso, bastaria recarregar a página para ver as contas antes de valer.
+- Depois de jogar, a tela mostra o placar, o tempo, a posição no ranking e a lista das contas com as respostas.
+- O teste concluído **conta como dia jogado** na sequência. Não mexe em etapas nem estrelas, e não entra no histórico de rodadas.
+
+### 13.3 Ranking
+- **Ordem:** mais acertos primeiro. No empate, o menor tempo. Se ainda empatar, quem enviou primeiro.
+- A tela mostra os **50 primeiros** do dia e, se estiver fora deles, a posição da própria pessoa ("Você ficou em 62º de 340.").
+- O ranking pode ser visto antes de jogar: ele não mostra as contas.
+- **Apelido, sem conta:** pedido antes do primeiro teste e lembrado depois. De 2 a 16 caracteres ⚙️: letras, números, espaço, ponto, hífen e sublinhado. Uma lista curta de palavrões é recusada ⚙️. A tela avisa que o apelido aparece para todo mundo e pede para não usar o nome completo.
+- **Sem internet:** o teste funciona. O resultado fica guardado e é enviado na próxima vez que a tela do teste do dia abrir com internet, se ainda for o mesmo dia.
+- **Sem o Supabase configurado** (build sem as variáveis): o teste funciona, sem apelido e sem ranking.

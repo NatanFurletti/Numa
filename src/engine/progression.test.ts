@@ -5,6 +5,7 @@ import {
   createInitialStages,
   nextRoundMode,
   type StageProgressMap,
+  unlockAfterPassed,
   unlockThrough,
   warmupTimeLimitMs,
 } from './progression';
@@ -199,6 +200,36 @@ describe('unlockThrough (nivelamento)', () => {
     const stages = unlockThrough(before, 'L01-C');
 
     expect(stages['L01-A'].bestStars).toBe(3);
+  });
+});
+
+describe('unlockAfterPassed (níveis novos depois do fim da tabela, D-030)', () => {
+  // Progresso de quem tinha terminado a tabela antiga (até o L25-C) antes da atualização.
+  const finishedOldTable = (lastStars: Stars) => {
+    const stages = unlockThrough(createInitialStages(), 'L25-C');
+    return { ...stages, 'L25-C': { ...stages['L25-C'], bestStars: lastStars, attempts: 1 } };
+  };
+
+  it('quem já passou da etapa mais avançada ganha a etapa seguinte', () => {
+    const stages = unlockAfterPassed(finishedOldTable(2));
+
+    expect(stages['L26-A'].unlocked).toBe(true);
+    expect(stages['L26-B'].unlocked).toBe(false);
+  });
+
+  it('quem ainda não passou dela continua onde estava', () => {
+    expect(unlockAfterPassed(finishedOldTable(1))['L26-A'].unlocked).toBe(false);
+    expect(unlockAfterPassed(createInitialStages())).toEqual(createInitialStages());
+  });
+
+  it('no fim da tabela, não muda nada', () => {
+    const done = applyChallengeResult(
+      unlockThrough(createInitialStages(), 'L35-C'),
+      'L35-C',
+      result(3),
+    );
+
+    expect(unlockAfterPassed(done)).toEqual(done);
   });
 });
 

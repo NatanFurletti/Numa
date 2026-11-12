@@ -14,7 +14,7 @@ import {
 } from './placement';
 import { getStage } from './stages';
 
-const checkpoints = GAME_CONFIG.placement.checkpoints; // L02, L05, L07, L10, L12, L15, L17, L20, L22, L25
+const checkpoints = GAME_CONFIG.placement.checkpoints; // L02, L05, …, L25, L27, L30, L32, L35
 
 describe('contas de cada checkpoint', () => {
   it('são 5 contas com as regras da etapa B do nível', () => {
@@ -113,8 +113,14 @@ describe('placementStartStageId', () => {
     expect(placementStartStageId([true, true, true, false])).toBe('L08V-A');
   });
 
-  it('aprovado em todos os checkpoints, começa na última etapa (L25-C)', () => {
-    expect(placementStartStageId(checkpoints.map(() => true))).toBe('L25-C');
+  it('os checkpoints incluem a multiplicação e a divisão (D-030)', () => {
+    expect(checkpoints.slice(10)).toEqual(['L27', 'L30', 'L32', 'L35']);
+    // Passou até o L25 e falhou na tabuada: começa na primeira tabuada.
+    expect(placementStartStageId([...Array<boolean>(10).fill(true), false])).toBe('L26-A');
+  });
+
+  it('aprovado em todos os checkpoints, começa na última etapa (L35-C)', () => {
+    expect(placementStartStageId(checkpoints.map(() => true))).toBe('L35-C');
   });
 
   it('ignora resultados depois da primeira falha', () => {

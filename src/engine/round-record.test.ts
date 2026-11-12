@@ -162,8 +162,8 @@ describe('roundOutcome', () => {
     });
   });
 
-  it('a última etapa (L25-C) não tem próxima', () => {
-    const history = [record('r', 10, 40_000, { stageId: 'L25-C' })];
+  it('a última etapa (L35-C) não tem próxima', () => {
+    const history = [record('r', 10, 40_000, { stageId: 'L35-C' })];
 
     expect(roundOutcome(history, 'r')?.nextStageId).toBeNull();
   });

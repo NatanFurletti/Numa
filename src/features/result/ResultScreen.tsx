@@ -6,15 +6,17 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { roundOutcome, type RoundOutcome, type RoundRecord } from '@/engine/round-record';
 import type { PlayMode } from '@/engine/round-setup';
-import type { ProblemAttempt } from '@/engine/types';
 import { stageLabel } from '@/features/levels/names';
 import { useHistory } from '@/store/history';
 import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
+import { moodForMessage } from './mascot-mood';
+import { MascotMessage } from './MascotMessage';
+import { ProblemRow } from './ProblemRow';
 import { Stars } from './Stars';
-import { comparisonText, messageText, problemLine, scoreTimeText } from './texts';
+import { comparisonText, messageText, scoreTimeText } from './texts';
 
 interface ResultScreenProps {
   roundId: string;
@@ -62,7 +64,10 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
 
         {outcome.stars !== null ? <Stars count={outcome.stars} /> : null}
         {outcome.message ? (
-          <Text style={styles.message}>{messageText(t, outcome.message)}</Text>
+          <MascotMessage
+            text={messageText(t, outcome.message)}
+            mood={moodForMessage(outcome.message.key)}
+          />
         ) : null}
         {comparison ? <Text style={styles.comparison}>{comparison}</Text> : null}
         {warmupAhead ? <Text style={styles.warmup}>{t('result.warmupAhead')}</Text> : null}
@@ -105,32 +110,6 @@ function playAgainAction(
     return { ...same, stageId: outcome.nextStageId, label: t('result.nextStage') };
   }
   return { ...same, label: t('result.playAgain') };
-}
-
-function ProblemRow({ problem }: { problem: ProblemAttempt }) {
-  const { t } = useTranslation();
-  const line = problemLine(problem);
-  const answered =
-    problem.answer === null
-      ? t('result.noAnswer')
-      : t('result.youAnswered', { answer: problem.answer });
-  const label = problem.correct
-    ? t('result.right', { line })
-    : t('result.wrong', { line, answered });
-
-  return (
-    <View
-      style={[styles.row, !problem.correct && styles.rowWrong]}
-      accessible
-      accessibilityLabel={label}
-    >
-      <Text style={[styles.mark, problem.correct ? styles.markRight : styles.markWrong]}>
-        {problem.correct ? '✓' : '✗'}
-      </Text>
-      <Text style={[styles.line, problem.correct && styles.lineRight]}>{line}</Text>
-      {problem.correct ? null : <Text style={styles.answered}>{answered}</Text>}
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -201,46 +180,6 @@ const styles = StyleSheet.create({
   list: {
     gap: spacing.xs,
     marginTop: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 10,
-  },
-  rowWrong: {
-    backgroundColor: colors.surface,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.error,
-  },
-  mark: {
-    width: 20,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  markRight: {
-    color: colors.success,
-    opacity: 0.7,
-  },
-  markWrong: {
-    color: colors.error,
-  },
-  line: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: '600',
-    fontVariant: ['tabular-nums'],
-  },
-  lineRight: {
-    color: colors.textMuted,
-    fontWeight: '400',
-  },
-  answered: {
-    color: colors.error,
-    fontSize: 16,
   },
   actions: {
     gap: spacing.sm,

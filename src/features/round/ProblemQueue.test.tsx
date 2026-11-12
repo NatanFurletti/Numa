@@ -33,6 +33,17 @@ describe('ProblemQueue', () => {
     expect(screen.getByText('15 − 7 =')).toBeOnTheScreen();
   });
 
+  it('usa × na multiplicação e ÷ na divisão (D-030)', async () => {
+    const mulDiv: Problem[] = [
+      { a: 7, b: 8, op: 'mul' },
+      { a: 56, b: 8, op: 'div' },
+    ];
+    await render(<ProblemQueue problems={mulDiv} answerText="" direction="ltr" />);
+
+    expect(screen.getByText('7 × 8 =')).toBeOnTheScreen();
+    expect(screen.getByText('56 ÷ 8 = ?')).toBeOnTheScreen();
+  });
+
   it('esquerda → direita: o cursor fica à direita da resposta', async () => {
     await render(<ProblemQueue problems={problems} answerText="9" direction="ltr" />);
 

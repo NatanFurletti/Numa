@@ -194,6 +194,32 @@ describe('numa.progress', () => {
     expect(stages['L08V-A'].unlocked).toBe(false);
   });
 
+  it('quem tinha terminado a tabela antiga começa nos níveis novos (multiplicação, D-030)', async () => {
+    const open = {
+      unlocked: true,
+      bestStars: 2,
+      attempts: 1,
+      consecutiveFails: 0,
+      pendingWarmup: false,
+    };
+    // Progresso salvo antes do L26 existir: tudo liberado e aprovado até o L25-C.
+    const old = Object.fromEntries(
+      Object.keys(createInitialStages())
+        .filter((id) => id <= 'L25-C')
+        .map((id) => [id, open]),
+    );
+    const storage = memoryStorage({
+      [PROGRESS_KEY]: JSON.stringify({ schemaVersion: 1, stages: old, placementDone: true }),
+    });
+    const store = createProgressStore(storage);
+    await store.persist.rehydrate();
+
+    const { stages } = store.getState();
+    expect(stages['L25-C'].bestStars).toBe(2);
+    expect(stages['L26-A']).toMatchObject({ unlocked: true, bestStars: 0 });
+    expect(stages['L26-B'].unlocked).toBe(false);
+  });
+
   it('etapas faltando ou estragadas voltam ao padrão (ex.: níveis novos numa atualização)', async () => {
     const storage = memoryStorage({
       [PROGRESS_KEY]: JSON.stringify({
@@ -224,7 +250,9 @@ describe('numa.progress', () => {
 
     const { stages, placementDone, streak } = store.getState();
     expect(stages['L01-A']).toMatchObject({ bestStars: 2, attempts: 3 });
-    expect(stages['L01-B']).toEqual(createInitialStages()['L01-B']);
+    // A L01-B estragada volta ao padrão, mas fica liberada: a L01-A já tinha sido aprovada (D-030).
+    expect(stages['L01-B']).toEqual({ ...createInitialStages()['L01-B'], unlocked: true });
+    expect(stages['L01-C']).toEqual(createInitialStages()['L01-C']);
     expect(stages['L15-C']).toEqual(createInitialStages()['L15-C']);
     expect(stages['L99-Z']).toBeUndefined();
     expect(placementDone).toBe(true);

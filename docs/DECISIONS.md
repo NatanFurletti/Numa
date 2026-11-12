@@ -208,3 +208,72 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Tempos de 3 dígitos:** estimativas iniciais, a calibrar.
 **Pendência encontrada:** o console da web mostra o erro #418 do React (hidratação) desde o M6. Ele vem do `react-native-safe-area-context`, usado pelo Expo Router, que renderiza diferente no build e no navegador. O app funciona (o React refaz a página no navegador), mas vale resolver depois.
 
+### D-029 · Mascote: ábaco de brinquedo com bracinhos
+**Data:** 2026-11-11
+**Contexto:** o app precisava de um logo e de um ícone definitivos. A ideia foi um mascote que servisse de logo, de ícone e de assistente dentro do app, dizendo as mensagens de apoio que já existiam.
+**Decisão:**
+- O mascote é um **ábaco de brinquedo com rosto, bracinhos e pés**, nas cores do tema. Foram comparadas outras formas (só a moldura com olhos de conta, uma conta sozinha, ábaco de pinos, versão com volume 3D) e esta foi a escolhida.
+- **Desenho em código** (`src/ui/Mascot.tsx`, com `react-native-svg`), animado com o Reanimated. Sem arquivo de animação externo (Lottie, Rive) e sem modelo 3D: é leve, funciona offline e em qualquer tamanho.
+- **Humores:** `party` (pula, braços para cima), `happy` (balança e acena), `focus` (olha de um lado para o outro) e `support` (inclina, um braço para cima). Ele também pisca. Os olhos ficam em uma camada separada do corpo, para piscar e olhar de lado sem animar atributos do SVG.
+- **No resultado**, o mascote diz a mensagem em um balão. Cada mensagem tem um humor (`src/features/result/mascot-mood.ts`): ⭐⭐⭐ comemora; ⭐⭐ e "certo, mas devagar" sorriem; "rápido, com erros" se concentra; "errou e estourou o tempo" dá apoio. Sem mensagem (aquecimento, treino livre), sem mascote.
+- **Acessibilidade:** o mascote é decorativo e fica fora da leitura de tela. A mensagem continua sendo um texto.
+- **Ícones:** `scripts/generate-icons.js` desenha o mesmo mascote, parado, e gera os ícones do PWA, o favicon, o ícone do app, o ícone adaptativo do Android e a tela de abertura. Ele substitui o `generate-pwa-icons.js` e o ícone provisório do D-027. O desenho está repetido no script e no componente: ao mudar um, mudar o outro.
+**Pendências:** o ícone do iOS (`assets/expo.icon`) continua o padrão do Expo até a Fase 3. As mensagens ainda têm emojis (🔥 🎯 💪), que podem sair agora que o mascote mostra o humor. Mascote no início e no nivelamento, e a versão com volume 3D, ficam em "Ideias futuras".
+
+### D-030 · Níveis de multiplicação e divisão
+**Data:** 2026-11-11
+**Contexto:** o jogo só tinha soma e subtração. Multiplicação e divisão estavam em "Ideias futuras".
+**Decisão:**
+- **10 níveis novos no fim da tabela** (L26–L35), em duas faixas, no mesmo ciclo das outras (duas de uma operação, duas da outra e um misto):
+  - **Tabuada:** L26 (do 2 ao 5), L27 (do 6 ao 9), L28 e L29 (as divisões que desfazem essas tabuadas) e L30 (misto).
+  - **2 dígitos por 1:** L31 (multiplicação sem vai um), L32 (com vai um), L33 (2d ÷ 1d) e L34 (3d ÷ 1d), as duas divisões com quociente de 2 dígitos, e L35 (misto).
+- **No fim, e não intercalados:** a tabuada é mais fácil que a subtração de 3 dígitos, mas colocar os níveis no meio mudaria o caminho de quem já está jogando, e operação nova é um assunto novo. Rever a ordem quando houver dados de uso (Fase 2).
+- **Divisão sempre exata.** Divisão com resto pede outra forma de resposta (dois números) e fica para depois.
+- **Sem 1** como fator, divisor ou quociente.
+- **Vai um na multiplicação** (por 1 dígito): alguma coluna, fora a mais alta, passa de 9. `72 × 3 = 216` conta como "sem vai um": nada é levado de uma coluna para outra.
+- **Só na linha.** A conta armada (D-028) continua só para soma e subtração. A multiplicação armada pode vir depois; a divisão armada (na chave) é outro desenho.
+- **Misto:** metade multiplicação, metade divisão. A regra do gerador ficou geral: divide as contas por igual entre as operações do nível. Os mistos de soma e subtração geram as mesmas rodadas de antes.
+- **Engine:** `Operation` ganha `'mul'` e `'div'`. Na spec da divisão, `a` é o dividendo, `b` é o divisor e `result` é o quociente. Sinais na tela: `×` e `÷`.
+- A tabela vai de 41 para **51 níveis** (153 etapas). `rulesVersion` sobe para 3. Os checkpoints do nivelamento ganham L27, L30, L32 e L35 (o nivelamento completo passa de 10 para 14 blocos).
+- **Quem já tinha terminado a tabela antiga** (2+ estrelas no L25-C): ao carregar o progresso, a etapa seguinte à mais avançada entra liberada quando a mais avançada já foi aprovada. Sem isso, a pessoa teria que jogar o L25-C de novo para liberar o L26-A.
+- **Tempos:** estimativas iniciais, a calibrar.
+
+### D-031 · Teste do dia com ranking diário, no Supabase
+**Data:** 2026-11-11
+**Resolve:** o D-003 (backend em aberto) e adianta dois itens da Fase 3 do roadmap.
+**Contexto:** faltava um motivo para voltar todo dia além da sequência, e algo para comparar com outras pessoas.
+**Decisão:**
+- **Teste do dia:** as mesmas 10 contas para todo mundo, em dificuldade crescente, com as quatro operações. A seed sai da data local, então o teste é gerado no aparelho e funciona offline. Sem tempo-limite: o tempo é medido para o ranking.
+- **Uma tentativa por dia.** Vale desde que a primeira conta aparece. Sair no meio encerra com o que foi respondido, e fechar o app no meio deixa a tentativa como interrompida. É a forma de as contas não serem vistas antes de valer.
+- **Ranking:** mais acertos, depois menor tempo. Os 50 primeiros e a posição da própria pessoa.
+- **Backend: Supabase.** Banco, API e login prontos, com pouco código de servidor. A alternativa era Vercel Functions + Postgres, que reaproveitaria o engine no servidor com mais facilidade.
+- **Identidade: apelido, sem conta.** Cada aparelho vira um usuário anônimo do Supabase no primeiro envio. Sem e-mail e sem senha. Outro aparelho (ou dados do navegador apagados) é outro usuário.
+- **Segurança no banco:** cada usuário só insere o próprio resultado, uma vez por dia. Ninguém lê a tabela direto: a leitura passa pela função `daily_ranking`, que não devolve os ids.
+- **Camada nova `src/services/`**, atrás da interface `RankingService`. Sem as variáveis do Supabase, o app funciona sem ranking (é assim nos testes e no CI).
+- **Cliente do Supabase com o AsyncStorage** que o projeto já usa, em vez do `expo-sqlite` do guia do Expo. O guia só cobre Android e iOS, e o app é web primeiro.
+- O teste do dia não entra no `numa.history` nem altera etapas. Fica em `numa.daily`. Conta como dia jogado na sequência.
+
+**Limites conhecidos (aceitos por enquanto):**
+- **O servidor confia no placar enviado.** Quem souber usar as ferramentas do navegador consegue enviar um resultado falso. O próximo passo é uma Edge Function que refaz o teste com o `src/engine` e confere as respostas.
+- **Uma tentativa por aparelho, não por pessoa.** Apagar os dados do navegador cria outro usuário anônimo.
+- **Dia local:** o ranking de um dia junta pessoas de fusos diferentes. O banco aceita o dia do aparelho com 1 dia de folga em relação ao servidor.
+- **Versões diferentes do app no mesmo dia** podem gerar contas diferentes, se a lista de níveis do teste ou o gerador mudarem. O `rules_version` vai junto com o resultado para dar para investigar. Mudou `daily.levels` ou o gerador? Suba o `rulesVersion`.
+- **Login anônimo tem limite por IP** no Supabase (30 por hora, por padrão). Uma escola inteira na mesma rede pode esbarrar nele no primeiro uso. Ajustável no painel.
+- **Filtro de apelido simples:** formato e uma lista curta de palavrões, só no app. O banco confere só o tamanho.
+
+**Pendências antes de ir para produção:** política de privacidade cobrindo o apelido público, e decidir sobre CAPTCHA no login anônimo (recomendado pelo Supabase).
+
+### D-032 · Pontos, evolução do mascote, missões, ranking semanal e desafios: decisões de base
+**Data:** 2026-11-12
+**Contexto:** foram pensadas cinco funcionalidades de engajamento: pontos por jogar, mascote que evolui, missões diárias, ranking semanal de pontos e desafios enviados a amigos por link. Todas dependem dos pontos, e o ranking e os desafios dependem do servidor. Esta entrada fixa só o que as outras decisões precisam. Os detalhes de cada parte são decididos ao iniciar o marco dela (M8 a M13 no [ROADMAP.md](ROADMAP.md)).
+**Decisão:**
+- **O servidor é a fonte da verdade dos pontos que valem para ranking e desafios.** O app envia a rodada (seed, respostas e tempos) e o servidor refaz as contas e calcula os pontos com o mesmo `src/engine`. O app calcula os mesmos pontos na hora, com a mesma função, para mostrar sem esperar a internet.
+- **Enviar rodadas exige consentimento.** Quem não aceita joga normalmente, ganha pontos e evolui o mascote só no aparelho, e fica fora do ranking e dos desafios.
+- **Identidade: continua o usuário anônimo com apelido** (D-031). Trocar de aparelho ou apagar os dados do navegador perde pontos e mascote. A conta opcional da Fase 2 resolve isso depois, vinculando o usuário anônimo a uma conta.
+- **O mascote evolui pelos pontos totais**, e não pelo nível do jogo. Quem está travado em uma etapa continua evoluindo, e quem pula níveis no nivelamento começa do mascote inicial como todo mundo. Nível alto ainda ajuda, porque cada acerto vale mais. O mascote nunca regride.
+- **Dois números da mesma moeda:** pontos da semana (ranking) e pontos totais (mascote). Sem moeda para gastar por enquanto.
+- **Pontos vêm dos acertos, não da participação**, com travas contra repetição de propósito. É o princípio; a fórmula e os valores ficam para o M9, em `src/engine/config/`.
+- **Desafios entre amigos passam pelo servidor**, para quem desafiou ver o resultado e para o bônus de vitória ser conferido.
+- **Ordem:** a conferência das rodadas no servidor vem primeiro (M8). Ela já era pendência do D-031 para o ranking diário.
+
+**Em aberto (decidir ao iniciar cada marco):** valores da fórmula de pontos, desenho e quantidade de estágios do mascote, lista de missões, corte da semana do ranking e regras dos desafios.
