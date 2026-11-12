@@ -23,11 +23,17 @@ import { type RankingState, useDailyRanking } from './useDailyRanking';
 interface DailyScreenProps {
   onStart: () => void;
   onBack: () => void;
+  onOpenPrivacy: () => void;
   /** Sem ela, usa o Supabase (ou nenhum, se o build não tem as variáveis). */
   service?: RankingService | null;
 }
 
-export function DailyScreen({ onStart, onBack, service: serviceProp }: DailyScreenProps) {
+export function DailyScreen({
+  onStart,
+  onBack,
+  onOpenPrivacy,
+  service: serviceProp,
+}: DailyScreenProps) {
   const { t } = useTranslation();
   const [day] = useState(() => localDateString(systemClock.now()));
   const [service] = useState(() =>
@@ -55,7 +61,7 @@ export function DailyScreen({ onStart, onBack, service: serviceProp }: DailyScre
         </View>
 
         {attempt === undefined ? (
-          <Intro needsNickname={service !== null} onStart={onStart} />
+          <Intro needsNickname={service !== null} onStart={onStart} onOpenPrivacy={onOpenPrivacy} />
         ) : attempt.status === 'started' ? (
           <Text style={styles.text}>{t('daily.interrupted')}</Text>
         ) : (
@@ -78,7 +84,15 @@ export function DailyScreen({ onStart, onBack, service: serviceProp }: DailyScre
 }
 
 /** Antes de jogar: as regras, o apelido (se há ranking) e o botão de começar. */
-function Intro({ needsNickname, onStart }: { needsNickname: boolean; onStart: () => void }) {
+function Intro({
+  needsNickname,
+  onStart,
+  onOpenPrivacy,
+}: {
+  needsNickname: boolean;
+  onStart: () => void;
+  onOpenPrivacy: () => void;
+}) {
   const { t } = useTranslation();
   const setNickname = useDaily((s) => s.setNickname);
   const [nickname, setDraft] = useState(() => useDaily.getState().nickname ?? '');
@@ -116,6 +130,9 @@ function Intro({ needsNickname, onStart }: { needsNickname: boolean; onStart: ()
             style={styles.input}
           />
           <Text style={styles.hint}>{t('daily.nicknameHint')}</Text>
+          <Pressable accessibilityRole="link" onPress={onOpenPrivacy} hitSlop={8}>
+            <Text style={styles.link}>{t('daily.privacyLink')}</Text>
+          </Pressable>
           {problem ? (
             <Text style={styles.error} accessibilityRole="alert">
               {t(`daily.nicknameErrors.${problem}`)}
@@ -278,6 +295,11 @@ const styles = StyleSheet.create({
   error: {
     color: colors.error,
     fontSize: 14,
+  },
+  link: {
+    color: colors.accent,
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
   scoreBlock: {
     alignItems: 'center',

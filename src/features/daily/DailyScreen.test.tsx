@@ -56,8 +56,21 @@ afterEach(() => jest.useRealTimers());
 async function renderDaily(service: RankingService | null = fakeService()) {
   const onStart = jest.fn();
   const onBack = jest.fn();
-  await render(<DailyScreen onStart={onStart} onBack={onBack} service={service} />);
-  return { onStart, onBack, user: userEvent.setup({ advanceTimers: jest.advanceTimersByTime }) };
+  const onOpenPrivacy = jest.fn();
+  await render(
+    <DailyScreen
+      onStart={onStart}
+      onBack={onBack}
+      onOpenPrivacy={onOpenPrivacy}
+      service={service}
+    />,
+  );
+  return {
+    onStart,
+    onBack,
+    onOpenPrivacy,
+    user: userEvent.setup({ advanceTimers: jest.advanceTimersByTime }),
+  };
 }
 
 describe('DailyScreen antes de jogar', () => {
@@ -95,6 +108,14 @@ describe('DailyScreen antes de jogar', () => {
     await fireEvent.changeText(screen.getByLabelText('Seu apelido no ranking'), 'Z');
 
     expect(screen.queryByText('Use pelo menos 2 caracteres.')).not.toBeOnTheScreen();
+  });
+
+  it('junto do apelido, leva à política de privacidade', async () => {
+    const { onOpenPrivacy, user } = await renderDaily();
+
+    await user.press(screen.getByRole('link', { name: 'Política de privacidade' }));
+
+    expect(onOpenPrivacy).toHaveBeenCalledTimes(1);
   });
 
   it('já vem com o apelido usado da última vez', async () => {

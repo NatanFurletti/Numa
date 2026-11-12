@@ -17,9 +17,10 @@ type EraseStep = 'idle' | 'first' | 'second' | 'done';
 interface SettingsScreenProps {
   onBack: () => void;
   onRedoPlacement: () => void;
+  onOpenPrivacy: () => void;
 }
 
-export function SettingsScreen({ onBack, onRedoPlacement }: SettingsScreenProps) {
+export function SettingsScreen({ onBack, onRedoPlacement, onOpenPrivacy }: SettingsScreenProps) {
   const { t } = useTranslation();
   const language = useSettings((s) => s.language);
   const direction = useSettings((s) => s.inputDirection);
@@ -96,6 +97,10 @@ export function SettingsScreen({ onBack, onRedoPlacement }: SettingsScreenProps)
             variant="secondary"
           />
           {erase === 'done' ? <Text style={styles.erased}>{t('settings.erased')}</Text> : null}
+        </Section>
+
+        <Section title={t('settings.privacySection')}>
+          <Button label={t('settings.privacy')} onPress={onOpenPrivacy} variant="secondary" />
         </Section>
       </View>
 
