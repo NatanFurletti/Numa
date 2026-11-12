@@ -9,6 +9,7 @@ import {
   type ResultMessage,
 } from './feedback';
 import type { RoundSummary } from './round';
+import { PASSING_STARS } from './progression';
 import { calculateStars, qualifiesForRecord } from './scoring';
 import { nextStageId } from './stages';
 import type { InputDirection, Mode, ProblemAttempt, Stars } from './types';
@@ -114,8 +115,6 @@ export interface RoundOutcome {
   nextStageId: string | null;
   wrongCount: number;
 }
-
-const PASSING_STARS = 2;
 
 /** Tudo o que a tela de resultado mostra além do placar. */
 export function roundOutcome(

@@ -26,6 +26,8 @@ export const en: Translation = {
     settings: '⚙️ Settings',
     streak_one: '🔥 {{count}} day',
     streak_other: '🔥 {{count}} days',
+    points_one: '✨ {{count}} point',
+    points_other: '✨ {{count}} points',
   },
   welcome: {
     question: 'Want a quick test to start at your level?',
@@ -161,6 +163,15 @@ export const en: Translation = {
     playAgain: 'Play again',
     backToChallenge: 'Back to the challenge',
     practiceAgain: 'Practice again',
+  },
+  points: {
+    earned_one: '+{{count}} point',
+    earned_other: '+{{count}} points',
+    hits: '{{count}} for correct answers',
+    stars: '{{count}} for new stars',
+    newStage: '{{count}} for a new stage',
+    capped:
+      "This stage's correct answers already earned points {{limit}} times today. They count again tomorrow.",
   },
   review: {
     progress: '{{current}} of {{total}}',

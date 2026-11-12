@@ -2,6 +2,7 @@ import { render, screen, userEvent } from '@testing-library/react-native';
 
 import { useHistory } from '@/store/history';
 import { useOutbox } from '@/store/outbox';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 import { buildRecord } from '@/test-utils/rounds';
@@ -13,6 +14,7 @@ beforeEach(() => {
   useProgress.setState(useProgress.getInitialState(), true);
   useHistory.setState(useHistory.getInitialState(), true);
   useOutbox.setState(useOutbox.getInitialState(), true);
+  usePoints.setState(usePoints.getInitialState(), true);
 });
 
 async function renderSettings(canShare = true) {
@@ -57,6 +59,11 @@ describe('SettingsScreen', () => {
   it('apagar progresso pede confirmação duas vezes e então apaga tudo', async () => {
     useProgress.getState().recordRound(buildRecord({ correct: 10 }), '2026-10-24');
     useHistory.getState().addRound(buildRecord());
+    usePoints.getState().award({
+      id: 'r1',
+      day: '2026-10-24',
+      points: { hits: 10, stars: 0, newStage: 0, total: 10, capped: false },
+    });
     useSettings.getState().setInputDirection('rtl');
     const { user } = await renderSettings();
 
@@ -72,6 +79,7 @@ describe('SettingsScreen', () => {
     expect(useProgress.getState().stages['L01-B'].unlocked).toBe(false);
     expect(useProgress.getState().streak.current).toBe(0);
     expect(useHistory.getState().rounds).toEqual([]);
+    expect(usePoints.getState().total).toBe(0);
     expect(useSettings.getState().inputDirection).toBe('rtl');
     expect(screen.getByText('Progresso apagado.')).toBeOnTheScreen();
   });

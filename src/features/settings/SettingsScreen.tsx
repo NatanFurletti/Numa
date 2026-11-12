@@ -8,6 +8,7 @@ import { setSharing } from '@/features/sync/outbox';
 import { LANGUAGE_NAMES, LANGUAGES } from '@/i18n';
 import { defaultRoundSyncService } from '@/services/api-rounds';
 import { useHistory } from '@/store/history';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 import { Button } from '@/ui/Button';
@@ -39,11 +40,13 @@ export function SettingsScreen({
   const setDirection = useSettings((s) => s.setInputDirection);
   const resetProgress = useProgress((s) => s.resetProgress);
   const clearHistory = useHistory((s) => s.clearHistory);
+  const resetPoints = usePoints((s) => s.resetPoints);
   const [erase, setErase] = useState<EraseStep>('idle');
 
   const eraseEverything = () => {
     resetProgress();
     clearHistory();
+    resetPoints();
     setErase('done');
   };
 

@@ -8,12 +8,14 @@ import { roundOutcome, type RoundOutcome, type RoundRecord } from '@/engine/roun
 import type { PlayMode } from '@/engine/round-setup';
 import { stageLabel } from '@/features/levels/names';
 import { useHistory } from '@/store/history';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
 import { moodForMessage } from './mascot-mood';
 import { MascotMessage } from './MascotMessage';
+import { PointsEarned } from './PointsEarned';
 import { ProblemRow } from './ProblemRow';
 import { Stars } from './Stars';
 import { comparisonText, messageText, scoreTimeText } from './texts';
@@ -33,6 +35,7 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
     round ? s.stages[round.stageId]?.pendingWarmup === true : false,
   );
   const outcome = round ? roundOutcome(rounds, roundId) : undefined;
+  const points = usePoints((s) => s.awards.find((a) => a.id === roundId)?.points);
 
   if (!round || !outcome) {
     return (
@@ -63,6 +66,7 @@ export function ResultScreen({ roundId, onReview, onPlay, onHome }: ResultScreen
         </View>
 
         {outcome.stars !== null ? <Stars count={outcome.stars} /> : null}
+        <PointsEarned points={points} />
         {outcome.message ? (
           <MascotMessage
             text={messageText(t, outcome.message)}

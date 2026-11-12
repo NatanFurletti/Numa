@@ -5,6 +5,7 @@ import { setupDailyTest } from '@/engine/daily';
 import { formatProblem } from '@/features/round/ProblemQueue';
 import { useDaily } from '@/store/daily';
 import { useHistory } from '@/store/history';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 
@@ -20,6 +21,7 @@ beforeEach(() => {
   useHistory.setState(useHistory.getInitialState(), true);
   useProgress.setState(useProgress.getInitialState(), true);
   useSettings.setState(useSettings.getInitialState(), true);
+  usePoints.setState(usePoints.getInitialState(), true);
 });
 afterEach(() => jest.useRealTimers());
 
@@ -79,6 +81,34 @@ describe('DailyPlayScreen', () => {
     });
     expect(useProgress.getState().streak).toMatchObject({ current: 1, lastPlayedDate: DAY });
     expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it('ao terminar, soma acertos × 3 em pontos, uma vez só no dia (GAME_RULES §14.3)', async () => {
+    const { user } = await renderPlay();
+    await finishCountdown();
+
+    await answer(user, solve(PROBLEMS[0]) + 1);
+    for (const problem of PROBLEMS.slice(1)) await answer(user, solve(problem));
+
+    expect(usePoints.getState().total).toBe(27);
+    expect(usePoints.getState().awards).toEqual([
+      {
+        id: `daily:${DAY}`,
+        day: DAY,
+        points: { hits: 27, stars: 0, newStage: 0, total: 27, capped: false },
+      },
+    ]);
+  });
+
+  it('sair no meio rende as contas respondidas', async () => {
+    const { user } = await renderPlay();
+    await finishCountdown();
+    await answer(user, solve(PROBLEMS[0]));
+
+    await user.press(screen.getByRole('button', { name: 'Sair' }));
+    await user.press(screen.getByRole('button', { name: 'Sair do teste' }));
+
+    expect(usePoints.getState().total).toBe(3);
   });
 
   it('o teste do dia não entra no histórico de rodadas nem mexe nas etapas', async () => {

@@ -311,3 +311,21 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Quem calcula as respostas com um programa** e envia tempos plausíveis ainda passa. O servidor não mede o tempo: o teste do dia funciona offline, então o tempo vem do aparelho. O piso de 250 ms por conta só barra o absurdo.
 - **App antigo em cache** (PWA) com `rulesVersion` diferente tem o envio recusado até atualizar. O resultado do dia fica só no aparelho.
 - **Resultados antigos não conferidos** continuam na tabela, marcados com `verified = false`.
+
+### D-035 · Pontos: peso por faixa, bônus por estrelas novas, travas por dia (M9)
+**Data:** 2026-11-12
+**Resolve:** os itens de "Decidir ao iniciar" do M9 e a fórmula deixada em aberto no D-032.
+**Contexto:** os pontos movem o mascote (M10), as missões (M11) e o ranking semanal (M12). O servidor recalcula os pontos de cada rodada que recebe (D-032), então a fórmula só pode usar o que ele também tem: a rodada e as rodadas anteriores da mesma pessoa.
+**Decisão:**
+- **Acertos × peso da faixa do nível.** O peso é fixo por faixa, e não pela posição na tabela, porque a tabuada (L26–L30) vem depois dos 3 dígitos e é mais fácil: 1 dígito (L01–L05) = 1; 2d ± 1d (L06–L10) = 2; 2d ± 2d (L11–L15) = 3; 3d ± 2d (L16–L20) = 4; 3d ± 3d (L21–L25) = 5; tabuada e divisão de 1 dígito (L26–L30) = 2; 2d × 1d e divisão de 2 dígitos (L31–L35) = 4 ⚙️. A versão armada tem o peso da versão na linha.
+- **Bônus por estrela nova:** 5 × peso por estrela acima da melhor nota anterior da etapa ⚙️. Repetir uma etapa com a mesma nota não rende bônus.
+- **Bônus de etapa nova:** 10 × peso na primeira vez que a pessoa passa da etapa (⭐⭐ ou mais) ⚙️. As etapas liberadas pelo nivelamento ainda não foram passadas e rendem o bônus.
+- **Travas:** os acertos só rendem nas **3 primeiras rodadas de desafio concluídas** de cada etapa, por dia (horário local) ⚙️. Rodada com menos de **50%** de acerto não rende acertos ⚙️ (e não tem estrelas). Os bônus continuam valendo depois da trava: eles só saem uma vez por etapa.
+- **Modos:** só o desafio concluído e o teste do dia rendem. O teste do dia vale **acertos × 3** ⚙️, uma vez por dia, inclusive quando a pessoa sai no meio (as contas respondidas). Treino livre, aquecimento, nivelamento e rodadas abandonadas não rendem: o servidor não recebe essas rodadas, e o total dele precisa bater com o do aparelho.
+- **Sem pontos retroativos:** todo mundo começa do zero quando o M9 chega. O servidor nunca recebeu as rodadas antigas.
+- **No aparelho:** os pontos de cada rodada são calculados ao gravar a rodada e somados uma vez só (`numa.points`, pelo id da rodada). A melhor nota anterior vem do progresso; as rodadas do dia, do histórico.
+- **Pontos da semana:** o aparelho guarda os pontos de cada dia (últimos 14 dias ⚙️). O corte da semana fica para o M12.
+- **"Apagar progresso" zera os pontos**, junto com o histórico.
+- **`rulesVersion` sobe para 4:** os valores dos pontos fazem parte das regras que o servidor usa para recalcular. Nada sai do aparelho por causa dos pontos, então a política de privacidade não muda.
+
+**Pendente para o item do servidor (depois da homologação do M8):** a trava "por dia" usa o dia local do aparelho, que o servidor não sabe. O envio da rodada vai precisar levar o dia local, como o teste do dia já leva. Quem já jogava antes de aceitar enviar terá no aparelho mais pontos que no servidor, que só conhece as rodadas enviadas.
