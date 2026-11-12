@@ -1,7 +1,9 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
+import { NO_POINTS } from '@/engine/points';
 import { useDaily } from '@/store/daily';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 
 import { HomeScreen } from './HomeScreen';
@@ -12,6 +14,7 @@ beforeEach(() => {
   jest.useFakeTimers({ now: TODAY });
   useProgress.setState(useProgress.getInitialState(), true);
   useDaily.setState(useDaily.getInitialState(), true);
+  usePoints.setState(usePoints.getInitialState(), true);
 });
 afterEach(() => jest.useRealTimers());
 
@@ -133,5 +136,22 @@ describe('HomeScreen em inglês', () => {
     expect(screen.getByText('🔥 2 days')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Start — Level 1 · Stage A' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: '⚙️ Settings' })).toBeOnTheScreen();
+  });
+
+  it('mostra o total de pontos', async () => {
+    usePoints.getState().award({
+      id: 'r1',
+      day: '2026-10-23',
+      points: { ...NO_POINTS, hits: 120, total: 120 },
+    });
+    await renderHome();
+
+    expect(screen.getByText('✨ 120 pontos')).toBeOnTheScreen();
+  });
+
+  it('sem pontos ainda, não mostra o total', async () => {
+    await renderHome();
+
+    expect(screen.queryByText(/pontos/)).toBeNull();
   });
 });

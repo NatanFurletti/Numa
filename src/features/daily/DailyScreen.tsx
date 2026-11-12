@@ -8,6 +8,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { GAME_CONFIG } from '@/engine/config/game-config';
 import type { DailyAttempt } from '@/engine/daily';
 import { nicknameProblem, type NicknameProblem, normalizeNickname } from '@/engine/nickname';
+import { PointsEarned } from '@/features/result/PointsEarned';
 import { ProblemRow } from '@/features/result/ProblemRow';
 import { setSharing } from '@/features/sync/outbox';
 import { systemClock } from '@/lib/clock';
@@ -16,6 +17,7 @@ import { formatSeconds, formatTenths } from '@/lib/format';
 import { defaultRankingService } from '@/services/daily-ranking';
 import type { RankingEntry, RankingService } from '@/services/ranking';
 import { useDaily } from '@/store/daily';
+import { usePoints } from '@/store/points';
 import { useSettings } from '@/store/settings';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
@@ -86,7 +88,13 @@ export function DailyScreen({
           <Text style={styles.text}>{t('daily.interrupted')}</Text>
         ) : (
           <>
-            <MyResult attempt={attempt} state={state} pending={sharing} declined={declined} />
+            <MyResult
+              day={day}
+              attempt={attempt}
+              state={state}
+              pending={sharing}
+              declined={declined}
+            />
             {asking ? <Consent onOpenPrivacy={onOpenPrivacy} /> : null}
             {sharing && !hasNickname && !attempt.submitted ? (
               <JoinRanking onOpenPrivacy={onOpenPrivacy} />
@@ -247,11 +255,13 @@ type DoneAttempt = Extract<DailyAttempt, { status: 'done' }>;
 
 /** Depois de jogar: placar, tempo e a posição no ranking. */
 function MyResult({
+  day,
   attempt,
   state,
   pending,
   declined,
 }: {
+  day: string;
   attempt: DoneAttempt;
   state: RankingState;
   /** A pessoa entra no ranking: avisa enquanto o resultado não foi enviado. */
@@ -262,11 +272,13 @@ function MyResult({
   const { t } = useTranslation();
   const me = state.status === 'ready' ? state.ranking.entries.find((e) => e.isMe) : undefined;
   const total = state.status === 'ready' ? state.ranking.totalPlayers : 0;
+  const points = usePoints((s) => s.awards.find((a) => a.id === `daily:${day}`)?.points);
 
   return (
     <View style={styles.scoreBlock}>
       <Text style={styles.score}>{`${attempt.correct}/${attempt.total}`}</Text>
       <Text style={styles.time}>{t('daily.time', { time: formatSeconds(attempt.elapsedMs) })}</Text>
+      <PointsEarned points={points} />
       {me ? (
         <Text style={styles.position}>{t('daily.position', { rank: me.rank, total })}</Text>
       ) : null}

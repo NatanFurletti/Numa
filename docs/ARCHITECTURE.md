@@ -77,6 +77,7 @@ numa/
 │  │  ├─ feedback.ts           # escolhe a mensagem e a comparação pessoal
 │  │  ├─ placement.ts          # teste de nivelamento
 │  │  ├─ streak.ts             # sequência de dias
+│  │  ├─ points.ts             # pontos de cada rodada e a soma no aparelho (GAME_RULES §14)
 │  │  ├─ types.ts
 │  │  └─ *.test.ts             # testes ao lado de cada módulo
 │  ├─ features/                # Hooks + componentes por funcionalidade
@@ -86,7 +87,7 @@ numa/
 │  │  ├─ review/
 │  │  ├─ levels/
 │  │  └─ settings/
-│  ├─ store/                   # Zustand: progress, settings, history
+│  ├─ store/                   # Zustand: progress, settings, history, daily, outbox, points
 │  ├─ storage/                 # Interface Storage + implementação AsyncStorage
 │  ├─ i18n/                    # index.ts, pt.ts, en.ts (D-024)
 │  ├─ ui/                      # Botões, tema (cores, fontes), layout

@@ -35,6 +35,7 @@ Primeiro acesso ──► Boas-vindas ──┬─► Nivelamento ──► Resu
 
 ### 3.2 Início
 - Sequência de dias: "🔥 5 dias".
+- Total de pontos: "✨ 120 pontos" ([GAME_RULES §14](GAME_RULES.md)). Some enquanto a pessoa não tem pontos.
 - Botão grande: **Continuar — Nível 7 · Etapa B**.
 - Botões secundários: **Teste do dia** (com ✓ depois de feito no dia), **Níveis**, **Treino livre** e ⚙️ **Configurações**.
 
@@ -78,6 +79,8 @@ Primeiro acesso ──► Boas-vindas ──┬─► Nivelamento ──► Resu
 ### 3.6 Resultado
 Ver a ordem dos elementos em [GAME_RULES.md §5](GAME_RULES.md). O mascote (um ábaco com bracinhos) diz a mensagem em um balão: comemora, sorri, se concentra ou dá apoio, conforme o resultado. Lista das contas: certas com ✓ discreto, erradas destacadas com ✗ e "você respondeu 85".
 
+Logo abaixo das estrelas, os pontos ganhos ("+105 pontos") e, quando há mais de uma parte, "30 dos acertos · 45 das estrelas novas · 30 da etapa nova". Quando a trava do dia segurou os acertos, uma frase avisa que eles voltam a valer amanhã. Com 0 pontos e sem trava, nada aparece ([GAME_RULES §14.4](GAME_RULES.md)).
+
 ### 3.7 Correção
 - Uma conta errada por vez, com o mesmo teclado. Indicador "2 de 3".
 - Acertou: ✓ verde e avança. Errou: tremida e tenta de novo. Após 2 erros: botão "Ver resposta".
@@ -95,7 +98,7 @@ Ver [GAME_RULES.md §12](GAME_RULES.md). Na seção "Privacidade", duas opções
 Regras em [GAME_RULES.md §13](GAME_RULES.md). Uma tela só, que muda conforme a tentativa do dia:
 - **Quem ainda não respondeu ao pedido de consentimento** ([GAME_RULES §13.4](GAME_RULES.md)): explicação curta e um cartão com o pedido, o link da política e os botões **Aceitar e entrar no ranking** e **Jogar sem enviar**. Sem campo de apelido e sem botão de começar até responder. Embaixo, o ranking de hoje.
 - **Antes de jogar:** explicação curta, campo do apelido (com o aviso de que ele é público) e o botão **Começar o teste**. Quem recusou o envio não vê o campo do apelido, e sim o aviso de que fica fora do ranking. Embaixo, o ranking de hoje.
-- **Depois de jogar:** placar grande, tempo, "Você ficou em 12º de 340.", o ranking (a linha da pessoa em destaque, com "(você)") e a lista das contas com as respostas.
+- **Depois de jogar:** placar grande, tempo, os pontos ganhos ("+27 pontos"), "Você ficou em 12º de 340.", o ranking (a linha da pessoa em destaque, com "(você)") e a lista das contas com as respostas.
 - **Depois de jogar, sem ter respondido ao pedido:** o placar e o mesmo cartão do pedido. Ao aceitar, o resultado é enviado. Quem aceitou e não tem apelido vê o campo do apelido com o botão **Entrar no ranking**. Quem recusou vê o aviso de que fica fora do ranking.
 - **Teste interrompido:** aviso de que a tentativa de hoje acabou, e o ranking.
 - Ranking: posição, apelido, acertos e tempo com décimos (`41.5s`). Estados: carregando, erro com "Tentar de novo", vazio e indisponível.

@@ -204,3 +204,45 @@ Mostre **uma** frase, na ordem de prioridade:
   - no teste do dia: o dia está a mais de 1 dia da data do servidor, ou o apelido está fora das regras.
 - **Rodadas de desafio** de quem aceitou são enviadas ao terminar (concluídas ou abandonadas). Sem internet, ficam numa fila no aparelho e saem depois. Treino livre, aquecimento e nivelamento não são enviados.
 - **Limite conhecido:** o tempo vem do aparelho, porque o teste funciona offline. Quem calcula as respostas com um programa e envia tempos plausíveis ainda passa.
+
+## 14. Pontos (D-032, D-035)
+
+Os pontos vêm dos **acertos**, e não da participação. Eles movem o mascote (pontos totais) e o ranking da semana (pontos de cada dia). Não há moeda para gastar.
+
+### 14.1 Rodada de desafio concluída
+Seja `peso` o peso da faixa do nível ⚙️:
+
+| Faixa | Níveis | Peso |
+|---|---|---|
+| 1 dígito | L01–L05 | 1 |
+| 2d ± 1d | L06–L10 | 2 |
+| 2d ± 2d | L11–L15 | 3 |
+| 3d ± 2d | L16–L20 | 4 |
+| 3d ± 3d | L21–L25 | 5 |
+| Tabuada e divisão de 1 dígito | L26–L30 | 2 |
+| 2d × 1d e divisão de 2 dígitos | L31–L35 | 4 |
+
+A versão armada (`L07V`) tem o peso da versão na linha (`L07`).
+
+- **Acertos:** `acertos × peso`.
+- **Estrelas novas:** `5 × peso` ⚙️ por estrela acima da melhor nota anterior da etapa. Repetir com a mesma nota (ou menor) não rende bônus.
+- **Etapa nova:** `10 × peso` ⚙️ na primeira vez que a pessoa passa da etapa (⭐⭐ ou mais). Etapas liberadas pelo nivelamento ainda contam como novas.
+- Ex.: 10/10 com ⭐⭐⭐ pela primeira vez na L12-B (peso 3): `30 + 3 × 15 + 30 = 105`.
+
+### 14.2 Travas
+- **Por dia:** os acertos só rendem nas **3 primeiras** ⚙️ rodadas de desafio concluídas de cada etapa no dia (horário local). Da 4ª em diante, só os bônus, que de qualquer jeito saem uma vez por etapa.
+- **Acerto mínimo:** rodada com menos de **50%** ⚙️ de acerto não rende acertos.
+
+### 14.3 Outros modos
+- **Teste do dia:** `acertos × 3` ⚙️, uma vez por dia. Sair no meio rende as contas respondidas.
+- **Treino livre, aquecimento, nivelamento e rodadas abandonadas** não rendem pontos.
+
+### 14.4 Onde aparecem
+- **Resultado** (desafio e teste do dia): os pontos ganhos, com as partes (acertos, estrelas novas, etapa nova). Quando a trava do dia segurou os acertos, uma frase explica, sem tom de bronca. Com 0 pontos, a linha não aparece.
+- **Tela inicial:** o total de pontos.
+
+### 14.5 Contagem
+- Os pontos de uma rodada são calculados ao gravá-la e somados **uma vez só** (pelo id da rodada, ou pelo dia no teste do dia).
+- **Sem pontos retroativos:** as rodadas de antes desta regra não rendem.
+- "Apagar progresso" zera os pontos.
+- O servidor recalcula os pontos das rodadas que recebe com a mesma função do engine (D-032).

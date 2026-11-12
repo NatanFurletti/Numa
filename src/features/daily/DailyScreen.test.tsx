@@ -2,7 +2,9 @@ import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/
 
 import type { DailyRanking, RankingService } from '@/services/ranking';
 import { useDaily } from '@/store/daily';
+import { NO_POINTS } from '@/engine/points';
 import { useOutbox } from '@/store/outbox';
+import { usePoints } from '@/store/points';
 import { useSettings } from '@/store/settings';
 
 import { DailyScreen } from './DailyScreen';
@@ -54,6 +56,7 @@ beforeEach(() => {
   useDaily.setState(useDaily.getInitialState(), true);
   useOutbox.setState(useOutbox.getInitialState(), true);
   useSettings.setState(useSettings.getInitialState(), true);
+  usePoints.setState(usePoints.getInitialState(), true);
   // A pessoa já aceitou enviar (D-034). O pedido em si é testado mais abaixo.
   useSettings.getState().setShareRounds(true);
 });
@@ -187,6 +190,17 @@ describe('DailyScreen depois de jogar', () => {
     expect(screen.getByText('Zé (você)')).toBeOnTheScreen();
     expect(screen.getByLabelText('2 + 2 = 4, errada, você respondeu 5')).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'Começar o teste' })).not.toBeOnTheScreen();
+  });
+
+  it('mostra os pontos ganhos no teste', async () => {
+    usePoints.getState().award({
+      id: `daily:${DAY}`,
+      day: DAY,
+      points: { ...NO_POINTS, hits: 3, total: 3 },
+    });
+    await renderDaily();
+
+    expect(screen.getByText('+3 pontos')).toBeOnTheScreen();
   });
 
   it('envio falhou: avisa que o resultado ainda não foi enviado', async () => {

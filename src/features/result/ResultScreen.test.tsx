@@ -1,7 +1,9 @@
 import { render, screen, userEvent, within } from '@testing-library/react-native';
 
 import type { RoundRecord } from '@/engine/round-record';
+import { NO_POINTS, type PointsBreakdown } from '@/engine/points';
 import { useHistory } from '@/store/history';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { buildRecord } from '@/test-utils/rounds';
 
@@ -10,6 +12,7 @@ import { ResultScreen } from './ResultScreen';
 beforeEach(() => {
   useHistory.setState(useHistory.getInitialState(), true);
   useProgress.setState(useProgress.getInitialState(), true);
+  usePoints.setState(usePoints.getInitialState(), true);
 });
 
 async function renderResult(...rounds: RoundRecord[]) {
@@ -161,5 +164,57 @@ describe('ResultScreen', () => {
     await user.press(screen.getByRole('button', { name: 'Início' }));
 
     expect(onHome).toHaveBeenCalledTimes(1);
+  });
+
+  describe('pontos (GAME_RULES §14.4)', () => {
+    const awardFor = (roundId: string, points: Partial<PointsBreakdown>) =>
+      usePoints.getState().award({
+        id: roundId,
+        day: '2026-10-23',
+        points: { ...NO_POINTS, ...points },
+      });
+
+    it('mostra os pontos ganhos, com as partes', async () => {
+      awardFor('round-1', { hits: 10, stars: 15, newStage: 10, total: 35 });
+      await renderResult(buildRecord());
+
+      expect(screen.getByText('+35 pontos')).toBeOnTheScreen();
+      expect(
+        screen.getByText('10 dos acertos · 15 das estrelas novas · 10 da etapa nova'),
+      ).toBeOnTheScreen();
+    });
+
+    it('só mostra as partes que renderam', async () => {
+      awardFor('round-1', { hits: 10, newStage: 10, total: 20 });
+      await renderResult(buildRecord());
+
+      expect(screen.getByText('10 dos acertos · 10 da etapa nova')).toBeOnTheScreen();
+    });
+
+    it('com uma parte só, mostra só o total', async () => {
+      awardFor('round-1', { hits: 1, total: 1 });
+      await renderResult(buildRecord());
+
+      expect(screen.getByText('+1 ponto')).toBeOnTheScreen();
+      expect(screen.queryByText('1 dos acertos')).toBeNull();
+    });
+
+    it('explica quando a trava do dia segurou os acertos', async () => {
+      awardFor('round-1', { capped: true });
+      await renderResult(buildRecord());
+
+      expect(screen.queryByText(/\+0/)).toBeNull();
+      expect(
+        screen.getByText(
+          'Os acertos desta etapa já renderam pontos 3 vezes hoje. Amanhã eles voltam a valer.',
+        ),
+      ).toBeOnTheScreen();
+    });
+
+    it('sem pontos, não mostra nada', async () => {
+      await renderResult(buildRecord({ correct: 3 }));
+
+      expect(screen.queryByText(/ponto/)).toBeNull();
+    });
   });
 });

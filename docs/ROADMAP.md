@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Próximo passo:** publicar o **M8** em homologação: abrir o PR da branch `m8-server-verified-rounds` para a `homolog`, cadastrar `SUPABASE_SECRET_KEY` na Vercel, rodar a migração `20261112000000_verified_rounds.sql` no Supabase e testar no navegador (placar falso recusado; quem não aceitou não envia nada). O **M9** (pontos) pode começar em paralelo, numa branch criada a partir da `m8-server-verified-rounds`, deixando o item do servidor para depois da homologação do M8. Ao concluir um marco, atualize esta linha.
+> **Próximo passo:** publicar o **M8** em homologação: abrir o PR da branch `m8-server-verified-rounds` para a `homolog`, cadastrar `SUPABASE_SECRET_KEY` na Vercel, rodar a migração `20261112000000_verified_rounds.sql` no Supabase e testar no navegador (placar falso recusado; quem não aceitou não envia nada). O **M9** (pontos) já tem a parte do aparelho pronta na branch `m9-points` (D-035); depois da homologação do M8, falta o item do servidor nessa mesma branch. Ao concluir um marco, atualize esta linha.
 
 ## Fase 0: setup do projeto
 
@@ -92,11 +92,11 @@ O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O
 **Pronto quando:** um placar falso enviado pelo navegador é recusado, e quem não consentiu joga sem enviar nada.
 
 ### M9 · Pontos
-- [ ] Regras dos pontos no GAME_RULES e valores em `src/engine/config/`
-- [ ] `points` no engine (TDD): acertos × peso do nível, bônus por estrelas e por etapa nova, e as travas
-- [ ] Pontos ganhos na tela de resultado e total na tela inicial
-- [ ] Store local dos pontos (total e da semana), com migração
-- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana
+- [x] Regras dos pontos no GAME_RULES (§14) e valores em `src/engine/config/` (D-035)
+- [x] `points` no engine (TDD): acertos × peso do nível, bônus por estrelas e por etapa nova, e as travas
+- [x] Pontos ganhos na tela de resultado (e no teste do dia) e total na tela inicial
+- [x] Store local dos pontos (`numa.points`): total e pontos de cada dia. O corte da semana fica para o M12
+- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana. **Só depois da homologação do M8.** O envio da rodada passa a levar o dia local (para a trava por dia, D-035)
 
 **Decidir ao iniciar:** pesos, bônus e travas; se treino livre, aquecimento e teste do dia rendem pontos; se as rodadas já guardadas no histórico rendem pontos retroativos.
 **Pronto quando:** toda rodada mostra os pontos ganhos, repetir e falhar de propósito não rende, e o total do servidor bate com o do aparelho.

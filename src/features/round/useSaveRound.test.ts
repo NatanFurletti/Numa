@@ -4,6 +4,7 @@ import { solve } from '@/engine/carry';
 import type { Mode, ProblemAttempt } from '@/engine/types';
 import { useHistory } from '@/store/history';
 import { useOutbox } from '@/store/outbox';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 import { TEST_PROBLEMS } from '@/test-utils/rounds';
@@ -33,6 +34,7 @@ beforeEach(() => {
   useProgress.setState(useProgress.getInitialState(), true);
   useHistory.setState(useHistory.getInitialState(), true);
   useOutbox.setState(useOutbox.getInitialState(), true);
+  usePoints.setState(usePoints.getInitialState(), true);
 });
 
 describe('useSaveRound', () => {
@@ -86,5 +88,49 @@ describe('useSaveRound', () => {
         expect(useOutbox.getState().roundIds).toEqual([]);
       },
     );
+  });
+
+  describe('pontos (GAME_RULES §14)', () => {
+    it('desafio concluído: soma os pontos da rodada, pelo id dela e no dia em que começou', async () => {
+      const record = await save('challenge');
+
+      // L01-A (peso 1), 10/10 com 3 estrelas pela primeira vez: 10 + 3 × 5 + 10.
+      expect(usePoints.getState().total).toBe(35);
+      expect(usePoints.getState().awards).toEqual([
+        {
+          id: record?.id,
+          day: '2026-11-12',
+          points: { hits: 10, stars: 15, newStage: 10, total: 35, capped: false },
+        },
+      ]);
+    });
+
+    it('repetir a etapa com a mesma nota rende só os acertos', async () => {
+      await save('challenge');
+      await save('challenge');
+
+      expect(usePoints.getState().total).toBe(45);
+    });
+
+    it('da 4ª rodada da etapa no dia em diante, os acertos não rendem', async () => {
+      for (let i = 0; i < 3; i++) await save('challenge');
+
+      await save('challenge');
+
+      expect(usePoints.getState().total).toBe(55);
+      expect(usePoints.getState().awards.at(-1)?.points).toMatchObject({ total: 0, capped: true });
+    });
+
+    it.each(['practice', 'warmup', 'placement'] as const)('%s não rende pontos', async (mode) => {
+      await save(mode);
+
+      expect(usePoints.getState().total).toBe(0);
+    });
+
+    it('desafio abandonado não rende pontos', async () => {
+      await save('challenge', { ...END, status: 'abandoned' });
+
+      expect(usePoints.getState().total).toBe(0);
+    });
   });
 });

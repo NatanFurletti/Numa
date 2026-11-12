@@ -2,7 +2,7 @@
 
 ## 1. Fase 1: tudo no aparelho
 
-Os dados são salvos com Zustand `persist` + AsyncStorage (`localStorage` na web), em cinco chaves independentes, cada uma com `schemaVersion` para migrações.
+Os dados são salvos com Zustand `persist` + AsyncStorage (`localStorage` na web), em seis chaves independentes, cada uma com `schemaVersion` para migrações.
 
 ### 1.1 `numa.settings`
 ```ts
@@ -115,7 +115,30 @@ interface Outbox {
 - No máximo **200 rodadas** ⚙️. As mais antigas são descartadas.
 - Desligar o envio nas configurações **esvazia a fila**. "Apagar progresso" apaga o histórico, e as rodadas que estavam na fila saem dela sem ser enviadas.
 
-### 1.6 Migrações
+### 1.6 `numa.points`: pontos (GAME_RULES §14, D-035)
+```ts
+interface PointsBreakdown {
+  hits: number;                         // acertos × peso
+  stars: number;                        // estrelas novas
+  newStage: number;                     // primeira vez que passa da etapa
+  total: number;
+  capped: boolean;                      // a trava do dia segurou os acertos
+}
+
+interface Points {
+  schemaVersion: 1;
+  total: number;                        // pontos totais (mascote)
+  days: Record<string, number>;         // pontos de cada dia, 'YYYY-MM-DD' local (ranking da semana)
+  awards: { id: string; day: string; points: PointsBreakdown }[]; // da mais antiga para a mais nova
+}
+```
+- `id` é o id da rodada, ou `daily:YYYY-MM-DD` no teste do dia. Um id que já está em `awards` não soma de novo.
+- Ganhos de 0 pontos não entram, a não ser quando a trava do dia segurou os acertos (a tela de resultado explica a trava).
+- Ficam os **últimos 14 dias** ⚙️ em `days` e os **últimos 100** ⚙️ ganhos em `awards` (a tela de resultado lê os pontos da rodada daqui).
+- Sem a chave (quem já jogava antes do M9), tudo começa em zero: não há pontos retroativos.
+- "Apagar progresso" zera esta chave.
+
+### 1.7 Migrações
 - Toda mudança de formato sobe o `schemaVersion` e ganha uma função de migração **testada** (`migrate(v1) → v2`).
 - Dados ilegíveis ou corrompidos não travam o app: ele volta aos padrões e registra o erro.
 

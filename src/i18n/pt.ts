@@ -25,6 +25,8 @@ export const pt = {
     settings: '⚙️ Configurações',
     streak_one: '🔥 {{count}} dia',
     streak_other: '🔥 {{count}} dias',
+    points_one: '✨ {{count}} ponto',
+    points_other: '✨ {{count}} pontos',
   },
   welcome: {
     question: 'Quer fazer um teste rápido para começar no seu nível?',
@@ -160,6 +162,15 @@ export const pt = {
     playAgain: 'Jogar de novo',
     backToChallenge: 'Voltar ao desafio',
     practiceAgain: 'Treinar de novo',
+  },
+  points: {
+    earned_one: '+{{count}} ponto',
+    earned_other: '+{{count}} pontos',
+    hits: '{{count}} dos acertos',
+    stars: '{{count}} das estrelas novas',
+    newStage: '{{count}} da etapa nova',
+    capped:
+      'Os acertos desta etapa já renderam pontos {{limit}} vezes hoje. Amanhã eles voltam a valer.',
   },
   review: {
     progress: '{{current}} de {{total}}',

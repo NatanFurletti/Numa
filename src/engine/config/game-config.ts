@@ -67,10 +67,29 @@ export interface GameConfig {
     /** Rodadas esperando envio guardadas no aparelho. As mais antigas são descartadas. */
     maxPendingRounds: number;
   };
+  /** Pontos (docs/GAME_RULES.md §14, D-035). */
+  points: {
+    /** Peso de cada faixa de níveis, pelo número do id (L07V e L07 → 7). */
+    levelWeights: { from: number; to: number; weight: number }[];
+    /** Acerto mínimo para os acertos renderem. */
+    minAccuracy: number;
+    /** Rodadas de desafio concluídas por etapa e por dia em que os acertos rendem. */
+    roundsPerStagePerDay: number;
+    /** Bônus por estrela acima da melhor nota anterior (× peso). */
+    perNewStar: number;
+    /** Bônus da primeira vez que passa da etapa (× peso). */
+    newStage: number;
+    /** Peso de cada acerto do teste do dia. */
+    dailyWeight: number;
+    /** Dias de pontos guardados no aparelho (para o ranking da semana). */
+    keepDays: number;
+    /** Ganhos guardados no aparelho (a tela de resultado lê daqui). */
+    keepAwards: number;
+  };
 }
 
 export const GAME_CONFIG: GameConfig = {
-  rulesVersion: 3,
+  rulesVersion: 4,
   problemsPerRound: 10,
   maxAnswerDigits: 4,
   stars: {
@@ -123,5 +142,23 @@ export const GAME_CONFIG: GameConfig = {
   },
   sync: {
     maxPendingRounds: 200,
+  },
+  points: {
+    levelWeights: [
+      { from: 1, to: 5, weight: 1 }, // 1 dígito
+      { from: 6, to: 10, weight: 2 }, // 2d ± 1d
+      { from: 11, to: 15, weight: 3 }, // 2d ± 2d
+      { from: 16, to: 20, weight: 4 }, // 3d ± 2d
+      { from: 21, to: 25, weight: 5 }, // 3d ± 3d
+      { from: 26, to: 30, weight: 2 }, // tabuada e divisão de 1 dígito
+      { from: 31, to: 35, weight: 4 }, // 2d × 1d e divisão de 2 dígitos
+    ],
+    minAccuracy: 0.5,
+    roundsPerStagePerDay: 3,
+    perNewStar: 5,
+    newStage: 10,
+    dailyWeight: 3,
+    keepDays: 14,
+    keepAwards: 100,
   },
 };
