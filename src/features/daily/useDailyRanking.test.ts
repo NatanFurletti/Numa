@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { GAME_CONFIG } from '@/engine/config/game-config';
 import type { DailyRanking, RankingService } from '@/services/ranking';
 import { useDaily } from '@/store/daily';
+import { useSettings } from '@/store/settings';
 
 import { useDailyRanking } from './useDailyRanking';
 
@@ -11,7 +12,17 @@ const RANKING: DailyRanking = {
   totalPlayers: 1,
   entries: [{ rank: 1, nickname: 'Ana', correct: 10, elapsedMs: 30_000, isMe: false }],
 };
-const RESULT = { correct: 9, total: 10, elapsedMs: 41_500, problems: [] };
+const PROBLEM = {
+  a: 2,
+  b: 3,
+  op: 'add' as const,
+  expected: 5,
+  answer: 5,
+  correct: true,
+  timeMs: 41_500,
+  keystrokes: 1,
+};
+const RESULT = { correct: 1, total: 1, elapsedMs: 41_500, problems: [PROBLEM] };
 
 function fakeService(overrides: Partial<RankingService> = {}) {
   return {
@@ -21,7 +32,12 @@ function fakeService(overrides: Partial<RankingService> = {}) {
   };
 }
 
-beforeEach(() => useDaily.setState(useDaily.getInitialState(), true));
+beforeEach(() => {
+  useDaily.setState(useDaily.getInitialState(), true);
+  useSettings.setState(useSettings.getInitialState(), true);
+  // A pessoa já aceitou enviar (D-034), como em quase todos os casos abaixo.
+  useSettings.getState().setShareRounds(true);
+});
 
 describe('useDailyRanking', () => {
   it('sem serviço (build sem Supabase): indisponível', async () => {
@@ -42,7 +58,7 @@ describe('useDailyRanking', () => {
     expect(service.submit).not.toHaveBeenCalled();
   });
 
-  it('envia o resultado pendente antes de buscar, e marca como enviado', async () => {
+  it('envia as respostas pendentes (e não o placar) antes de buscar, e marca como enviado', async () => {
     useDaily.getState().setNickname('Zé');
     useDaily.getState().finishAttempt(DAY, RESULT);
     const service = fakeService();
@@ -53,12 +69,48 @@ describe('useDailyRanking', () => {
     expect(service.submit).toHaveBeenCalledWith({
       day: DAY,
       nickname: 'Zé',
-      correct: 9,
-      total: 10,
-      elapsedMs: 41_500,
       rulesVersion: GAME_CONFIG.rulesVersion,
+      answers: [{ answer: 5, timeMs: 41_500, keystrokes: 1 }],
     });
     expect(useDaily.getState().attempts[DAY]).toMatchObject({ submitted: true });
+  });
+
+  it.each([null, false])('sem consentimento (%p), não envia nada', async (shareRounds) => {
+    useSettings.setState({ shareRounds });
+    useDaily.getState().setNickname('Zé');
+    useDaily.getState().finishAttempt(DAY, RESULT);
+    const service = fakeService();
+
+    const { result } = await renderHook(() => useDailyRanking(DAY, service));
+
+    await waitFor(() => expect(result.current.state.status).toBe('ready'));
+    expect(service.submit).not.toHaveBeenCalled();
+    expect(useDaily.getState().attempts[DAY]).toMatchObject({ submitted: false });
+  });
+
+  it('aceitar o envio com a tela aberta envia o que estava esperando', async () => {
+    useSettings.setState({ shareRounds: null });
+    useDaily.getState().setNickname('Zé');
+    useDaily.getState().finishAttempt(DAY, RESULT);
+    const service = fakeService();
+    const { result } = await renderHook(() => useDailyRanking(DAY, service));
+    await waitFor(() => expect(result.current.state.status).toBe('ready'));
+
+    await act(async () => useSettings.getState().setShareRounds(true));
+
+    await waitFor(() => expect(service.submit).toHaveBeenCalledTimes(1));
+  });
+
+  it('escolher o apelido depois de jogar envia o que estava esperando', async () => {
+    useDaily.getState().finishAttempt(DAY, RESULT);
+    const service = fakeService();
+    const { result } = await renderHook(() => useDailyRanking(DAY, service));
+    await waitFor(() => expect(result.current.state.status).toBe('ready'));
+    expect(service.submit).not.toHaveBeenCalled();
+
+    await act(async () => useDaily.getState().setNickname('Zé'));
+
+    await waitFor(() => expect(service.submit).toHaveBeenCalledTimes(1));
   });
 
   it('não envia de novo um resultado já enviado', async () => {
@@ -82,17 +134,6 @@ describe('useDailyRanking', () => {
 
     await waitFor(() => expect(result.current.state.status).toBe('ready'));
     expect(useDaily.getState().attempts[DAY]).toMatchObject({ submitted: false });
-  });
-
-  it('tempo 0 vai como 1 ms (o banco recusa 0)', async () => {
-    useDaily.getState().setNickname('Zé');
-    useDaily.getState().finishAttempt(DAY, { ...RESULT, elapsedMs: 0 });
-    const service = fakeService();
-
-    const { result } = await renderHook(() => useDailyRanking(DAY, service));
-
-    await waitFor(() => expect(result.current.state.status).toBe('ready'));
-    expect(service.submit).toHaveBeenCalledWith(expect.objectContaining({ elapsedMs: 1 }));
   });
 
   it('busca falhou: erro; "tentar de novo" busca outra vez', async () => {

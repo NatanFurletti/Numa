@@ -32,6 +32,7 @@ O Numa é desenvolvido com **TDD (Test-Driven Development)**: o teste vem antes 
 | **Unidade (engine)** | `src/engine/**` | Jest + fast-check | Muitos | **≥ 95%** linhas e branches |
 | **Store / hooks** | `src/store`, `src/features/**/use*.ts` | Jest + `renderHook` (RNTL) | Médio | ≥ 85% |
 | **Componentes** | `src/features/**`, `src/ui/**` | React Native Testing Library | Médio | ≥ 80% |
+| **Servidor** | `src/server/**` | Jest, com um banco falso (`ServerRepo`) | Médio | **≥ 95%** |
 | **E2E** | `e2e/` | Playwright (web) | Poucos, só fluxos críticos | – |
 
 O CI falha se a cobertura ficar abaixo desses limites (`coverageThreshold` do Jest).
@@ -90,7 +91,13 @@ Propriedades obrigatórias para **todos os níveis**:
 - Use uma implementação **em memória** da interface `Storage` nos testes.
 - Cada migração tem um teste com um dado real da versão anterior (fixture).
 
-### 3.6 E2E (Playwright, web)
+### 3.6 Servidor
+- A regra (`submissions.ts`) recebe o token, o corpo e um `ServerRepo` falso: entrada → resposta, sem HTTP e sem Supabase. O horário do servidor entra por parâmetro.
+- Todo motivo de recusa tem um teste, começando pelo que dá nome ao M8: **um placar falso, sem as respostas, é recusado**.
+- O `http.ts` é testado com `Request` e `Response` de verdade, no ambiente `node` do Jest (`@jest-environment node` no topo do arquivo).
+- Os arquivos de `api/` não têm teste: só ligam as duas pontas. Quem confirma que eles sobem é o preview da Vercel.
+
+### 3.7 E2E (Playwright, web)
 Fluxos críticos da Fase 1:
 1. Primeiro acesso → pular nivelamento → jogar L01-A → resultado → próxima etapa.
 2. Rodada com erros → correção → "Ver resposta".

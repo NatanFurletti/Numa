@@ -20,8 +20,19 @@ describe('PrivacyScreen', () => {
   it('explica que o apelido e o resultado do teste do dia são públicos', async () => {
     await renderPrivacy();
 
-    expect(screen.getByText('O que vai para o servidor: só o teste do dia')).toBeOnTheScreen();
+    expect(screen.getByText('O que vai para o servidor, e só se você aceitar')).toBeOnTheScreen();
     expect(screen.getByText(/aparecem no ranking para qualquer pessoa/)).toBeOnTheScreen();
+  });
+
+  it('explica o consentimento, as rodadas de desafio enviadas e como parar de enviar', async () => {
+    await renderPrivacy();
+
+    expect(screen.getByText(/Se você não aceitar, nada é enviado/)).toBeOnTheScreen();
+    expect(
+      screen.getByText(/das rodadas de desafio: a etapa, a resposta, o tempo/),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(/Configurações > Privacidade/)).toBeOnTheScreen();
+    expect(screen.getByText(/retirar o seu aceite a qualquer momento/)).toBeOnTheScreen();
   });
 
   it('mostra o contato para pedir a exclusão dos dados', async () => {

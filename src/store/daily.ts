@@ -1,4 +1,4 @@
-// Teste do dia (docs/DATA.md §1.5), salvo em `numa.daily`: o apelido e a tentativa de cada dia.
+// Teste do dia (docs/DATA.md §1.4), salvo em `numa.daily`: o apelido e a tentativa de cada dia.
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';

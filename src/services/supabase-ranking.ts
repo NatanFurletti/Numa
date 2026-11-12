@@ -1,11 +1,10 @@
-// Ranking do teste do dia no Supabase (tabela e função em supabase/migrations).
+// Ranking do teste do dia. Ler: função `daily_ranking` do Supabase (supabase/migrations).
+// Gravar: pela função do servidor, que confere as respostas (api/daily, D-034).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import type { ApiClient } from './api';
 import type { DailyRanking, RankingService } from './ranking';
-
-/** Código do Postgres para chave repetida: este aparelho já enviou o resultado do dia. */
-const UNIQUE_VIOLATION = '23505';
 
 interface RankingRow {
   rank: number;
@@ -16,27 +15,11 @@ interface RankingRow {
   total_players: number;
 }
 
-/** Cada aparelho é um usuário anônimo do Supabase (sem e-mail nem senha), criado no primeiro envio. */
-async function ensureSession(client: SupabaseClient): Promise<void> {
-  const { data } = await client.auth.getSession();
-  if (data.session) return;
-  const { error } = await client.auth.signInAnonymously();
-  if (error) throw error;
-}
-
-export function createSupabaseRanking(client: SupabaseClient): RankingService {
+export function createSupabaseRanking(client: SupabaseClient, api: ApiClient): RankingService {
   return {
-    async submit({ day, nickname, correct, total, elapsedMs, rulesVersion }) {
-      await ensureSession(client);
-      const { error } = await client.from('daily_results').insert({
-        day,
-        nickname,
-        correct,
-        total,
-        elapsed_ms: elapsedMs,
-        rules_version: rulesVersion,
-      });
-      if (error && error.code !== UNIQUE_VIOLATION) throw error;
+    async submit(submission) {
+      const status = await api.post('/api/daily', submission);
+      if (status !== 200) throw new Error(`O servidor não aceitou o resultado (${status}).`);
     },
 
     async fetchRanking(day): Promise<DailyRanking> {
