@@ -7,6 +7,7 @@ export default function Daily() {
     <DailyScreen
       onStart={() => router.push('/daily-play')}
       onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+      onOpenPrivacy={() => router.push('/privacy')}
     />
   );
 }

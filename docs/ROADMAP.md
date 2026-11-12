@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Próximo passo:** terminar o teste do dia (D-031) e levar para `homolog`. Depois, **M8** (Fase 4). Ao concluir um marco, atualize esta linha.
+> **Próximo passo:** levar a `homolog` para a produção (PR #11), com o teste do dia e a política de privacidade. Depois, **M8** (Fase 4). Ao concluir um marco, atualize esta linha.
 
 ## Fase 0: setup do projeto
 
@@ -62,7 +62,7 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [ ] Faixa etária opcional
 - [ ] Configuração de regras baixada do servidor (`rules_configs`)
 - [ ] Painel/consultas de calibração por etapa e faixa etária
-- [ ] Política de privacidade
+- [x] Política de privacidade (versão simples, cobrindo o teste do dia: D-033). A parte das rodadas enviadas vem no M8
 - [ ] Registrar domínio e fazer a busca de marca no INPI
 
 ## Fase 3: lojas e engajamento
@@ -85,7 +85,7 @@ O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O
 - [ ] Teste do dia conferido no servidor: o app envia respostas e tempos, e o servidor refaz as contas pela seed e calcula o placar
 - [ ] Consentimento para enviar rodadas (DATA §2.4), com a opção nas configurações
 - [ ] Envio das rodadas de desafio (seed, respostas, tempos), com fila para quando não há internet
-- [ ] Política de privacidade (apelido público e rodadas enviadas)
+- [ ] Política de privacidade: acrescentar as rodadas enviadas e o consentimento (a versão simples é do D-033)
 
 **Decidir ao iniciar:** onde a conferência roda; em que momento pedir o consentimento (primeiro acesso ou ao abrir o ranking); o que acontece com quem já tem apelido.
 **Pronto quando:** um placar falso enviado pelo navegador é recusado, e quem não consentiu joga sem enviar nada.

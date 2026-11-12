@@ -277,3 +277,16 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Ordem:** a conferência das rodadas no servidor vem primeiro (M8). Ela já era pendência do D-031 para o ranking diário.
 
 **Em aberto (decidir ao iniciar cada marco):** valores da fórmula de pontos, desenho e quantidade de estágios do mascote, lista de missões, corte da semana do ranking e regras dos desafios.
+
+### D-033 · Política de privacidade simples, dentro do app
+**Data:** 2026-11-12
+**Resolve:** a pendência do D-031 (política cobrindo o apelido público antes da produção).
+**Contexto:** o teste do dia mostra o apelido para todo mundo e guarda resultados no Supabase. Era preciso ter uma política antes de levar o ranking para a produção. A versão completa, cobrindo o envio das rodadas, estava prevista no M8.
+**Decisão:**
+- **Uma tela no app (`/privacy`)**, com o texto no i18n (PT e EN), e não uma página fora do app. Funciona offline e segue o idioma escolhido.
+- **Abre pelas Configurações** (seção "Privacidade") e **pelo link junto do apelido** no teste do dia, que é onde o dado público é pedido.
+- **Conteúdo:** o que fica só no aparelho; o que vai para o servidor (só o teste do dia: apelido, acertos, tempo, dia e um código aleatório); o que é público no ranking; quem guarda (Supabase e Vercel, possivelmente fora do Brasil); por quanto tempo (até pedirem para apagar); direitos pela LGPD; crianças; mudanças.
+- **Contato por um e-mail próprio do projeto**, e não o e-mail pessoal nem issues do GitHub. Fica em `src/features/privacy/contact.ts`.
+- **Sem aceite obrigatório:** o teste do dia continua começando direto. O consentimento para enviar as rodadas de desafio fica para o M8, quando a política ganha a parte sobre essas rodadas.
+
+**Regra:** mudou o que vai para o servidor? Atualize o texto da política e a data no topo, no mesmo PR.
