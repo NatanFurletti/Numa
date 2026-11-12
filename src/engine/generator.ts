@@ -165,6 +165,14 @@ export function generateRound(
 }
 
 /**
+ * Uma conta de cada nível, na ordem dada (teste do dia). As contas não se repetem entre os níveis.
+ */
+export function generateSequence(levels: readonly LevelConfig[], seed: number): Problem[] {
+  const pool = newPool(seed);
+  return levels.flatMap((level) => generateFromLevel(level, 1, pool));
+}
+
+/**
  * Aquecimento: metade da etapa anterior e metade da atual, intercaladas,
  * começando pela anterior. Sem etapa anterior, usa só a atual.
  */

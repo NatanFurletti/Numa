@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
+import { useDaily } from '@/store/daily';
 import { useHistory } from '@/store/history';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 
-const STORES = [useSettings, useProgress, useHistory];
+const STORES = [useSettings, useProgress, useHistory, useDaily];
 
 const allHydrated = () => STORES.every((store) => store.persist.hasHydrated());
 

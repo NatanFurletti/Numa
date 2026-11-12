@@ -53,4 +53,6 @@ Branches de trabalho saem de `homolog`, e os PRs apontam para `homolog`, nunca d
 - **`src/engine/` é TypeScript puro:** sem React/Expo/storage, sem `Date` e sem `Math.random` (relógio e Rng injetados). O lint barra isso.
 - Números ajustáveis (tempos, limites de estrelas, etc.) ficam em `src/engine/config/`, nunca espalhados no código.
 - Textos de interface sempre pelo i18n: chave nova em `src/i18n/pt.ts` e `en.ts` (o typecheck acusa se faltar em um dos dois). Nada de texto fixo nas telas.
+- **Serviços externos em `src/services/`**, atrás de uma interface (ex.: `RankingService`). As telas recebem o serviço por prop, e os testes passam um falso. Nada de chamar o Supabase direto de uma tela.
+- Variáveis do Supabase em `.env.local` (modelo em `.env.example`). Sem elas o app roda sem ranking. O SQL do banco fica em `supabase/migrations/`.
 - Teste ao lado do arquivo (`scoring.ts` → `scoring.test.ts`). Sem snapshots de componentes inteiros.

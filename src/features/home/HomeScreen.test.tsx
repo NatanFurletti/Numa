@@ -1,6 +1,7 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
+import { useDaily } from '@/store/daily';
 import { useProgress } from '@/store/progress';
 
 import { HomeScreen } from './HomeScreen';
@@ -10,6 +11,7 @@ const TODAY = new Date(2026, 9, 23, 12).getTime(); // 23/10/2026, horário local
 beforeEach(() => {
   jest.useFakeTimers({ now: TODAY });
   useProgress.setState(useProgress.getInitialState(), true);
+  useDaily.setState(useDaily.getInitialState(), true);
 });
 afterEach(() => jest.useRealTimers());
 
@@ -21,12 +23,14 @@ function setStage(stageId: string, change: { unlocked?: boolean; attempts?: numb
 
 async function renderHome() {
   const onContinue = jest.fn();
+  const onDaily = jest.fn();
   const onLevels = jest.fn();
   const onPractice = jest.fn();
   const onSettings = jest.fn();
   await render(
     <HomeScreen
       onContinue={onContinue}
+      onDaily={onDaily}
       onLevels={onLevels}
       onPractice={onPractice}
       onSettings={onSettings}
@@ -34,6 +38,7 @@ async function renderHome() {
   );
   return {
     onContinue,
+    onDaily,
     onLevels,
     onPractice,
     onSettings,
@@ -77,6 +82,21 @@ describe('HomeScreen', () => {
     expect(onLevels).toHaveBeenCalledTimes(1);
     expect(onPractice).toHaveBeenCalledTimes(1);
     expect(onSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Teste do dia" abre o teste do dia', async () => {
+    const { onDaily, user } = await renderHome();
+
+    await user.press(screen.getByRole('button', { name: 'Teste do dia' }));
+
+    expect(onDaily).toHaveBeenCalledTimes(1);
+  });
+
+  it('com o teste de hoje já feito, o botão ganha um ✓', async () => {
+    useDaily.getState().startAttempt('2026-10-23');
+    await renderHome();
+
+    expect(screen.getByRole('button', { name: 'Teste do dia ✓' })).toBeOnTheScreen();
   });
 
   it('mostra a sequência de dias (jogou ontem)', async () => {

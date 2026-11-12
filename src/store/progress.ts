@@ -17,7 +17,7 @@ import {
   unlockAfterPassed,
   unlockThrough,
 } from '@/engine/progression';
-import type { Streak } from '@/engine/streak';
+import { recordPlay, type Streak } from '@/engine/streak';
 import type { Stars } from '@/engine/types';
 import type { DocumentSpec } from '@/storage/document';
 import { deviceStorage } from '@/storage/device-storage';
@@ -28,6 +28,8 @@ import { documentStorage, isBoolean, isCount, isRecord, isString, pick } from '.
 interface ProgressState extends Progress {
   /** Aplica uma rodada terminada. `today` é a data local, 'YYYY-MM-DD'. */
   recordRound: (round: FinishedRound, today: string) => void;
+  /** Conta `today` como dia jogado na sequência (teste do dia concluído). */
+  recordPlayedDay: (today: string) => void;
   /** Resultado do nivelamento: aprovado ou não em cada checkpoint, na ordem. */
   completePlacement: (results: readonly boolean[]) => void;
   /** Apagar progresso (configurações): volta ao início, como no primeiro acesso. */
@@ -97,6 +99,7 @@ export function createProgressStore(storage: KeyValueStorage = deviceStorage) {
       (set) => ({
         ...createInitialProgress(),
         recordRound: (round, today) => set((state) => applyRound(state, round, today)),
+        recordPlayedDay: (today) => set((state) => ({ streak: recordPlay(state.streak, today) })),
         completePlacement: (results) => set((state) => applyPlacement(state, results)),
         resetProgress: () => set(createInitialProgress()),
       }),

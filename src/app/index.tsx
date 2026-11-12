@@ -11,6 +11,7 @@ export default function Index() {
   return (
     <HomeScreen
       onContinue={(stageId) => router.push({ pathname: '/play/[stageId]', params: { stageId } })}
+      onDaily={() => router.push('/daily')}
       onLevels={() => router.push('/levels')}
       onPractice={() => router.push('/practice')}
       onSettings={() => router.push('/settings')}

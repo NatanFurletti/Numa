@@ -12,6 +12,7 @@ Este documento é a **especificação de comportamento** do jogo. Cada regra aqu
 | **Etapa** (`Stage`) | Subdivisão do nível (A, B, C), com tempo cada vez mais curto |
 | **Estrelas** | Nota de 0 a 3 de uma rodada |
 | **Modo** | `challenge` (desafio), `practice` (treino livre), `warmup` (aquecimento), `placement` (nivelamento) |
+| **Teste do dia** | As mesmas contas para todo mundo, uma tentativa por dia, com ranking (seção 13) |
 
 Tabela de níveis e regras de geração: [LEVELS.md](LEVELS.md).
 
@@ -155,3 +156,27 @@ Mostre **uma** frase, na ordem de prioridade:
 - **Direita → esquerda:** digitando `2`, `1`, `1`, aparece `2` → `12` → `112`. Cada dígito novo entra à esquerda. O cursor fica à **esquerda** do número.
 - **Nenhum indicador revela a quantidade de dígitos da resposta** (sem tracinhos por dígito).
 - O "apagar" sempre remove o **último dígito digitado**, qualquer que seja a direção.
+
+## 13. Teste do dia e ranking (D-031)
+
+### 13.1 O teste
+- **Todo mundo faz as mesmas contas no mesmo dia.** A seed sai da data (`dailySeed('2026-11-11')`), então o teste é gerado no aparelho, sem servidor, e funciona offline.
+- O dia é o do **horário local** do aparelho, como na sequência de dias.
+- São **10 contas** ⚙️, uma de cada nível da lista `daily.levels` ⚙️, em **dificuldade crescente**, misturando as quatro operações: soma, subtração, tabuada e divisão de 1 dígito, e depois as mesmas quatro com 2 dígitos.
+- **Sem tempo-limite e sem barra de tempo.** O tempo é medido e vale para o ranking. Sem estrelas e sem tela de correção.
+- Mesma tela da rodada (contagem 3-2-1, sem retorno de certo ou errado), com o rótulo "Teste do dia".
+
+### 13.2 Uma tentativa por dia
+- A tentativa está **usada quando a primeira conta aparece**. Sair durante a contagem não usa a tentativa.
+- **Sair no meio** (com confirmação) encerra a tentativa com as contas já respondidas. As outras contam como erradas.
+- Se o app fechar no meio do teste, a tentativa do dia fica como **interrompida**: sem resultado e sem nova chance. Sem isso, bastaria recarregar a página para ver as contas antes de valer.
+- Depois de jogar, a tela mostra o placar, o tempo, a posição no ranking e a lista das contas com as respostas.
+- O teste concluído **conta como dia jogado** na sequência. Não mexe em etapas nem estrelas, e não entra no histórico de rodadas.
+
+### 13.3 Ranking
+- **Ordem:** mais acertos primeiro. No empate, o menor tempo. Se ainda empatar, quem enviou primeiro.
+- A tela mostra os **50 primeiros** do dia e, se estiver fora deles, a posição da própria pessoa ("Você ficou em 62º de 340.").
+- O ranking pode ser visto antes de jogar: ele não mostra as contas.
+- **Apelido, sem conta:** pedido antes do primeiro teste e lembrado depois. De 2 a 16 caracteres ⚙️: letras, números, espaço, ponto, hífen e sublinhado. Uma lista curta de palavrões é recusada ⚙️. A tela avisa que o apelido aparece para todo mundo e pede para não usar o nome completo.
+- **Sem internet:** o teste funciona. O resultado fica guardado e é enviado na próxima vez que a tela do teste do dia abrir com internet, se ainda for o mesmo dia.
+- **Sem o Supabase configurado** (build sem as variáveis): o teste funciona, sem apelido e sem ranking.

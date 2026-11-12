@@ -1,4 +1,4 @@
-// Início (docs/SCREENS.md §3.2): sequência de dias, "Continuar" e atalhos.
+// Início (docs/SCREENS.md §3.2): sequência de dias, "Continuar", teste do dia e atalhos.
 
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -8,25 +8,35 @@ import { currentStreak } from '@/engine/streak';
 import { stageLabel } from '@/features/levels/names';
 import { systemClock } from '@/lib/clock';
 import { localDateString } from '@/lib/date';
+import { useDaily } from '@/store/daily';
 import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
 interface HomeScreenProps {
   onContinue: (stageId: string) => void;
+  onDaily: () => void;
   onLevels: () => void;
   onPractice: () => void;
   onSettings: () => void;
 }
 
-export function HomeScreen({ onContinue, onLevels, onPractice, onSettings }: HomeScreenProps) {
+export function HomeScreen({
+  onContinue,
+  onDaily,
+  onLevels,
+  onPractice,
+  onSettings,
+}: HomeScreenProps) {
   const { t } = useTranslation();
   const stages = useProgress((s) => s.stages);
   const streak = useProgress((s) => s.streak);
 
   const stageId = continueStageId(stages);
   const neverPlayed = Object.values(stages).every((stage) => stage.attempts === 0);
-  const days = currentStreak(streak, localDateString(systemClock.now()));
+  const today = localDateString(systemClock.now());
+  const days = currentStreak(streak, today);
+  const dailyPlayed = useDaily((s) => s.attempts[today] !== undefined);
 
   return (
     <View style={styles.container}>
@@ -42,6 +52,11 @@ export function HomeScreen({ onContinue, onLevels, onPractice, onSettings }: Hom
               stage: stageLabel(t, stageId),
             })}
             onPress={() => onContinue(stageId)}
+          />
+          <Button
+            label={t(dailyPlayed ? 'home.dailyDone' : 'home.daily')}
+            onPress={onDaily}
+            variant="secondary"
           />
           <Button label={t('home.levels')} onPress={onLevels} variant="secondary" />
           <Button label={t('home.practice')} onPress={onPractice} variant="secondary" />

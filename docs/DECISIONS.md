@@ -237,3 +237,43 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - A tabela vai de 41 para **51 níveis** (153 etapas). `rulesVersion` sobe para 3. Os checkpoints do nivelamento ganham L27, L30, L32 e L35 (o nivelamento completo passa de 10 para 14 blocos).
 - **Quem já tinha terminado a tabela antiga** (2+ estrelas no L25-C): ao carregar o progresso, a etapa seguinte à mais avançada entra liberada quando a mais avançada já foi aprovada. Sem isso, a pessoa teria que jogar o L25-C de novo para liberar o L26-A.
 - **Tempos:** estimativas iniciais, a calibrar.
+
+### D-031 · Teste do dia com ranking diário, no Supabase
+**Data:** 2026-11-11
+**Resolve:** o D-003 (backend em aberto) e adianta dois itens da Fase 3 do roadmap.
+**Contexto:** faltava um motivo para voltar todo dia além da sequência, e algo para comparar com outras pessoas.
+**Decisão:**
+- **Teste do dia:** as mesmas 10 contas para todo mundo, em dificuldade crescente, com as quatro operações. A seed sai da data local, então o teste é gerado no aparelho e funciona offline. Sem tempo-limite: o tempo é medido para o ranking.
+- **Uma tentativa por dia.** Vale desde que a primeira conta aparece. Sair no meio encerra com o que foi respondido, e fechar o app no meio deixa a tentativa como interrompida. É a forma de as contas não serem vistas antes de valer.
+- **Ranking:** mais acertos, depois menor tempo. Os 50 primeiros e a posição da própria pessoa.
+- **Backend: Supabase.** Banco, API e login prontos, com pouco código de servidor. A alternativa era Vercel Functions + Postgres, que reaproveitaria o engine no servidor com mais facilidade.
+- **Identidade: apelido, sem conta.** Cada aparelho vira um usuário anônimo do Supabase no primeiro envio. Sem e-mail e sem senha. Outro aparelho (ou dados do navegador apagados) é outro usuário.
+- **Segurança no banco:** cada usuário só insere o próprio resultado, uma vez por dia. Ninguém lê a tabela direto: a leitura passa pela função `daily_ranking`, que não devolve os ids.
+- **Camada nova `src/services/`**, atrás da interface `RankingService`. Sem as variáveis do Supabase, o app funciona sem ranking (é assim nos testes e no CI).
+- **Cliente do Supabase com o AsyncStorage** que o projeto já usa, em vez do `expo-sqlite` do guia do Expo. O guia só cobre Android e iOS, e o app é web primeiro.
+- O teste do dia não entra no `numa.history` nem altera etapas. Fica em `numa.daily`. Conta como dia jogado na sequência.
+
+**Limites conhecidos (aceitos por enquanto):**
+- **O servidor confia no placar enviado.** Quem souber usar as ferramentas do navegador consegue enviar um resultado falso. O próximo passo é uma Edge Function que refaz o teste com o `src/engine` e confere as respostas.
+- **Uma tentativa por aparelho, não por pessoa.** Apagar os dados do navegador cria outro usuário anônimo.
+- **Dia local:** o ranking de um dia junta pessoas de fusos diferentes. O banco aceita o dia do aparelho com 1 dia de folga em relação ao servidor.
+- **Versões diferentes do app no mesmo dia** podem gerar contas diferentes, se a lista de níveis do teste ou o gerador mudarem. O `rules_version` vai junto com o resultado para dar para investigar. Mudou `daily.levels` ou o gerador? Suba o `rulesVersion`.
+- **Login anônimo tem limite por IP** no Supabase (30 por hora, por padrão). Uma escola inteira na mesma rede pode esbarrar nele no primeiro uso. Ajustável no painel.
+- **Filtro de apelido simples:** formato e uma lista curta de palavrões, só no app. O banco confere só o tamanho.
+
+**Pendências antes de ir para produção:** política de privacidade cobrindo o apelido público, e decidir sobre CAPTCHA no login anônimo (recomendado pelo Supabase).
+
+### D-032 · Pontos, evolução do mascote, missões, ranking semanal e desafios: decisões de base
+**Data:** 2026-11-12
+**Contexto:** foram pensadas cinco funcionalidades de engajamento: pontos por jogar, mascote que evolui, missões diárias, ranking semanal de pontos e desafios enviados a amigos por link. Todas dependem dos pontos, e o ranking e os desafios dependem do servidor. Esta entrada fixa só o que as outras decisões precisam. Os detalhes de cada parte são decididos ao iniciar o marco dela (M8 a M13 no [ROADMAP.md](ROADMAP.md)).
+**Decisão:**
+- **O servidor é a fonte da verdade dos pontos que valem para ranking e desafios.** O app envia a rodada (seed, respostas e tempos) e o servidor refaz as contas e calcula os pontos com o mesmo `src/engine`. O app calcula os mesmos pontos na hora, com a mesma função, para mostrar sem esperar a internet.
+- **Enviar rodadas exige consentimento.** Quem não aceita joga normalmente, ganha pontos e evolui o mascote só no aparelho, e fica fora do ranking e dos desafios.
+- **Identidade: continua o usuário anônimo com apelido** (D-031). Trocar de aparelho ou apagar os dados do navegador perde pontos e mascote. A conta opcional da Fase 2 resolve isso depois, vinculando o usuário anônimo a uma conta.
+- **O mascote evolui pelos pontos totais**, e não pelo nível do jogo. Quem está travado em uma etapa continua evoluindo, e quem pula níveis no nivelamento começa do mascote inicial como todo mundo. Nível alto ainda ajuda, porque cada acerto vale mais. O mascote nunca regride.
+- **Dois números da mesma moeda:** pontos da semana (ranking) e pontos totais (mascote). Sem moeda para gastar por enquanto.
+- **Pontos vêm dos acertos, não da participação**, com travas contra repetição de propósito. É o princípio; a fórmula e os valores ficam para o M9, em `src/engine/config/`.
+- **Desafios entre amigos passam pelo servidor**, para quem desafiou ver o resultado e para o bônus de vitória ser conferido.
+- **Ordem:** a conferência das rodadas no servidor vem primeiro (M8). Ela já era pendência do D-031 para o ranking diário.
+
+**Em aberto (decidir ao iniciar cada marco):** valores da fórmula de pontos, desenho e quantidade de estágios do mascote, lista de missões, corte da semana do ranking e regras dos desafios.
