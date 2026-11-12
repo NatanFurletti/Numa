@@ -12,7 +12,8 @@
 │        ▼                                                         (localStorage) │
 │   src/i18n/  ·  src/ui/                                                         │
 └─────────────────────────────────────────────────────────────────────────────────┘
-                 Sem servidor. Hospedagem estática (Vercel/Netlify) como PWA.
+      Hospedagem estática (Vercel) como PWA. Único servidor: o ranking do teste do dia
+      (src/services ──► Supabase). Sem ele, o resto do app funciona igual.
 ```
 
 Na Fase 2, o `src/storage/` ganha uma implementação que também sincroniza com uma API. O resto do app não muda.
@@ -81,7 +82,9 @@ numa/
 │  ├─ storage/                 # Interface Storage + implementação AsyncStorage
 │  ├─ i18n/                    # index.ts, pt.ts, en.ts (D-024)
 │  ├─ ui/                      # Botões, tema (cores, fontes), layout
-│  └─ lib/                     # clock.ts (relógio injetável), id.ts
+│  ├─ services/                # Serviços externos: ranking do teste do dia (Supabase)
+│  ├─ lib/                     # clock.ts (relógio injetável), id.ts
+├─ supabase/migrations/        # SQL do banco (tabelas, políticas, funções)
 ├─ e2e/                        # Playwright
 ├─ docs/
 ├─ CLAUDE.md
@@ -93,9 +96,10 @@ numa/
 | Camada | Pode importar | Não pode importar |
 |---|---|---|
 | `src/engine` | apenas `src/engine` | React, Expo, RN, store, storage, i18n |
-| `src/store` | engine, storage | componentes, app |
-| `src/features` | engine, store, ui, i18n, lib | app |
-| `src/app` | features, ui, i18n | engine diretamente (passe pelos hooks) |
+| `src/store` | engine, storage | componentes, app, services |
+| `src/services` | apenas `src/services` | engine, store, features, app |
+| `src/features` | engine, store, services, ui, i18n, lib | app |
+| `src/app` | features, ui, i18n | engine diretamente (passe pelos hooks), services |
 
 Essas regras serão verificadas por lint (`eslint-plugin-boundaries` ou `no-restricted-imports`) na Fase 0.
 
@@ -132,9 +136,18 @@ O hook `useRound` só liga o teclado e o relógio a esse reducer. Toda a regra (
 - Um service worker (Workbox) guarda os arquivos em cache para abrir offline.
 - Todos os dados ficam no aparelho, então o app funciona 100% offline depois da primeira visita.
 
-## 7. Evolução prevista
+## 7. Serviços externos (`src/services/`)
+
+O ranking do teste do dia é a primeira parte do app que fala com um servidor (D-031).
+
+- `ranking.ts` define a interface `RankingService` (`submit`, `fetchRanking`). As telas só conhecem essa interface, e os testes passam uma implementação falsa.
+- `supabase-ranking.ts` é a implementação com o Supabase. `supabase.ts` cria o cliente **só quando alguém pede**, nunca ao importar o arquivo: na geração das páginas estáticas não há `window`.
+- Configuração por variáveis de ambiente (`.env.example`): `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Sem elas, `defaultRankingService()` devolve `null` e o app funciona sem ranking.
+- O teste do dia em si não depende do servidor: as contas saem da data, no engine.
+
+## 8. Evolução prevista
 
 | Fase | Mudança na arquitetura |
 |---|---|
 | 2 | API + Postgres. `src/storage` ganha sincronização. Configuração de regras baixada do servidor (com fallback local). Envio anônimo de rodadas para métricas |
-| 3 | Builds nativos via EAS, notificações push, ranking (validação no servidor reaproveitando `src/engine`) |
+| 3 | Builds nativos via EAS, notificações push, validação do ranking no servidor reaproveitando `src/engine` |

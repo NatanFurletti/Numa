@@ -1,5 +1,5 @@
 import { systemClock } from './clock';
-import { formatSeconds, toIsoString } from './format';
+import { formatSeconds, formatTenths, toIsoString } from './format';
 import { localDateString } from './date';
 import { newId } from './id';
 import { randomSeed } from './seed';
@@ -20,6 +20,12 @@ describe('randomSeed', () => {
 
     expect(seeds.every((s) => Number.isInteger(s) && s >= 0 && s < 2 ** 31)).toBe(true);
     expect(new Set(seeds).size).toBeGreaterThan(1);
+  });
+});
+
+describe('formatTenths', () => {
+  it('mostra os décimos de segundo', () => {
+    expect(formatTenths(52_430)).toBe('52.4s');
   });
 });
 
