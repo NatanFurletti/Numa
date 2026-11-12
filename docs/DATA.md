@@ -2,18 +2,22 @@
 
 ## 1. Fase 1: tudo no aparelho
 
-Os dados são salvos com Zustand `persist` + AsyncStorage (`localStorage` na web), em quatro chaves independentes, cada uma com `schemaVersion` para migrações.
+Os dados são salvos com Zustand `persist` + AsyncStorage (`localStorage` na web), em cinco chaves independentes, cada uma com `schemaVersion` para migrações.
 
 ### 1.1 `numa.settings`
 ```ts
 interface Settings {
-  schemaVersion: 2;                     // v1 → v2: o idioma salvo é descartado (D-024)
+  schemaVersion: 3;                     // v1 → v2: o idioma salvo é descartado (D-024)
+                                        // v2 → v3: entra `shareRounds`, como null (D-034)
   language: 'pt' | 'en';
   inputDirection: 'ltr' | 'rtl';        // esquerda→direita / direita→esquerda
   onboardingDone: boolean;
   hasSeenDirectionTip: boolean;
+  shareRounds: boolean | null;          // consentimento para enviar rodadas; null = não perguntado
 }
 ```
+- Só `shareRounds === true` deixa alguma coisa sair do aparelho. Na migração, todo mundo volta a `null`, inclusive quem já tinha apelido no ranking.
+- "Apagar progresso" não mexe nas configurações, então o consentimento fica.
 
 ### 1.2 `numa.progress`
 ```ts
@@ -95,9 +99,23 @@ interface Daily {
 ```
 - Ficam só as tentativas dos **últimos 7 dias** ⚙️.
 - "Apagar progresso" **não** apaga esta chave: a tentativa do dia continua usada.
-- A sessão anônima do Supabase fica em chaves próprias do `supabase-js`, no mesmo armazenamento.
+- A sessão anônima do Supabase fica em chaves próprias do `supabase-js`, no mesmo armazenamento. Ela só é criada no primeiro envio, ou seja, só para quem aceitou enviar.
+- `submitted` vira `true` quando o servidor aceita as respostas. O que vai é `problems` reduzido a resposta, tempo e teclas de cada conta: o placar é o servidor que calcula (§2.4).
 
-### 1.5 Migrações
+### 1.5 `numa.outbox`: fila de envio
+```ts
+interface Outbox {
+  schemaVersion: 1;
+  roundIds: string[];                   // ids de rodadas do `numa.history`, da mais antiga para a mais nova
+}
+```
+- Entram só as rodadas de **desafio** (concluídas ou abandonadas) jogadas com `shareRounds === true`.
+- Uma rodada sai da fila quando o servidor aceita, quando ele recusa de vez (não adianta tentar de novo) ou quando ela não existe mais no histórico. Sem internet ou com o servidor fora do ar, fica.
+- O envio acontece ao abrir o app, quando uma rodada termina e quando a internet volta (na web).
+- No máximo **200 rodadas** ⚙️. As mais antigas são descartadas.
+- Desligar o envio nas configurações **esvazia a fila**. "Apagar progresso" apaga o histórico, e as rodadas que estavam na fila saem dela sem ser enviadas.
+
+### 1.6 Migrações
 - Toda mudança de formato sobe o `schemaVersion` e ganha uma função de migração **testada** (`migrate(v1) → v2`).
 - Dados ilegíveis ou corrompidos não travam o app: ele volta aos padrões e registra o erro.
 
@@ -124,20 +142,42 @@ Objetivo: perguntas como "70% das pessoas de 7–9 anos fazem a L07-B com ⭐⭐
 - Novos tempos e limites são publicados como uma nova versão em `rules_configs`. O app baixa a versão e usa a local como fallback.
 - Como a regra já é configuração desde a Fase 1 (D-004, D-010), isso **não exige reescrever o engine**.
 
-### 2.4 Ranking do teste do dia (D-031)
+### 2.4 Ranking do teste do dia (D-031, D-034)
 Primeiro pedaço do backend, no Supabase. O SQL está em `supabase/migrations/`.
 ```
-daily_results (day, user_id, nickname, correct, total, elapsed_ms, rules_version, created_at)
+daily_results (day, user_id, nickname, correct, total, elapsed_ms, rules_version, verified, created_at)
               chave primária: (day, user_id)
 ```
 - **`user_id`** é um usuário **anônimo** do Supabase Auth, criado no primeiro envio de cada aparelho. Sem e-mail nem senha.
-- **Gravar:** cada usuário insere só o próprio resultado, uma vez por dia (chave primária), e só de um dia a no máximo 1 dia de distância da data do servidor (o dia do app é o do horário local). Não há update nem delete.
-- **Ler:** ninguém lê a tabela direto. A função `daily_ranking(p_day, p_limit)` devolve posição, apelido, acertos, tempo, `is_me` e o total de jogadores. Os ids dos usuários não saem do banco.
-- **O servidor confia no placar enviado.** Ele não refaz o teste. Conferir as respostas no servidor com o `src/engine` (Edge Function) é o próximo passo contra trapaça.
+- **Gravar:** o navegador **não grava** na tabela (não há política de insert). O app chama `POST /api/daily` com o token do usuário anônimo e este corpo:
+  ```
+  { day, nickname, rulesVersion, answers: [{ answer, timeMs, keystrokes }, …] }
+  ```
+  A função refaz as contas do dia com o `src/engine`, confere as respostas e grava, com a chave secreta, o placar que ela mesma calculou (`verified = true`). Uma vez por dia (chave primária): o segundo envio não muda nada.
+- **A função recusa:** token inválido (401); corpo fora do formato (400); `rulesVersion` diferente da do servidor (409); e, com 422, apelido fora das regras, dia a mais de 1 dia de distância da data do servidor (o dia do app é o do horário local) ou respostas que não passam na conferência (quantidade errada, resposta que o teclado não produz, conta respondida depois de uma sem resposta, conta respondida em menos de 250 ms ⚙️).
+- **Ler:** ninguém lê a tabela direto. A função SQL `daily_ranking(p_day, p_limit)` devolve posição, apelido, acertos, tempo, `is_me` e o total de jogadores. Os ids dos usuários não saem do banco. Ler o ranking não cria usuário anônimo.
+- Os resultados de antes do M8 não foram conferidos e ficam com `verified = false`.
 
-### 2.5 Privacidade (LGPD)
-- A conta continua **opcional**. Sem conta, os dados podem ser enviados de forma **anônima**, só com o consentimento informado.
+### 2.5 Rodadas de desafio conferidas (D-034)
+```
+round_records (id, user_id, stage_id, seed, rules_version, app_version, status, started_at,
+               elapsed_ms, time_limit_ms, correct, total, stars, input_direction, problems, created_at)
+              chave primária: id (o uuid da rodada no aparelho)
+```
+- O app chama `POST /api/rounds` para cada rodada da fila (§1.5), com:
+  ```
+  { id, stageId, seed, rulesVersion, appVersion, startedAt, inputDirection,
+    answers: [{ answer, timeMs, keystrokes }, …] }
+  ```
+- A função refaz as contas pela etapa e pela seed, confere as respostas e calcula acertos, tempo, estrelas e se a rodada foi concluída ou abandonada. `problems` (jsonb) guarda cada conta refeita, no formato do `ProblemAttempt`.
+- É **uma tabela só**, com as contas em `jsonb`, e não as duas do rascunho da §2.1: basta para os pontos (M9) e para as consultas de calibração, e a função grava tudo de uma vez.
+- Ninguém lê nem grava pelo navegador (sem políticas). Os pontos do M9 serão calculados a partir daqui.
+- Só rodadas de **desafio**. Treino livre, aquecimento e nivelamento não são enviados por enquanto.
+
+### 2.6 Privacidade (LGPD)
+- A conta continua **opcional**. Sem conta, os dados são enviados de forma **anônima**, só com o consentimento informado (`shareRounds`, §1.1). O pedido aparece ao abrir o teste do dia, e a opção fica nas Configurações (D-034).
 - Idade apenas como **faixa etária** (ex.: `7-9`, `10-12`, `13-17`, `18+`), sem data de nascimento.
 - Para menores de 12 anos, **consentimento de um responsável** antes de qualquer coleta identificável.
 - Política de privacidade publicada antes do lançamento da Fase 2.
-- **Ranking do teste do dia:** os únicos dados enviados são o apelido escolhido, o placar e o tempo, ligados a um id anônimo. O apelido é público. A tela pede para não usar o nome completo. A política de privacidade precisa cobrir isso **antes de o ranking ir para produção**.
+- **O que é enviado**, ligado a um id anônimo: do teste do dia, o apelido e a resposta e o tempo de cada conta; das rodadas de desafio, a etapa, a seed, as respostas, os tempos, as teclas, a direção da digitação, a versão do app e o horário de início. O apelido é público. A tela pede para não usar o nome completo.
+- A política de privacidade do app (`/privacy`) cobre tudo isso. Mudou o que é enviado? Atualize o texto e a data no mesmo PR (D-033).

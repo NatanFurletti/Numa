@@ -14,7 +14,7 @@
     "test:coverage": "jest --coverage",
     "e2e": "playwright test",
     "typecheck": "node scripts/generate-route-types.js && tsc --noEmit",
-    "lint": "expo lint",
+    "lint": "expo lint src api",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

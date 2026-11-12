@@ -290,3 +290,24 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Sem aceite obrigatório:** o teste do dia continua começando direto. O consentimento para enviar as rodadas de desafio fica para o M8, quando a política ganha a parte sobre essas rodadas.
 
 **Regra:** mudou o que vai para o servidor? Atualize o texto da política e a data no topo, no mesmo PR.
+
+### D-034 · Rodadas conferidas no servidor (Vercel Function) e consentimento para enviar (M8)
+**Data:** 2026-11-12
+**Resolve:** o limite "o servidor confia no placar enviado" do D-031 e os três itens de "Decidir ao iniciar" do M8.
+**Contexto:** o ranking aceitava qualquer placar gravado direto no banco pelo navegador. E o D-032 pede que o servidor refaça as rodadas com o mesmo `src/engine` antes de os pontos existirem.
+**Decisão:**
+- **A conferência roda em Vercel Functions** (`api/`), e não em Edge Functions do Supabase. A função importa o `src/engine` direto e é publicada junto com o app a cada push, então produção, homologação e cada preview usam o engine do mesmo commit do app. A Edge Function roda em Deno, pediria adaptar ou empacotar o engine (imports sem extensão) e teria um deploy separado. Custo aceito: a chave secreta do Supabase fica nas variáveis da Vercel (`SUPABASE_SECRET_KEY`).
+- **O app envia respostas e tempos, nunca o placar.** O servidor refaz as contas (pela data, no teste do dia; pela etapa e seed, no desafio), confere cada resposta e calcula acertos, tempo e estrelas. O tempo total é a soma dos tempos por conta.
+- **O navegador não grava mais no banco.** A política de insert da `daily_results` sai. Só a função grava, com a chave secreta, depois de identificar o usuário anônimo pelo token dele.
+- **O que o servidor recusa:** dia a mais de 1 dia de distância da data do servidor; `rulesVersion` diferente da do servidor; quantidade de respostas errada; resposta fora do teclado (não inteira, negativa ou com mais de 4 dígitos); conta respondida depois de uma sem resposta; conta respondida em menos de 250 ms ⚙️; apelido fora das regras (as mesmas do app, agora também no servidor).
+- **Consentimento pedido ao abrir o teste do dia**, antes do apelido, e não nas boas-vindas. Um aceite só vale para o teste do dia e para as rodadas de desafio. Quem nunca abre o teste do dia não é perguntado e não envia nada. A opção fica nas Configurações (seção "Privacidade").
+- **Quem recusa** joga tudo normalmente, inclusive o teste do dia, e vê o ranking. Não tem apelido, não entra no ranking e nenhum usuário anônimo é criado para o aparelho.
+- **Quem já tinha apelido** vê o pedido na próxima vez que abrir o teste do dia. Até aceitar, nada novo é enviado. Os resultados antigos continuam nos rankings dos dias passados.
+- **Desligar nas Configurações** para os envios e esvazia a fila. O que já foi enviado continua no servidor até a pessoa pedir para apagar (política de privacidade).
+- **Rodadas de desafio:** concluídas e abandonadas, só as jogadas com o consentimento ligado. Ficam numa fila no aparelho (`numa.outbox`) e saem quando há internet. O envio é idempotente pelo `id` da rodada. Treino livre, aquecimento e nivelamento não são enviados por enquanto.
+- **Camada nova `src/server/`**: a lógica das funções, em TypeScript sem React nem Expo, testada no Jest com um banco falso. Os arquivos de `api/` só ligam a requisição a essa lógica.
+
+**Limites conhecidos (aceitos por enquanto):**
+- **Quem calcula as respostas com um programa** e envia tempos plausíveis ainda passa. O servidor não mede o tempo: o teste do dia funciona offline, então o tempo vem do aparelho. O piso de 250 ms por conta só barra o absurdo.
+- **App antigo em cache** (PWA) com `rulesVersion` diferente tem o envio recusado até atualizar. O resultado do dia fica só no aparelho.
+- **Resultados antigos não conferidos** continuam na tabela, marcados com `verified = false`.

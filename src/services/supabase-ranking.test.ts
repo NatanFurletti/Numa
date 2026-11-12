@@ -1,82 +1,47 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import type { ApiClient } from './api';
 import { createSupabaseRanking } from './supabase-ranking';
 
 const SUBMISSION = {
   day: '2026-11-11',
   nickname: 'Zé',
-  correct: 9,
-  total: 10,
-  elapsedMs: 41_500,
   rulesVersion: 3,
+  answers: [{ answer: 5, timeMs: 2000, keystrokes: 1 }],
 };
 
-function fakeClient(options: {
-  session?: object | null;
-  signInError?: Error | null;
-  insertError?: { code: string } | null;
-  rpc?: { data: unknown; error: Error | null };
-}) {
-  const insert = jest.fn(async () => ({ error: options.insertError ?? null }));
-  const signInAnonymously = jest.fn(async () => ({ error: options.signInError ?? null }));
+const fakeApi = (status = 200): ApiClient => ({ post: jest.fn(async () => status) });
+
+function fakeClient(options: { rpc?: { data: unknown; error: Error | null } }) {
   const rpc = jest.fn(async () => options.rpc ?? { data: [], error: null });
-  const from = jest.fn(() => ({ insert }));
-  const client = {
-    auth: {
-      getSession: jest.fn(async () => ({ data: { session: options.session ?? null } })),
-      signInAnonymously,
-    },
-    from,
-    rpc,
-  };
-  return { client: client as unknown as SupabaseClient, insert, signInAnonymously, rpc, from };
+  const from = jest.fn();
+  return { client: { rpc, from } as unknown as SupabaseClient, rpc, from };
 }
 
 describe('createSupabaseRanking.submit', () => {
-  it('sem sessão, entra como anônimo e grava o resultado', async () => {
-    const { client, insert, signInAnonymously, from } = fakeClient({});
+  it('envia as respostas para a função do servidor, e não grava no banco direto', async () => {
+    const { client, from } = fakeClient({});
+    const api = fakeApi();
 
-    await createSupabaseRanking(client).submit(SUBMISSION);
+    await createSupabaseRanking(client, api).submit(SUBMISSION);
 
-    expect(signInAnonymously).toHaveBeenCalledTimes(1);
-    expect(from).toHaveBeenCalledWith('daily_results');
-    expect(insert).toHaveBeenCalledWith({
-      day: '2026-11-11',
-      nickname: 'Zé',
-      correct: 9,
-      total: 10,
-      elapsed_ms: 41_500,
-      rules_version: 3,
-    });
+    expect(api.post).toHaveBeenCalledWith('/api/daily', SUBMISSION);
+    expect(from).not.toHaveBeenCalled();
   });
 
-  it('com sessão, não entra de novo', async () => {
-    const { client, signInAnonymously } = fakeClient({ session: {} });
+  it.each([401, 409, 422, 500])('servidor não aceitou (%p): erro', async (status) => {
+    const { client } = fakeClient({});
 
-    await createSupabaseRanking(client).submit(SUBMISSION);
-
-    expect(signInAnonymously).not.toHaveBeenCalled();
+    await expect(createSupabaseRanking(client, fakeApi(status)).submit(SUBMISSION)).rejects.toThrow(
+      String(status),
+    );
   });
 
-  it('resultado do dia já enviado (chave repetida) conta como enviado', async () => {
-    const { client } = fakeClient({ session: {}, insertError: { code: '23505' } });
+  it('sem internet: o erro é repassado', async () => {
+    const { client } = fakeClient({});
+    const api: ApiClient = { post: jest.fn().mockRejectedValue(new Error('sem rede')) };
 
-    await expect(createSupabaseRanking(client).submit(SUBMISSION)).resolves.toBeUndefined();
-  });
-
-  it('outros erros do banco são repassados', async () => {
-    const { client } = fakeClient({ session: {}, insertError: { code: '42501' } });
-
-    await expect(createSupabaseRanking(client).submit(SUBMISSION)).rejects.toEqual({
-      code: '42501',
-    });
-  });
-
-  it('falha ao entrar como anônimo é repassada, sem gravar', async () => {
-    const { client, insert } = fakeClient({ signInError: new Error('sem rede') });
-
-    await expect(createSupabaseRanking(client).submit(SUBMISSION)).rejects.toThrow('sem rede');
-    expect(insert).not.toHaveBeenCalled();
+    await expect(createSupabaseRanking(client, api).submit(SUBMISSION)).rejects.toThrow('sem rede');
   });
 });
 
@@ -93,7 +58,7 @@ describe('createSupabaseRanking.fetchRanking', () => {
       },
     });
 
-    const ranking = await createSupabaseRanking(client).fetchRanking('2026-11-11');
+    const ranking = await createSupabaseRanking(client, fakeApi()).fetchRanking('2026-11-11');
 
     expect(rpc).toHaveBeenCalledWith('daily_ranking', { p_day: '2026-11-11' });
     expect(ranking).toEqual({
@@ -108,7 +73,9 @@ describe('createSupabaseRanking.fetchRanking', () => {
   it('ninguém jogou ainda: ranking vazio', async () => {
     const { client } = fakeClient({ rpc: { data: null, error: null } });
 
-    await expect(createSupabaseRanking(client).fetchRanking('2026-11-11')).resolves.toEqual({
+    await expect(
+      createSupabaseRanking(client, fakeApi()).fetchRanking('2026-11-11'),
+    ).resolves.toEqual({
       entries: [],
       totalPlayers: 0,
     });
@@ -117,8 +84,8 @@ describe('createSupabaseRanking.fetchRanking', () => {
   it('erro na consulta é repassado', async () => {
     const { client } = fakeClient({ rpc: { data: null, error: new Error('fora do ar') } });
 
-    await expect(createSupabaseRanking(client).fetchRanking('2026-11-11')).rejects.toThrow(
-      'fora do ar',
-    );
+    await expect(
+      createSupabaseRanking(client, fakeApi()).fetchRanking('2026-11-11'),
+    ).rejects.toThrow('fora do ar');
   });
 });

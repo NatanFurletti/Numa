@@ -27,7 +27,7 @@ npm test                 # todos os testes
 npm run test:watch       # modo watch (use durante o TDD)
 npm run test:coverage    # testes com cobertura (o CI usa este)
 npm run typecheck        # tsc --noEmit
-npm run lint             # ESLint, incluindo as fronteiras entre camadas
+npm run lint             # ESLint em src/ e api/, incluindo as fronteiras entre camadas
 npm run format           # Prettier
 npm run build:web        # site estático em dist/, com o service worker do PWA
 npm run e2e              # testes E2E (Playwright) sobre o dist/; rode o build:web antes
@@ -54,5 +54,7 @@ Branches de trabalho saem de `homolog`, e os PRs apontam para `homolog`, nunca d
 - Números ajustáveis (tempos, limites de estrelas, etc.) ficam em `src/engine/config/`, nunca espalhados no código.
 - Textos de interface sempre pelo i18n: chave nova em `src/i18n/pt.ts` e `en.ts` (o typecheck acusa se faltar em um dos dois). Nada de texto fixo nas telas.
 - **Serviços externos em `src/services/`**, atrás de uma interface (ex.: `RankingService`). As telas recebem o serviço por prop, e os testes passam um falso. Nada de chamar o Supabase direto de uma tela.
-- Variáveis do Supabase em `.env.local` (modelo em `.env.example`). Sem elas o app roda sem ranking. O SQL do banco fica em `supabase/migrations/`.
+- **Servidor em `api/` (Vercel Functions) e `src/server/`** (D-034). O servidor refaz as rodadas com o mesmo `src/engine` e grava o placar que ele calcula: o app nunca envia placar. `api/` e `src/server/` só usam imports relativos e só importam `src/engine` e `src/server`.
+- **Nada sai do aparelho sem consentimento** (`shareRounds === true` em `numa.settings`). Mudou o que é enviado? Atualize a política de privacidade no mesmo PR (D-033).
+- Variáveis do Supabase em `.env.local` (modelo em `.env.example`). Sem elas o app roda sem ranking. A chave secreta (`SUPABASE_SECRET_KEY`) fica só nas variáveis da Vercel. O SQL do banco fica em `supabase/migrations/`.
 - Teste ao lado do arquivo (`scoring.ts` → `scoring.test.ts`). Sem snapshots de componentes inteiros.

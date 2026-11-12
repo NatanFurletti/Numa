@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { GAME_CONFIG } from '@/engine/config/game-config';
+import { toSubmittedAnswers } from '@/engine/verify';
+import { isSharing } from '@/features/sync/outbox';
 import type { DailyRanking, RankingService } from '@/services/ranking';
 import { useDaily } from '@/store/daily';
+import { useSettings } from '@/store/settings';
 
 export type RankingState =
   /** Build sem o Supabase configurado. */
@@ -13,20 +16,21 @@ export type RankingState =
   | { status: 'error' }
   | { status: 'ready'; ranking: DailyRanking };
 
-/** Envia o resultado do dia, se houver um ainda não enviado. Falhar aqui não impede ver o ranking. */
+/**
+ * Envia o teste do dia, se houver um ainda não enviado e a pessoa aceitou enviar (D-034).
+ * Vão as respostas e os tempos; o placar é o servidor que calcula.
+ * Falhar aqui não impede ver o ranking.
+ */
 async function submitPending(day: string, service: RankingService): Promise<void> {
   const { attempts, nickname, markSubmitted } = useDaily.getState();
   const attempt = attempts[day];
-  if (attempt?.status !== 'done' || attempt.submitted || !nickname) return;
+  if (attempt?.status !== 'done' || attempt.submitted || !nickname || !isSharing()) return;
   try {
     await service.submit({
       day,
       nickname,
-      correct: attempt.correct,
-      total: attempt.total,
-      // O banco recusa tempo 0 (sair no instante em que a 1ª conta aparece).
-      elapsedMs: Math.max(1, attempt.elapsedMs),
       rulesVersion: GAME_CONFIG.rulesVersion,
+      answers: toSubmittedAnswers(attempt.problems),
     });
     markSubmitted(day);
   } catch {
@@ -41,6 +45,9 @@ export function useDailyRanking(day: string, service: RankingService | null) {
   const [request, setRequest] = useState(0);
   // Terminar o teste com esta tela aberta (por baixo da rodada) envia o resultado e atualiza a lista.
   const done = useDaily((s) => s.attempts[day]?.status === 'done');
+  // Aceitar o envio ou escolher o apelido depois de jogar também envia o que estava esperando.
+  const canSubmit = useSettings((s) => s.shareRounds === true);
+  const hasNickname = useDaily((s) => s.nickname !== null);
 
   useEffect(() => {
     if (!service) return;
@@ -59,7 +66,7 @@ export function useDailyRanking(day: string, service: RankingService | null) {
     return () => {
       cancelled = true;
     };
-  }, [day, service, request, done]);
+  }, [day, service, request, done, canSubmit, hasNickname]);
 
   const reload = useCallback(() => {
     setState({ status: 'loading' });

@@ -1,4 +1,4 @@
-// Persistência dos três stores (docs/DATA.md §1): grava no formato do DATA, lê de volta,
+// Persistência dos stores (docs/DATA.md §1): grava no formato do DATA, lê de volta,
 // e volta aos padrões quando o dado está ilegível.
 
 import { getLocales } from 'expo-localization';
@@ -35,11 +35,12 @@ describe('numa.settings', () => {
     await flush();
 
     expect(JSON.parse(storage.dump()[SETTINGS_KEY])).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       language: 'pt',
       inputDirection: 'rtl',
       onboardingDone: false,
       hasSeenDirectionTip: true,
+      shareRounds: null,
     });
 
     const second = createSettingsStore(storage);
@@ -83,6 +84,41 @@ describe('numa.settings', () => {
       inputDirection: 'rtl',
       hasSeenDirectionTip: true,
     });
+  });
+
+  it('migra da v2 (antes do M8): ninguém tinha sido perguntado sobre o envio de rodadas', async () => {
+    // Fixture real gravada antes do M8, de quem já tinha apelido no ranking.
+    const fixture =
+      '{"schemaVersion":2,"language":"en","inputDirection":"rtl","onboardingDone":true,"hasSeenDirectionTip":true}';
+    const storage = memoryStorage({ [SETTINGS_KEY]: fixture });
+    const store = createSettingsStore(storage);
+    await store.persist.rehydrate();
+
+    expect(store.getState()).toMatchObject({
+      language: 'en',
+      inputDirection: 'rtl',
+      onboardingDone: true,
+      hasSeenDirectionTip: true,
+      shareRounds: null,
+    });
+  });
+
+  it('a resposta sobre o envio de rodadas fica salva; valor estragado volta a "não perguntado"', async () => {
+    const storage = memoryStorage();
+    const first = createSettingsStore(storage);
+    await first.persist.rehydrate();
+    first.getState().setShareRounds(false);
+    await flush();
+
+    const second = createSettingsStore(storage);
+    await second.persist.rehydrate();
+    expect(second.getState().shareRounds).toBe(false);
+
+    const broken = createSettingsStore(
+      memoryStorage({ [SETTINGS_KEY]: JSON.stringify({ schemaVersion: 3, shareRounds: 'sim' }) }),
+    );
+    await broken.persist.rehydrate();
+    expect(broken.getState().shareRounds).toBeNull();
   });
 
   it('o idioma escolhido fica salvo', async () => {

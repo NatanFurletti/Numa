@@ -54,6 +54,19 @@ export interface GameConfig {
       blockedWords: string[];
     };
   };
+  /** Conferência das rodadas no servidor (D-034). */
+  verification: {
+    /** Tempo mínimo de uma conta respondida. Abaixo disso, a rodada enviada é recusada. */
+    minAnswerTimeMs: number;
+    /** Tempo máximo de uma conta (o teste do dia não tem limite, mas o envio tem). */
+    maxProblemTimeMs: number;
+    /** Máximo de teclas contadas em uma conta. */
+    maxKeystrokes: number;
+  };
+  sync: {
+    /** Rodadas esperando envio guardadas no aparelho. As mais antigas são descartadas. */
+    maxPendingRounds: number;
+  };
 }
 
 export const GAME_CONFIG: GameConfig = {
@@ -102,5 +115,13 @@ export const GAME_CONFIG: GameConfig = {
         'fuck', 'shit', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'nigga', 'fag',
       ],
     },
+  },
+  verification: {
+    minAnswerTimeMs: 250,
+    maxProblemTimeMs: 24 * 60 * 60 * 1000,
+    maxKeystrokes: 1000,
+  },
+  sync: {
+    maxPendingRounds: 200,
   },
 };

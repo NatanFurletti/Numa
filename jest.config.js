@@ -17,6 +17,8 @@ const thresholds = [
   },
   { glob: './src/features/**/*.tsx', dir: 'src/features', match: /\.tsx$/, min: 80 },
   { glob: './src/ui/**/*.tsx', dir: 'src/ui', match: /\.tsx$/, min: 80 },
+  // Servidor (D-034): é o que barra placar falso, então o alvo é o do engine.
+  { glob: './src/server/**/*.ts', dir: 'src/server', match: /\.ts$/, min: 95 },
 ];
 
 function hasSourceFile(dir, match) {
