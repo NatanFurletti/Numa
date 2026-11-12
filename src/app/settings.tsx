@@ -7,6 +7,7 @@ export default function Settings() {
     <SettingsScreen
       onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       onRedoPlacement={() => router.push('/placement')}
+      onOpenPrivacy={() => router.push('/privacy')}
     />
   );
 }

@@ -16,8 +16,15 @@ beforeEach(() => {
 async function renderSettings() {
   const onBack = jest.fn();
   const onRedoPlacement = jest.fn();
-  await render(<SettingsScreen onBack={onBack} onRedoPlacement={onRedoPlacement} />);
-  return { onBack, onRedoPlacement, user: userEvent.setup() };
+  const onOpenPrivacy = jest.fn();
+  await render(
+    <SettingsScreen
+      onBack={onBack}
+      onRedoPlacement={onRedoPlacement}
+      onOpenPrivacy={onOpenPrivacy}
+    />,
+  );
+  return { onBack, onRedoPlacement, onOpenPrivacy, user: userEvent.setup() };
 }
 
 describe('SettingsScreen', () => {
@@ -86,6 +93,14 @@ describe('SettingsScreen', () => {
     await user.press(screen.getByRole('button', { name: 'Refazer nivelamento' }));
 
     expect(onRedoPlacement).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Política de privacidade" abre a política', async () => {
+    const { onOpenPrivacy, user } = await renderSettings();
+
+    await user.press(screen.getByRole('button', { name: 'Política de privacidade' }));
+
+    expect(onOpenPrivacy).toHaveBeenCalledTimes(1);
   });
 
   it('o botão de voltar leva ao início', async () => {

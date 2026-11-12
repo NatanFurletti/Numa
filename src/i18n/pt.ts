@@ -182,6 +182,7 @@ export const pt = {
     rule: 'No ranking, vale quem acerta mais. No empate, o menor tempo.',
     nicknameLabel: 'Seu apelido no ranking',
     nicknameHint: 'Aparece para todo mundo. Não use seu nome completo.',
+    privacyLink: 'Política de privacidade',
     nicknameErrors: {
       tooShort: 'Use pelo menos 2 caracteres.',
       tooLong: 'Use no máximo 16 caracteres.',
@@ -234,6 +235,44 @@ export const pt = {
     eraseConfirmMessage: 'Isso não pode ser desfeito.',
     eraseConfirm: 'Apagar tudo',
     erased: 'Progresso apagado.',
+    privacySection: 'Privacidade',
+    privacy: 'Política de privacidade',
+  },
+  privacy: {
+    title: 'Política de privacidade',
+    updated: 'Atualizada em 12 de novembro de 2026.',
+    intro:
+      'O Numa foi feito para guardar o mínimo possível sobre você. Não pedimos nome, e-mail, idade nem cadastro.',
+    sections: {
+      device: {
+        title: 'O que fica só no seu aparelho',
+        body: 'Seu progresso, estrelas, sequência de dias, histórico de rodadas, idioma e preferências ficam guardados no próprio aparelho (no navegador, quando você joga pela web). Nada disso é enviado para nós.\n\n"Apagar progresso", nas Configurações, apaga esses dados. Apagar os dados do navegador também.',
+      },
+      server: {
+        title: 'O que vai para o servidor: só o teste do dia',
+        body: 'Quando você faz o teste do dia, enviamos o apelido que você escolheu, quantas contas acertou, o tempo e o dia. Para saber que o resultado é seu, o aparelho recebe um código aleatório, sem nenhum dado seu.\n\nO apelido, os acertos, o tempo e a posição aparecem no ranking para qualquer pessoa. O código aleatório não aparece. Por isso, não use seu nome completo no apelido.',
+      },
+      providers: {
+        title: 'Quem guarda esses dados',
+        body: 'Os resultados do teste do dia ficam no Supabase, e o site fica na Vercel. Os servidores deles podem ficar fora do Brasil. Como todo site, a Vercel registra dados técnicos de acesso (como o endereço IP) por segurança.\n\nO Numa não tem anúncios, não usa ferramentas de rastreamento e não vende nem compartilha dados.',
+      },
+      keep: {
+        title: 'Por quanto tempo',
+        body: 'Os resultados do teste do dia ficam guardados para mostrar os rankings, até você pedir para apagar.',
+      },
+      rights: {
+        title: 'Seus direitos',
+        body: 'Pela LGPD, você pode pedir para ver, corrigir ou apagar seus resultados do teste do dia. Escreva para {{email}} informando o apelido e os dias em que jogou.',
+      },
+      kids: {
+        title: 'Crianças',
+        body: 'O Numa serve para todas as idades e não pede dados pessoais. Crianças devem escolher o apelido com a ajuda de um adulto, sem usar o nome verdadeiro.',
+      },
+      changes: {
+        title: 'Mudanças',
+        body: 'Se esta política mudar, a data no topo é atualizada. Mudanças importantes também são avisadas no app.',
+      },
+    },
   },
 };
 

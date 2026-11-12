@@ -98,6 +98,12 @@ Regras em [GAME_RULES.md §13](GAME_RULES.md). Uma tela só, que muda conforme a
 - **Teste interrompido:** aviso de que a tentativa de hoje acabou, e o ranking.
 - Ranking: posição, apelido, acertos e tempo com décimos (`41.5s`). Estados: carregando, erro com "Tentar de novo", vazio e indisponível.
 - A rodada do teste (`/daily-play`) é a tela da rodada, sem barra de tempo, com o rótulo "Teste do dia".
+- Embaixo do aviso do apelido, um link para a **Política de privacidade**.
+
+### 3.11 Política de privacidade
+- Texto corrido, em seções: o que fica no aparelho, o que vai para o servidor (só o teste do dia), quem guarda, por quanto tempo, direitos, crianças e mudanças. Data da última atualização no topo.
+- Abre pelas Configurações (seção "Privacidade") e pelo link junto do apelido no teste do dia.
+- O e-mail de contato fica em `src/features/privacy/contact.ts`. Mudou o que é enviado ao servidor? Atualize o texto e a data (D-033).
 
 ## 4. Rotas (Expo Router)
 
@@ -114,3 +120,4 @@ Regras em [GAME_RULES.md §13](GAME_RULES.md). Uma tela só, que muda conforme a
 | `/settings` | Configurações |
 | `/daily` | Teste do dia: entrada, resultado e ranking |
 | `/daily-play` | Rodada do teste do dia |
+| `/privacy` | Política de privacidade |

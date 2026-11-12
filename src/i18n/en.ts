@@ -183,6 +183,7 @@ export const en: Translation = {
     rule: 'In the ranking, more correct answers win. On a tie, the shortest time.',
     nicknameLabel: 'Your nickname in the ranking',
     nicknameHint: "Everyone can see it. Don't use your full name.",
+    privacyLink: 'Privacy policy',
     nicknameErrors: {
       tooShort: 'Use at least 2 characters.',
       tooLong: 'Use at most 16 characters.',
@@ -235,5 +236,43 @@ export const en: Translation = {
     eraseConfirmMessage: 'This cannot be undone.',
     eraseConfirm: 'Erase everything',
     erased: 'Progress erased.',
+    privacySection: 'Privacy',
+    privacy: 'Privacy policy',
+  },
+  privacy: {
+    title: 'Privacy policy',
+    updated: 'Updated on November 12, 2026.',
+    intro:
+      "Numa is built to keep as little about you as possible. We don't ask for your name, email, age or any sign-up.",
+    sections: {
+      device: {
+        title: 'What stays only on your device',
+        body: 'Your progress, stars, day streak, round history, language and preferences are stored on your own device (in the browser, when you play on the web). None of it is sent to us.\n\n"Erase progress", in Settings, deletes this data. So does clearing your browser data.',
+      },
+      server: {
+        title: 'What goes to the server: only the daily test',
+        body: 'When you take the daily test, we send the nickname you chose, how many problems you got right, your time and the day. So we know the result is yours, your device gets a random code that contains nothing about you.\n\nThe nickname, correct answers, time and position appear in the ranking for anyone to see. The random code does not. That is why you should not use your full name as your nickname.',
+      },
+      providers: {
+        title: 'Who stores this data',
+        body: 'Daily test results are stored on Supabase, and the website is hosted on Vercel. Their servers may be outside your country. Like any website, Vercel logs technical access data (such as the IP address) for security.\n\nNuma has no ads, uses no tracking tools, and does not sell or share data.',
+      },
+      keep: {
+        title: 'How long',
+        body: 'Daily test results are kept to show the rankings, until you ask us to delete them.',
+      },
+      rights: {
+        title: 'Your rights',
+        body: 'You can ask to see, correct or delete your daily test results. Write to {{email}} with your nickname and the days you played.',
+      },
+      kids: {
+        title: 'Children',
+        body: 'Numa is for all ages and does not ask for personal data. Children should choose their nickname with help from an adult, without using their real name.',
+      },
+      changes: {
+        title: 'Changes',
+        body: 'If this policy changes, the date at the top is updated. Important changes are also announced in the app.',
+      },
+    },
   },
 };
