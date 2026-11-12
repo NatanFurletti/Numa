@@ -290,3 +290,42 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Sem aceite obrigatório:** o teste do dia continua começando direto. O consentimento para enviar as rodadas de desafio fica para o M8, quando a política ganha a parte sobre essas rodadas.
 
 **Regra:** mudou o que vai para o servidor? Atualize o texto da política e a data no topo, no mesmo PR.
+
+### D-034 · Rodadas conferidas no servidor (Vercel Function) e consentimento para enviar (M8)
+**Data:** 2026-11-12
+**Resolve:** o limite "o servidor confia no placar enviado" do D-031 e os três itens de "Decidir ao iniciar" do M8.
+**Contexto:** o ranking aceitava qualquer placar gravado direto no banco pelo navegador. E o D-032 pede que o servidor refaça as rodadas com o mesmo `src/engine` antes de os pontos existirem.
+**Decisão:**
+- **A conferência roda em Vercel Functions** (`api/`), e não em Edge Functions do Supabase. A função importa o `src/engine` direto e é publicada junto com o app a cada push, então produção, homologação e cada preview usam o engine do mesmo commit do app. A Edge Function roda em Deno, pediria adaptar ou empacotar o engine (imports sem extensão) e teria um deploy separado. Custo aceito: a chave secreta do Supabase fica nas variáveis da Vercel (`SUPABASE_SECRET_KEY`).
+- **O app envia respostas e tempos, nunca o placar.** O servidor refaz as contas (pela data, no teste do dia; pela etapa e seed, no desafio), confere cada resposta e calcula acertos, tempo e estrelas. O tempo total é a soma dos tempos por conta.
+- **O navegador não grava mais no banco.** A política de insert da `daily_results` sai. Só a função grava, com a chave secreta, depois de identificar o usuário anônimo pelo token dele.
+- **O que o servidor recusa:** dia a mais de 1 dia de distância da data do servidor; `rulesVersion` diferente da do servidor; quantidade de respostas errada; resposta fora do teclado (não inteira, negativa ou com mais de 4 dígitos); conta respondida depois de uma sem resposta; conta respondida em menos de 250 ms ⚙️; apelido fora das regras (as mesmas do app, agora também no servidor).
+- **Consentimento pedido ao abrir o teste do dia**, antes do apelido, e não nas boas-vindas. Um aceite só vale para o teste do dia e para as rodadas de desafio. Quem nunca abre o teste do dia não é perguntado e não envia nada. A opção fica nas Configurações (seção "Privacidade").
+- **Quem recusa** joga tudo normalmente, inclusive o teste do dia, e vê o ranking. Não tem apelido, não entra no ranking e nenhum usuário anônimo é criado para o aparelho.
+- **Quem já tinha apelido** vê o pedido na próxima vez que abrir o teste do dia. Até aceitar, nada novo é enviado. Os resultados antigos continuam nos rankings dos dias passados.
+- **Desligar nas Configurações** para os envios e esvazia a fila. O que já foi enviado continua no servidor até a pessoa pedir para apagar (política de privacidade).
+- **Rodadas de desafio:** concluídas e abandonadas, só as jogadas com o consentimento ligado. Ficam numa fila no aparelho (`numa.outbox`) e saem quando há internet. O envio é idempotente pelo `id` da rodada. Treino livre, aquecimento e nivelamento não são enviados por enquanto.
+- **Camada nova `src/server/`**: a lógica das funções, em TypeScript sem React nem Expo, testada no Jest com um banco falso. Os arquivos de `api/` só ligam a requisição a essa lógica.
+
+**Limites conhecidos (aceitos por enquanto):**
+- **Quem calcula as respostas com um programa** e envia tempos plausíveis ainda passa. O servidor não mede o tempo: o teste do dia funciona offline, então o tempo vem do aparelho. O piso de 250 ms por conta só barra o absurdo.
+- **App antigo em cache** (PWA) com `rulesVersion` diferente tem o envio recusado até atualizar. O resultado do dia fica só no aparelho.
+- **Resultados antigos não conferidos** continuam na tabela, marcados com `verified = false`.
+
+### D-035 · Pontos: peso por faixa, bônus por estrelas novas, travas por dia (M9)
+**Data:** 2026-11-12
+**Resolve:** os itens de "Decidir ao iniciar" do M9 e a fórmula deixada em aberto no D-032.
+**Contexto:** os pontos movem o mascote (M10), as missões (M11) e o ranking semanal (M12). O servidor recalcula os pontos de cada rodada que recebe (D-032), então a fórmula só pode usar o que ele também tem: a rodada e as rodadas anteriores da mesma pessoa.
+**Decisão:**
+- **Acertos × peso da faixa do nível.** O peso é fixo por faixa, e não pela posição na tabela, porque a tabuada (L26–L30) vem depois dos 3 dígitos e é mais fácil: 1 dígito (L01–L05) = 1; 2d ± 1d (L06–L10) = 2; 2d ± 2d (L11–L15) = 3; 3d ± 2d (L16–L20) = 4; 3d ± 3d (L21–L25) = 5; tabuada e divisão de 1 dígito (L26–L30) = 2; 2d × 1d e divisão de 2 dígitos (L31–L35) = 4 ⚙️. A versão armada tem o peso da versão na linha.
+- **Bônus por estrela nova:** 5 × peso por estrela acima da melhor nota anterior da etapa ⚙️. Repetir uma etapa com a mesma nota não rende bônus.
+- **Bônus de etapa nova:** 10 × peso na primeira vez que a pessoa passa da etapa (⭐⭐ ou mais) ⚙️. As etapas liberadas pelo nivelamento ainda não foram passadas e rendem o bônus.
+- **Travas:** os acertos só rendem nas **3 primeiras rodadas de desafio concluídas** de cada etapa, por dia (horário local) ⚙️. Rodada com menos de **50%** de acerto não rende acertos ⚙️ (e não tem estrelas). Os bônus continuam valendo depois da trava: eles só saem uma vez por etapa.
+- **Modos:** só o desafio concluído e o teste do dia rendem. O teste do dia vale **acertos × 3** ⚙️, uma vez por dia, inclusive quando a pessoa sai no meio (as contas respondidas). Treino livre, aquecimento, nivelamento e rodadas abandonadas não rendem: o servidor não recebe essas rodadas, e o total dele precisa bater com o do aparelho.
+- **Sem pontos retroativos:** todo mundo começa do zero quando o M9 chega. O servidor nunca recebeu as rodadas antigas.
+- **No aparelho:** os pontos de cada rodada são calculados ao gravar a rodada e somados uma vez só (`numa.points`, pelo id da rodada). A melhor nota anterior vem do progresso; as rodadas do dia, do histórico.
+- **Pontos da semana:** o aparelho guarda os pontos de cada dia (últimos 14 dias ⚙️). O corte da semana fica para o M12.
+- **"Apagar progresso" zera os pontos**, junto com o histórico.
+- **`rulesVersion` sobe para 4:** os valores dos pontos fazem parte das regras que o servidor usa para recalcular. Nada sai do aparelho por causa dos pontos, então a política de privacidade não muda.
+
+**Pendente para o item do servidor (depois da homologação do M8):** a trava "por dia" usa o dia local do aparelho, que o servidor não sabe. O envio da rodada vai precisar levar o dia local, como o teste do dia já leva. Quem já jogava antes de aceitar enviar terá no aparelho mais pontos que no servidor, que só conhece as rodadas enviadas.

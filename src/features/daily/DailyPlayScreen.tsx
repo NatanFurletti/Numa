@@ -6,12 +6,14 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { setupDailyTest } from '@/engine/daily';
+import { dailyPoints } from '@/engine/points';
 import type { KeyTarget } from '@/features/keypad/usePhysicalKeyboard';
 import { RoundBoard } from '@/features/round/RoundBoard';
 import { type RoundEnd, useRound } from '@/features/round/useRound';
 import { systemClock } from '@/lib/clock';
 import { localDateString } from '@/lib/date';
 import { useDaily } from '@/store/daily';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 import { Button } from '@/ui/Button';
@@ -54,6 +56,7 @@ function DailyRound({
   const startAttempt = useDaily((s) => s.startAttempt);
   const finishAttempt = useDaily((s) => s.finishAttempt);
   const recordPlayedDay = useProgress((s) => s.recordPlayedDay);
+  const award = usePoints((s) => s.award);
 
   const handleEnd = (end: RoundEnd) => {
     if (end.startedAt === null) {
@@ -62,6 +65,8 @@ function DailyRound({
     }
     const { correct, total, elapsedMs, problems } = end.summary;
     finishAttempt(day, { correct, total, elapsedMs, problems });
+    // Sair no meio também rende as contas respondidas (GAME_RULES §14.3).
+    award({ id: `daily:${day}`, day, points: dailyPoints(correct) });
     // Como nas rodadas, só o teste concluído conta como dia jogado.
     if (end.status === 'completed') recordPlayedDay(day);
     onDone();

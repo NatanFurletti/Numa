@@ -1,5 +1,5 @@
 // Teste do dia (docs/GAME_RULES.md §13, docs/SCREENS.md §3.10): a entrada do teste, o resultado
-// de quem já fez e o ranking do dia.
+// de quem já fez e o ranking do dia. É aqui que o app pede o consentimento para enviar (D-034).
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +8,17 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { GAME_CONFIG } from '@/engine/config/game-config';
 import type { DailyAttempt } from '@/engine/daily';
 import { nicknameProblem, type NicknameProblem, normalizeNickname } from '@/engine/nickname';
+import { PointsEarned } from '@/features/result/PointsEarned';
 import { ProblemRow } from '@/features/result/ProblemRow';
+import { setSharing } from '@/features/sync/outbox';
 import { systemClock } from '@/lib/clock';
 import { localDateString } from '@/lib/date';
 import { formatSeconds, formatTenths } from '@/lib/format';
 import { defaultRankingService } from '@/services/daily-ranking';
 import type { RankingEntry, RankingService } from '@/services/ranking';
 import { useDaily } from '@/store/daily';
+import { usePoints } from '@/store/points';
+import { useSettings } from '@/store/settings';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
 
@@ -40,7 +44,13 @@ export function DailyScreen({
     serviceProp === undefined ? defaultRankingService() : serviceProp,
   );
   const attempt = useDaily((s) => s.attempts[day]);
+  const hasNickname = useDaily((s) => s.nickname !== null);
+  const consent = useSettings((s) => s.shareRounds);
   const { state, reload } = useDailyRanking(day, service);
+  // Sem servidor neste build não há o que enviar, então não há o que perguntar.
+  const asking = service !== null && consent === null;
+  const sharing = service !== null && consent === true;
+  const declined = service !== null && consent === false;
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.screen}>
@@ -61,11 +71,35 @@ export function DailyScreen({
         </View>
 
         {attempt === undefined ? (
-          <Intro needsNickname={service !== null} onStart={onStart} onOpenPrivacy={onOpenPrivacy} />
+          asking ? (
+            <>
+              <Text style={styles.text}>{t('daily.intro')}</Text>
+              <Consent onOpenPrivacy={onOpenPrivacy} />
+            </>
+          ) : (
+            <Intro
+              needsNickname={sharing}
+              declined={declined}
+              onStart={onStart}
+              onOpenPrivacy={onOpenPrivacy}
+            />
+          )
         ) : attempt.status === 'started' ? (
           <Text style={styles.text}>{t('daily.interrupted')}</Text>
         ) : (
-          <MyResult attempt={attempt} state={state} pending={service !== null} />
+          <>
+            <MyResult
+              day={day}
+              attempt={attempt}
+              state={state}
+              pending={sharing}
+              declined={declined}
+            />
+            {asking ? <Consent onOpenPrivacy={onOpenPrivacy} /> : null}
+            {sharing && !hasNickname && !attempt.submitted ? (
+              <JoinRanking onOpenPrivacy={onOpenPrivacy} />
+            ) : null}
+          </>
         )}
 
         <Ranking state={state} onRetry={reload} />
@@ -83,28 +117,112 @@ export function DailyScreen({
   );
 }
 
-/** Antes de jogar: as regras, o apelido (se há ranking) e o botão de começar. */
-function Intro({
-  needsNickname,
-  onStart,
-  onOpenPrivacy,
-}: {
-  needsNickname: boolean;
-  onStart: () => void;
-  onOpenPrivacy: () => void;
-}) {
+/**
+ * O pedido de consentimento (D-034): aparece para quem ainda não respondeu, antes do apelido.
+ * Recusar não impede de jogar.
+ */
+function Consent({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
   const { t } = useTranslation();
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle} accessibilityRole="header">
+        {t('daily.consent.title')}
+      </Text>
+      <Text style={styles.cardText}>{t('daily.consent.body')}</Text>
+      <Text style={styles.hint}>{t('daily.consent.hint')}</Text>
+      <PrivacyLink onPress={onOpenPrivacy} />
+      <Button label={t('daily.consent.accept')} onPress={() => setSharing(true)} />
+      <Button
+        label={t('daily.consent.decline')}
+        onPress={() => setSharing(false)}
+        variant="secondary"
+      />
+    </View>
+  );
+}
+
+function PrivacyLink({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable accessibilityRole="link" onPress={onPress} hitSlop={8}>
+      <Text style={styles.link}>{t('daily.privacyLink')}</Text>
+    </Pressable>
+  );
+}
+
+/** O campo do apelido, com as regras. `save` devolve false se o apelido não pode ser usado. */
+function useNicknameField() {
   const setNickname = useDaily((s) => s.setNickname);
   const [nickname, setDraft] = useState(() => useDaily.getState().nickname ?? '');
   const [problem, setProblem] = useState<NicknameProblem | null>(null);
 
+  const save = (): boolean => {
+    const found = nicknameProblem(nickname);
+    setProblem(found);
+    if (found) return false;
+    setNickname(normalizeNickname(nickname));
+    return true;
+  };
+  const change = (text: string) => {
+    setDraft(text);
+    setProblem(null);
+  };
+  return { nickname, problem, change, save };
+}
+
+function NicknameField({
+  field,
+  onSubmit,
+  onOpenPrivacy,
+}: {
+  field: ReturnType<typeof useNicknameField>;
+  onSubmit: () => void;
+  onOpenPrivacy: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{t('daily.nicknameLabel')}</Text>
+      <TextInput
+        accessibilityLabel={t('daily.nicknameLabel')}
+        value={field.nickname}
+        onChangeText={field.change}
+        maxLength={GAME_CONFIG.daily.nickname.maxLength}
+        autoCapitalize="words"
+        autoCorrect={false}
+        returnKeyType="done"
+        onSubmitEditing={onSubmit}
+        style={styles.input}
+      />
+      <Text style={styles.hint}>{t('daily.nicknameHint')}</Text>
+      <PrivacyLink onPress={onOpenPrivacy} />
+      {field.problem ? (
+        <Text style={styles.error} accessibilityRole="alert">
+          {t(`daily.nicknameErrors.${field.problem}`)}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** Antes de jogar: as regras, o apelido (para quem entra no ranking) e o botão de começar. */
+function Intro({
+  needsNickname,
+  declined,
+  onStart,
+  onOpenPrivacy,
+}: {
+  needsNickname: boolean;
+  /** A pessoa escolheu não enviar: joga sem apelido e fica fora do ranking. */
+  declined: boolean;
+  onStart: () => void;
+  onOpenPrivacy: () => void;
+}) {
+  const { t } = useTranslation();
+  const field = useNicknameField();
+
   const start = () => {
-    if (needsNickname) {
-      const found = nicknameProblem(nickname);
-      setProblem(found);
-      if (found) return;
-      setNickname(normalizeNickname(nickname));
-    }
+    if (needsNickname && !field.save()) return;
     onStart();
   };
 
@@ -113,34 +231,22 @@ function Intro({
       <Text style={styles.text}>{t('daily.intro')}</Text>
       <Text style={styles.hint}>{t('daily.rule')}</Text>
       {needsNickname ? (
-        <View style={styles.field}>
-          <Text style={styles.label}>{t('daily.nicknameLabel')}</Text>
-          <TextInput
-            accessibilityLabel={t('daily.nicknameLabel')}
-            value={nickname}
-            onChangeText={(text) => {
-              setDraft(text);
-              setProblem(null);
-            }}
-            maxLength={GAME_CONFIG.daily.nickname.maxLength}
-            autoCapitalize="words"
-            autoCorrect={false}
-            returnKeyType="done"
-            onSubmitEditing={start}
-            style={styles.input}
-          />
-          <Text style={styles.hint}>{t('daily.nicknameHint')}</Text>
-          <Pressable accessibilityRole="link" onPress={onOpenPrivacy} hitSlop={8}>
-            <Text style={styles.link}>{t('daily.privacyLink')}</Text>
-          </Pressable>
-          {problem ? (
-            <Text style={styles.error} accessibilityRole="alert">
-              {t(`daily.nicknameErrors.${problem}`)}
-            </Text>
-          ) : null}
-        </View>
+        <NicknameField field={field} onSubmit={start} onOpenPrivacy={onOpenPrivacy} />
       ) : null}
+      {declined ? <Text style={styles.hint}>{t('daily.notSharing')}</Text> : null}
       <Button label={t('daily.start')} onPress={start} />
+    </View>
+  );
+}
+
+/** Aceitou enviar depois de jogar, sem apelido ainda: escolhe o apelido e o resultado é enviado. */
+function JoinRanking({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
+  const { t } = useTranslation();
+  const field = useNicknameField();
+  return (
+    <View style={styles.section}>
+      <NicknameField field={field} onSubmit={field.save} onOpenPrivacy={onOpenPrivacy} />
+      <Button label={t('daily.join')} onPress={field.save} />
     </View>
   );
 }
@@ -149,29 +255,37 @@ type DoneAttempt = Extract<DailyAttempt, { status: 'done' }>;
 
 /** Depois de jogar: placar, tempo e a posição no ranking. */
 function MyResult({
+  day,
   attempt,
   state,
   pending,
+  declined,
 }: {
+  day: string;
   attempt: DoneAttempt;
   state: RankingState;
-  /** Há ranking neste build: avisa enquanto o resultado não foi enviado. */
+  /** A pessoa entra no ranking: avisa enquanto o resultado não foi enviado. */
   pending: boolean;
+  /** A pessoa escolheu não enviar. */
+  declined: boolean;
 }) {
   const { t } = useTranslation();
   const me = state.status === 'ready' ? state.ranking.entries.find((e) => e.isMe) : undefined;
   const total = state.status === 'ready' ? state.ranking.totalPlayers : 0;
+  const points = usePoints((s) => s.awards.find((a) => a.id === `daily:${day}`)?.points);
 
   return (
     <View style={styles.scoreBlock}>
       <Text style={styles.score}>{`${attempt.correct}/${attempt.total}`}</Text>
       <Text style={styles.time}>{t('daily.time', { time: formatSeconds(attempt.elapsedMs) })}</Text>
+      <PointsEarned points={points} />
       {me ? (
         <Text style={styles.position}>{t('daily.position', { rank: me.rank, total })}</Text>
       ) : null}
       {pending && !attempt.submitted && state.status !== 'loading' ? (
         <Text style={styles.hint}>{t('daily.pendingSubmit')}</Text>
       ) : null}
+      {declined ? <Text style={styles.centeredHint}>{t('daily.notSharing')}</Text> : null}
     </View>
   );
 }
@@ -274,6 +388,27 @@ const styles = StyleSheet.create({
   hint: {
     color: colors.textMuted,
     fontSize: 14,
+  },
+  centeredHint: {
+    color: colors.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  card: {
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+  },
+  cardTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  cardText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
   },
   field: {
     gap: spacing.xs,

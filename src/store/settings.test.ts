@@ -56,3 +56,17 @@ describe('boas-vindas', () => {
     expect(useSettings.getState().onboardingDone).toBe(true);
   });
 });
+
+describe('envio de rodadas (D-034)', () => {
+  it('começa sem resposta: a pessoa ainda não foi perguntada', () => {
+    expect(useSettings.getState().shareRounds).toBeNull();
+  });
+
+  it('guarda o aceite e a recusa', () => {
+    useSettings.getState().setShareRounds(true);
+    expect(useSettings.getState().shareRounds).toBe(true);
+
+    useSettings.getState().setShareRounds(false);
+    expect(useSettings.getState().shareRounds).toBe(false);
+  });
+});

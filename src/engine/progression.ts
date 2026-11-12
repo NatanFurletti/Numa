@@ -28,7 +28,8 @@ export interface ChallengeResult {
   elapsedMs: number;
 }
 
-const PASSING_STARS = 2;
+/** Estrelas para passar de etapa (GAME_RULES §4). */
+export const PASSING_STARS = 2;
 
 function lockedStage(): StageProgress {
   return { unlocked: false, bestStars: 0, attempts: 0, consecutiveFails: 0, pendingWarmup: false };

@@ -5,7 +5,7 @@ import { useProgress } from '@/store/progress';
 import { useStoresReady } from './useStoresReady';
 
 describe('useStoresReady', () => {
-  it('fica pronto quando os três stores terminam de carregar', async () => {
+  it('fica pronto quando todos os stores terminam de carregar', async () => {
     const { result } = await renderHook(() => useStoresReady());
 
     await waitFor(() => expect(result.current).toBe(true));

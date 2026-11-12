@@ -26,6 +26,8 @@ export const en: Translation = {
     settings: '⚙️ Settings',
     streak_one: '🔥 {{count}} day',
     streak_other: '🔥 {{count}} days',
+    points_one: '✨ {{count}} point',
+    points_other: '✨ {{count}} points',
   },
   welcome: {
     question: 'Want a quick test to start at your level?',
@@ -162,6 +164,15 @@ export const en: Translation = {
     backToChallenge: 'Back to the challenge',
     practiceAgain: 'Practice again',
   },
+  points: {
+    earned_one: '+{{count}} point',
+    earned_other: '+{{count}} points',
+    hits: '{{count}} for correct answers',
+    stars: '{{count}} for new stars',
+    newStage: '{{count}} for a new stage',
+    capped:
+      "This stage's correct answers already earned points {{limit}} times today. They count again tomorrow.",
+  },
   review: {
     progress: '{{current}} of {{total}}',
     correct: 'Correct!',
@@ -190,6 +201,16 @@ export const en: Translation = {
       invalidChars: 'Use only letters, numbers, spaces, dots, hyphens and underscores.',
       blocked: 'Pick another nickname.',
     },
+    consent: {
+      title: 'Want to join the ranking?',
+      body: "To join the ranking, Numa sends the server your nickname plus your answers and times from the daily test and from challenge rounds. We don't ask for your name or email.",
+      hint: 'You can change this later in Settings.',
+      accept: 'Accept and join the ranking',
+      decline: 'Play without sending',
+    },
+    notSharing:
+      'You chose not to send your results, so you are not in the ranking. You can change this in Settings.',
+    join: 'Join the ranking',
     start: 'Start the test',
     exitTitle: 'Leave the daily test?',
     exitMessage: "Today's attempt ends here, with the problems you have already answered.",
@@ -237,6 +258,10 @@ export const en: Translation = {
     eraseConfirm: 'Erase everything',
     erased: 'Progress erased.',
     privacySection: 'Privacy',
+    shareOn: 'Send my rounds',
+    shareOnHint: 'You join the ranking. Your nickname, answers and times are sent.',
+    shareOff: "Don't send",
+    shareOffHint: 'Everything stays on this device, and you stay out of the ranking.',
     privacy: 'Privacy policy',
   },
   privacy: {
@@ -247,27 +272,27 @@ export const en: Translation = {
     sections: {
       device: {
         title: 'What stays only on your device',
-        body: 'Your progress, stars, day streak, round history, language and preferences are stored on your own device (in the browser, when you play on the web). None of it is sent to us.\n\n"Erase progress", in Settings, deletes this data. So does clearing your browser data.',
+        body: 'Your progress, stars, day streak, round history, language and preferences are stored on your own device (in the browser, when you play on the web). Without your consent, none of it is sent to us.\n\n"Erase progress", in Settings, deletes this data from the device. So does clearing your browser data.',
       },
       server: {
-        title: 'What goes to the server: only the daily test',
-        body: 'When you take the daily test, we send the nickname you chose, how many problems you got right, your time and the day. So we know the result is yours, your device gets a random code that contains nothing about you.\n\nThe nickname, correct answers, time and position appear in the ranking for anyone to see. The random code does not. That is why you should not use your full name as your nickname.',
+        title: 'What goes to the server, and only if you accept',
+        body: 'The first time you open the daily test, Numa asks whether you want to join the ranking. If you do not accept, nothing is sent and you play as usual, including the daily test.\n\nIf you accept, we send:\n• from the daily test: the nickname you chose, the day, and your answer and time for each problem;\n• from challenge rounds: the stage, your answer, time and number of key presses for each problem, the typing direction, the app version and the time the round started.\n\nThe server rebuilds the problems and checks the answers, so the ranking is fair. So we know the results are yours, your device gets a random code that contains nothing about you.\n\nThe nickname, correct answers, time and position in the daily test appear in the ranking for anyone to see. The random code and the challenge rounds do not. That is why you should not use your full name as your nickname.\n\nYou can stop sending at any time in Settings > Privacy. What was already sent stays stored until you ask us to delete it.',
       },
       providers: {
         title: 'Who stores this data',
-        body: 'Daily test results are stored on Supabase, and the website is hosted on Vercel. Their servers may be outside your country. Like any website, Vercel logs technical access data (such as the IP address) for security.\n\nNuma has no ads, uses no tracking tools, and does not sell or share data.',
+        body: 'The data you send is stored on Supabase. The website and the answer checking run on Vercel. Their servers may be outside your country. Like any website, Vercel logs technical access data (such as the IP address) for security.\n\nNuma has no ads, uses no tracking tools, and does not sell or share data.',
       },
       keep: {
         title: 'How long',
-        body: 'Daily test results are kept to show the rankings, until you ask us to delete them.',
+        body: 'Daily test results are kept to show the rankings, and challenge rounds to calculate points and tune the difficulty of the game. Everything is kept until you ask us to delete it.',
       },
       rights: {
         title: 'Your rights',
-        body: 'You can ask to see, correct or delete your daily test results. Write to {{email}} with your nickname and the days you played.',
+        body: 'You can ask to see, correct or delete what was sent, and you can withdraw your consent at any time in Settings. To see or delete data, write to {{email}} with your nickname and the days you played.',
       },
       kids: {
         title: 'Children',
-        body: 'Numa is for all ages and does not ask for personal data. Children should choose their nickname with help from an adult, without using their real name.',
+        body: 'Numa is for all ages and does not ask for personal data. Children should decide about the ranking and choose their nickname with help from an adult, without using their real name.',
       },
       changes: {
         title: 'Changes',

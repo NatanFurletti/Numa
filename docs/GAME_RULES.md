@@ -150,6 +150,7 @@ Mostre **uma** frase, na ordem de prioridade:
 | Direção da digitação | Esquerda → direita / Direita → esquerda | Esquerda → direita |
 | Refazer nivelamento | ação | – |
 | Apagar progresso | ação com confirmação dupla | – |
+| Enviar minhas rodadas | Enviar / Não enviar (só com servidor configurado) | sem resposta, até a pessoa ser perguntada (§13.4) |
 
 ### 12.1 Direção da digitação
 - **Esquerda → direita:** digitando `1`, `1`, `2`, aparece `1` → `11` → `112`. O cursor fica à **direita** do número.
@@ -157,7 +158,7 @@ Mostre **uma** frase, na ordem de prioridade:
 - **Nenhum indicador revela a quantidade de dígitos da resposta** (sem tracinhos por dígito).
 - O "apagar" sempre remove o **último dígito digitado**, qualquer que seja a direção.
 
-## 13. Teste do dia e ranking (D-031)
+## 13. Teste do dia e ranking (D-031, D-034)
 
 ### 13.1 O teste
 - **Todo mundo faz as mesmas contas no mesmo dia.** A seed sai da data (`dailySeed('2026-11-11')`), então o teste é gerado no aparelho, sem servidor, e funciona offline.
@@ -177,6 +178,71 @@ Mostre **uma** frase, na ordem de prioridade:
 - **Ordem:** mais acertos primeiro. No empate, o menor tempo. Se ainda empatar, quem enviou primeiro.
 - A tela mostra os **50 primeiros** do dia e, se estiver fora deles, a posição da própria pessoa ("Você ficou em 62º de 340.").
 - O ranking pode ser visto antes de jogar: ele não mostra as contas.
-- **Apelido, sem conta:** pedido antes do primeiro teste e lembrado depois. De 2 a 16 caracteres ⚙️: letras, números, espaço, ponto, hífen e sublinhado. Uma lista curta de palavrões é recusada ⚙️. A tela avisa que o apelido aparece para todo mundo e pede para não usar o nome completo.
+- **Só entra no ranking quem aceita enviar os resultados** (§13.4). Quem recusa faz o teste do mesmo jeito, sem apelido, e vê o ranking.
+- **Apelido, sem conta:** pedido antes do primeiro teste de quem aceitou, e lembrado depois. De 2 a 16 caracteres ⚙️: letras, números, espaço, ponto, hífen e sublinhado. Uma lista curta de palavrões é recusada ⚙️. A tela avisa que o apelido aparece para todo mundo e pede para não usar o nome completo.
 - **Sem internet:** o teste funciona. O resultado fica guardado e é enviado na próxima vez que a tela do teste do dia abrir com internet, se ainda for o mesmo dia.
-- **Sem o Supabase configurado** (build sem as variáveis): o teste funciona, sem apelido e sem ranking.
+- **Sem o Supabase configurado** (build sem as variáveis): o teste funciona, sem pedido de consentimento, sem apelido e sem ranking.
+
+### 13.4 Consentimento para enviar (D-034)
+- Na **primeira vez que a pessoa abre o teste do dia**, antes do apelido, o app pergunta se ela quer entrar no ranking e explica o que é enviado. Dois botões: **Aceitar e entrar no ranking** e **Jogar sem enviar**. Há um link para a política de privacidade.
+- **Um aceite vale para tudo o que é enviado:** o teste do dia e as rodadas de desafio.
+- **Sem resposta ou com recusa, nada sai do aparelho.** Quem recusa joga tudo normalmente.
+- **Quem já tinha apelido** antes desta regra também é perguntado, na próxima vez que abrir o teste do dia. Até aceitar, nada novo é enviado.
+- **Quem já jogou o teste de hoje e aceita depois** tem o resultado enviado na hora. Se ainda não tinha apelido, escolhe um.
+- A escolha pode ser mudada em **Configurações > Privacidade**. Desligar para os envios e descarta as rodadas que esperavam na fila. O que já foi enviado continua no servidor até a pessoa pedir para apagar.
+
+### 13.5 Conferência no servidor (D-034)
+- **O app nunca envia o placar.** Envia a resposta, o tempo e o número de teclas de cada conta. O servidor refaz as contas com o mesmo engine (pela data, no teste do dia; pela etapa e seed, no desafio) e calcula acertos, tempo e estrelas.
+- **O tempo total é a soma dos tempos por conta.**
+- O servidor **recusa** a rodada inteira quando:
+  - a quantidade de respostas não bate com a de contas;
+  - uma resposta não é um número que o teclado produz (inteiro de 0 a 9999);
+  - há conta respondida depois de uma conta sem resposta (a rodada para no abandono);
+  - uma conta foi respondida em menos de **250 ms** ⚙️;
+  - um tempo é negativo, não inteiro ou maior que 24 h ⚙️;
+  - a versão das regras (`rulesVersion`) é diferente da do servidor;
+  - no teste do dia: o dia está a mais de 1 dia da data do servidor, ou o apelido está fora das regras.
+- **Rodadas de desafio** de quem aceitou são enviadas ao terminar (concluídas ou abandonadas). Sem internet, ficam numa fila no aparelho e saem depois. Treino livre, aquecimento e nivelamento não são enviados.
+- **Limite conhecido:** o tempo vem do aparelho, porque o teste funciona offline. Quem calcula as respostas com um programa e envia tempos plausíveis ainda passa.
+
+## 14. Pontos (D-032, D-035)
+
+Os pontos vêm dos **acertos**, e não da participação. Eles movem o mascote (pontos totais) e o ranking da semana (pontos de cada dia). Não há moeda para gastar.
+
+### 14.1 Rodada de desafio concluída
+Seja `peso` o peso da faixa do nível ⚙️:
+
+| Faixa | Níveis | Peso |
+|---|---|---|
+| 1 dígito | L01–L05 | 1 |
+| 2d ± 1d | L06–L10 | 2 |
+| 2d ± 2d | L11–L15 | 3 |
+| 3d ± 2d | L16–L20 | 4 |
+| 3d ± 3d | L21–L25 | 5 |
+| Tabuada e divisão de 1 dígito | L26–L30 | 2 |
+| 2d × 1d e divisão de 2 dígitos | L31–L35 | 4 |
+
+A versão armada (`L07V`) tem o peso da versão na linha (`L07`).
+
+- **Acertos:** `acertos × peso`.
+- **Estrelas novas:** `5 × peso` ⚙️ por estrela acima da melhor nota anterior da etapa. Repetir com a mesma nota (ou menor) não rende bônus.
+- **Etapa nova:** `10 × peso` ⚙️ na primeira vez que a pessoa passa da etapa (⭐⭐ ou mais). Etapas liberadas pelo nivelamento ainda contam como novas.
+- Ex.: 10/10 com ⭐⭐⭐ pela primeira vez na L12-B (peso 3): `30 + 3 × 15 + 30 = 105`.
+
+### 14.2 Travas
+- **Por dia:** os acertos só rendem nas **3 primeiras** ⚙️ rodadas de desafio concluídas de cada etapa no dia (horário local). Da 4ª em diante, só os bônus, que de qualquer jeito saem uma vez por etapa.
+- **Acerto mínimo:** rodada com menos de **50%** ⚙️ de acerto não rende acertos.
+
+### 14.3 Outros modos
+- **Teste do dia:** `acertos × 3` ⚙️, uma vez por dia. Sair no meio rende as contas respondidas.
+- **Treino livre, aquecimento, nivelamento e rodadas abandonadas** não rendem pontos.
+
+### 14.4 Onde aparecem
+- **Resultado** (desafio e teste do dia): os pontos ganhos, com as partes (acertos, estrelas novas, etapa nova). Quando a trava do dia segurou os acertos, uma frase explica, sem tom de bronca. Com 0 pontos, a linha não aparece.
+- **Tela inicial:** o total de pontos.
+
+### 14.5 Contagem
+- Os pontos de uma rodada são calculados ao gravá-la e somados **uma vez só** (pelo id da rodada, ou pelo dia no teste do dia).
+- **Sem pontos retroativos:** as rodadas de antes desta regra não rendem.
+- "Apagar progresso" zera os pontos.
+- O servidor recalcula os pontos das rodadas que recebe com a mesma função do engine (D-032).

@@ -25,6 +25,8 @@ export const pt = {
     settings: '⚙️ Configurações',
     streak_one: '🔥 {{count}} dia',
     streak_other: '🔥 {{count}} dias',
+    points_one: '✨ {{count}} ponto',
+    points_other: '✨ {{count}} pontos',
   },
   welcome: {
     question: 'Quer fazer um teste rápido para começar no seu nível?',
@@ -161,6 +163,15 @@ export const pt = {
     backToChallenge: 'Voltar ao desafio',
     practiceAgain: 'Treinar de novo',
   },
+  points: {
+    earned_one: '+{{count}} ponto',
+    earned_other: '+{{count}} pontos',
+    hits: '{{count}} dos acertos',
+    stars: '{{count}} das estrelas novas',
+    newStage: '{{count}} da etapa nova',
+    capped:
+      'Os acertos desta etapa já renderam pontos {{limit}} vezes hoje. Amanhã eles voltam a valer.',
+  },
   review: {
     progress: '{{current}} de {{total}}',
     correct: 'Certa!',
@@ -189,6 +200,16 @@ export const pt = {
       invalidChars: 'Use só letras, números, espaço, ponto, hífen e sublinhado.',
       blocked: 'Escolha outro apelido.',
     },
+    consent: {
+      title: 'Quer entrar no ranking?',
+      body: 'Para entrar no ranking, o Numa envia ao servidor o seu apelido e as respostas e os tempos do teste do dia e das rodadas de desafio. Não pedimos nome nem e-mail.',
+      hint: 'Dá para mudar isso depois, nas Configurações.',
+      accept: 'Aceitar e entrar no ranking',
+      decline: 'Jogar sem enviar',
+    },
+    notSharing:
+      'Você escolheu não enviar seus resultados, então fica fora do ranking. Dá para mudar nas Configurações.',
+    join: 'Entrar no ranking',
     start: 'Começar o teste',
     exitTitle: 'Sair do teste do dia?',
     exitMessage: 'Sua tentativa de hoje termina aqui, com as contas que você já respondeu.',
@@ -236,6 +257,10 @@ export const pt = {
     eraseConfirm: 'Apagar tudo',
     erased: 'Progresso apagado.',
     privacySection: 'Privacidade',
+    shareOn: 'Enviar minhas rodadas',
+    shareOnHint: 'Você entra no ranking. Vão o apelido, as respostas e os tempos.',
+    shareOff: 'Não enviar',
+    shareOffHint: 'Tudo fica só neste aparelho, e você fica fora do ranking.',
     privacy: 'Política de privacidade',
   },
   privacy: {
@@ -246,27 +271,27 @@ export const pt = {
     sections: {
       device: {
         title: 'O que fica só no seu aparelho',
-        body: 'Seu progresso, estrelas, sequência de dias, histórico de rodadas, idioma e preferências ficam guardados no próprio aparelho (no navegador, quando você joga pela web). Nada disso é enviado para nós.\n\n"Apagar progresso", nas Configurações, apaga esses dados. Apagar os dados do navegador também.',
+        body: 'Seu progresso, estrelas, sequência de dias, histórico de rodadas, idioma e preferências ficam guardados no próprio aparelho (no navegador, quando você joga pela web). Sem o seu aceite, nada disso é enviado para nós.\n\n"Apagar progresso", nas Configurações, apaga esses dados do aparelho. Apagar os dados do navegador também.',
       },
       server: {
-        title: 'O que vai para o servidor: só o teste do dia',
-        body: 'Quando você faz o teste do dia, enviamos o apelido que você escolheu, quantas contas acertou, o tempo e o dia. Para saber que o resultado é seu, o aparelho recebe um código aleatório, sem nenhum dado seu.\n\nO apelido, os acertos, o tempo e a posição aparecem no ranking para qualquer pessoa. O código aleatório não aparece. Por isso, não use seu nome completo no apelido.',
+        title: 'O que vai para o servidor, e só se você aceitar',
+        body: 'Na primeira vez que você abre o teste do dia, o Numa pergunta se você quer entrar no ranking. Se você não aceitar, nada é enviado e você joga normalmente, inclusive o teste do dia.\n\nSe você aceitar, enviamos:\n• do teste do dia: o apelido que você escolheu, o dia, e a resposta e o tempo de cada conta;\n• das rodadas de desafio: a etapa, a resposta, o tempo e o número de teclas de cada conta, a direção da digitação, a versão do app e o horário em que a rodada começou.\n\nO servidor refaz as contas e confere as respostas, para o ranking ser justo. Para saber que os resultados são seus, o aparelho recebe um código aleatório, sem nenhum dado seu.\n\nO apelido, os acertos, o tempo e a posição no teste do dia aparecem no ranking para qualquer pessoa. O código aleatório e as rodadas de desafio não aparecem. Por isso, não use seu nome completo no apelido.\n\nVocê pode parar de enviar quando quiser, em Configurações > Privacidade. O que já foi enviado continua guardado até você pedir para apagar.',
       },
       providers: {
         title: 'Quem guarda esses dados',
-        body: 'Os resultados do teste do dia ficam no Supabase, e o site fica na Vercel. Os servidores deles podem ficar fora do Brasil. Como todo site, a Vercel registra dados técnicos de acesso (como o endereço IP) por segurança.\n\nO Numa não tem anúncios, não usa ferramentas de rastreamento e não vende nem compartilha dados.',
+        body: 'Os dados enviados ficam guardados no Supabase. O site e a conferência das respostas ficam na Vercel. Os servidores deles podem ficar fora do Brasil. Como todo site, a Vercel registra dados técnicos de acesso (como o endereço IP) por segurança.\n\nO Numa não tem anúncios, não usa ferramentas de rastreamento e não vende nem compartilha dados.',
       },
       keep: {
         title: 'Por quanto tempo',
-        body: 'Os resultados do teste do dia ficam guardados para mostrar os rankings, até você pedir para apagar.',
+        body: 'Os resultados do teste do dia ficam guardados para mostrar os rankings, e as rodadas de desafio, para calcular os pontos e ajustar a dificuldade do jogo. Tudo fica até você pedir para apagar.',
       },
       rights: {
         title: 'Seus direitos',
-        body: 'Pela LGPD, você pode pedir para ver, corrigir ou apagar seus resultados do teste do dia. Escreva para {{email}} informando o apelido e os dias em que jogou.',
+        body: 'Pela LGPD, você pode pedir para ver, corrigir ou apagar o que foi enviado, e pode retirar o seu aceite a qualquer momento nas Configurações. Para ver ou apagar dados, escreva para {{email}} informando o apelido e os dias em que jogou.',
       },
       kids: {
         title: 'Crianças',
-        body: 'O Numa serve para todas as idades e não pede dados pessoais. Crianças devem escolher o apelido com a ajuda de um adulto, sem usar o nome verdadeiro.',
+        body: 'O Numa serve para todas as idades e não pede dados pessoais. Crianças devem decidir sobre o ranking e escolher o apelido com a ajuda de um adulto, sem usar o nome verdadeiro.',
       },
       changes: {
         title: 'Mudanças',

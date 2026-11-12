@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Próximo passo:** levar a `homolog` para a produção (PR #11), com o teste do dia e a política de privacidade. Depois, **M8** (Fase 4). Ao concluir um marco, atualize esta linha.
+> **Próximo passo:** publicar o **M8** em homologação: abrir o PR da branch `m8-server-verified-rounds` para a `homolog`, cadastrar `SUPABASE_SECRET_KEY` na Vercel, rodar a migração `20261112000000_verified_rounds.sql` no Supabase e testar no navegador (placar falso recusado; quem não aceitou não envia nada). O **M9** (pontos) já tem a parte do aparelho pronta na branch `m9-points` (D-035); depois da homologação do M8, falta o item do servidor nessa mesma branch. Ao concluir um marco, atualize esta linha.
 
 ## Fase 0: setup do projeto
 
@@ -58,11 +58,11 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 
 - [x] Decidir o backend (D-003: Supabase × API própria): Supabase (D-031)
 - [ ] Conta opcional + sincronização entre aparelhos
-- [ ] Envio anônimo de rodadas com consentimento (DATA §2.4)
+- [x] Envio anônimo de rodadas com consentimento (DATA §2.5 e §2.6, D-034). Por enquanto, só as rodadas de desafio
 - [ ] Faixa etária opcional
 - [ ] Configuração de regras baixada do servidor (`rules_configs`)
 - [ ] Painel/consultas de calibração por etapa e faixa etária
-- [x] Política de privacidade (versão simples, cobrindo o teste do dia: D-033). A parte das rodadas enviadas vem no M8
+- [x] Política de privacidade (D-033), com as rodadas enviadas e o consentimento (D-034)
 - [ ] Registrar domínio e fazer a busca de marca no INPI
 
 ## Fase 3: lojas e engajamento
@@ -70,7 +70,7 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 - [ ] Builds iOS/Android via EAS e publicação nas lojas
 - [ ] Notificações push ("não perca sua sequência")
 - [x] Teste do dia (mesma seed para todos) com ranking diário (D-031)
-- [ ] Ranking: conferir as respostas no servidor reaproveitando o engine (hoje o servidor confia no placar). Está no M8
+- [x] Ranking: conferir as respostas no servidor reaproveitando o engine (D-034)
 - [ ] Ranking: CAPTCHA no login anônimo e limpeza periódica de usuários anônimos antigos
 - [ ] Monetização freemium (D-016)
 
@@ -81,21 +81,22 @@ Marcos em ordem. Cada um cabe em uma sessão de trabalho própria, em uma branch
 O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O M12 e o M13 dependem do M8 e do M9.
 
 ### M8 · Rodadas conferidas no servidor e consentimento
-- [ ] Teste técnico: rodar o `src/engine` no servidor (Edge Function do Supabase × Vercel Function) e escolher
-- [ ] Teste do dia conferido no servidor: o app envia respostas e tempos, e o servidor refaz as contas pela seed e calcula o placar
-- [ ] Consentimento para enviar rodadas (DATA §2.4), com a opção nas configurações
-- [ ] Envio das rodadas de desafio (seed, respostas, tempos), com fila para quando não há internet
-- [ ] Política de privacidade: acrescentar as rodadas enviadas e o consentimento (a versão simples é do D-033)
+- [x] Teste técnico: rodar o `src/engine` no servidor (Edge Function do Supabase × Vercel Function) e escolher. Escolhida a Vercel Function (D-034)
+- [x] Teste do dia conferido no servidor: o app envia respostas e tempos, e o servidor refaz as contas pela seed e calcula o placar
+- [x] Consentimento para enviar rodadas (DATA §2.6), com a opção nas configurações
+- [x] Envio das rodadas de desafio (seed, respostas, tempos), com fila para quando não há internet
+- [x] Política de privacidade: acrescentar as rodadas enviadas e o consentimento (a versão simples é do D-033)
+- [ ] Publicar em homologação: `SUPABASE_SECRET_KEY` na Vercel, migração `20261112000000_verified_rounds.sql` no Supabase (só depois do deploy) e o teste do "Pronto quando" no navegador
 
 **Decidir ao iniciar:** onde a conferência roda; em que momento pedir o consentimento (primeiro acesso ou ao abrir o ranking); o que acontece com quem já tem apelido.
 **Pronto quando:** um placar falso enviado pelo navegador é recusado, e quem não consentiu joga sem enviar nada.
 
 ### M9 · Pontos
-- [ ] Regras dos pontos no GAME_RULES e valores em `src/engine/config/`
-- [ ] `points` no engine (TDD): acertos × peso do nível, bônus por estrelas e por etapa nova, e as travas
-- [ ] Pontos ganhos na tela de resultado e total na tela inicial
-- [ ] Store local dos pontos (total e da semana), com migração
-- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana
+- [x] Regras dos pontos no GAME_RULES (§14) e valores em `src/engine/config/` (D-035)
+- [x] `points` no engine (TDD): acertos × peso do nível, bônus por estrelas e por etapa nova, e as travas
+- [x] Pontos ganhos na tela de resultado (e no teste do dia) e total na tela inicial
+- [x] Store local dos pontos (`numa.points`): total e pontos de cada dia. O corte da semana fica para o M12
+- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana. **Só depois da homologação do M8.** O envio da rodada passa a levar o dia local (para a trava por dia, D-035)
 
 **Decidir ao iniciar:** pesos, bônus e travas; se treino livre, aquecimento e teste do dia rendem pontos; se as rodadas já guardadas no histórico rendem pontos retroativos.
 **Pronto quando:** toda rodada mostra os pontos ganhos, repetir e falhar de propósito não rende, e o total do servidor bate com o do aparelho.

@@ -42,6 +42,7 @@ module.exports = defineConfig([
             layer('ui'),
             layer('lib'),
             layer('services'),
+            layer('server'),
             layer('app'),
           ],
         },
@@ -61,14 +62,73 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [layer('features'), layer('app'), layer('ui'), layer('services')] },
+        {
+          patterns: [
+            layer('features'),
+            layer('app'),
+            layer('ui'),
+            layer('services'),
+            layer('server'),
+          ],
+        },
       ],
     },
   },
   {
     files: ['src/features/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': ['error', { patterns: [layer('app')] }],
+      'no-restricted-imports': ['error', { patterns: [layer('app'), layer('server')] }],
+    },
+  },
+  {
+    // Serviços externos: só falam com o servidor por HTTP, nunca importando o código dele.
+    files: ['src/services/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [layer('server')] }],
+    },
+  },
+  {
+    // Servidor (Vercel Functions, D-034): só o engine e o Supabase. Roda fora do app, sem React
+    // nem Expo, e a Vercel não lê os atalhos `@/` do tsconfig.
+    files: ['src/server/**/*.ts', 'api/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                'react',
+                'react-*',
+                'react-native',
+                'react-native-*',
+                'expo',
+                'expo-*',
+                '@expo/*',
+              ],
+              message: 'O servidor roda fora do app: sem React, React Native ou Expo.',
+            },
+            {
+              group: ['@/*'],
+              message:
+                'No servidor, use imports relativos: a Vercel não lê os atalhos do tsconfig.',
+            },
+            {
+              group: [
+                '**/store/*',
+                '**/storage/*',
+                '**/i18n/*',
+                '**/features/*',
+                '**/ui/*',
+                '**/lib/*',
+                '**/services/*',
+                '**/app/*',
+              ],
+              message: 'O servidor só importa src/engine e src/server (ARCHITECTURE §4).',
+            },
+          ],
+        },
+      ],
     },
   },
   {
@@ -77,7 +137,15 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [layer('engine'), layer('store'), layer('storage'), layer('services')] },
+        {
+          patterns: [
+            layer('engine'),
+            layer('store'),
+            layer('storage'),
+            layer('services'),
+            layer('server'),
+          ],
+        },
       ],
     },
   },

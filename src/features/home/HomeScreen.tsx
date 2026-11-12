@@ -1,4 +1,4 @@
-// Início (docs/SCREENS.md §3.2): sequência de dias, "Continuar", teste do dia e atalhos.
+// Início (docs/SCREENS.md §3.2): sequência de dias, pontos, "Continuar", teste do dia e atalhos.
 
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -9,6 +9,7 @@ import { stageLabel } from '@/features/levels/names';
 import { systemClock } from '@/lib/clock';
 import { localDateString } from '@/lib/date';
 import { useDaily } from '@/store/daily';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { Button } from '@/ui/Button';
 import { colors, maxContentWidth, spacing } from '@/ui/theme';
@@ -37,6 +38,7 @@ export function HomeScreen({
   const today = localDateString(systemClock.now());
   const days = currentStreak(streak, today);
   const dailyPlayed = useDaily((s) => s.attempts[today] !== undefined);
+  const points = usePoints((s) => s.total);
 
   return (
     <View style={styles.container}>
@@ -46,6 +48,9 @@ export function HomeScreen({
         </Text>
         <Text style={styles.subtitle}>{t('home.tagline')}</Text>
         {days > 0 ? <Text style={styles.streak}>{t('home.streak', { count: days })}</Text> : null}
+        {points > 0 ? (
+          <Text style={styles.points}>{t('home.points', { count: points })}</Text>
+        ) : null}
         <View style={styles.actions}>
           <Button
             label={t(neverPlayed ? 'home.start' : 'home.continue', {
@@ -96,6 +101,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginTop: spacing.sm,
+  },
+  points: {
+    color: colors.accent,
+    fontSize: 18,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
   },
   actions: {
     alignSelf: 'stretch',

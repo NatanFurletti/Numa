@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { setSharing } from '@/features/sync/outbox';
 import { LANGUAGE_NAMES, LANGUAGES } from '@/i18n';
+import { defaultRoundSyncService } from '@/services/api-rounds';
 import { useHistory } from '@/store/history';
+import { usePoints } from '@/store/points';
 import { useProgress } from '@/store/progress';
 import { useSettings } from '@/store/settings';
 import { Button } from '@/ui/Button';
@@ -18,21 +21,32 @@ interface SettingsScreenProps {
   onBack: () => void;
   onRedoPlacement: () => void;
   onOpenPrivacy: () => void;
+  /** Há servidor para onde enviar. Sem ela, vale o que o build tem configurado. */
+  canShare?: boolean;
 }
 
-export function SettingsScreen({ onBack, onRedoPlacement, onOpenPrivacy }: SettingsScreenProps) {
+export function SettingsScreen({
+  onBack,
+  onRedoPlacement,
+  onOpenPrivacy,
+  canShare: canShareProp,
+}: SettingsScreenProps) {
   const { t } = useTranslation();
+  const [canShare] = useState(() => canShareProp ?? defaultRoundSyncService() !== null);
+  const shareRounds = useSettings((s) => s.shareRounds);
   const language = useSettings((s) => s.language);
   const direction = useSettings((s) => s.inputDirection);
   const setLanguage = useSettings((s) => s.setLanguage);
   const setDirection = useSettings((s) => s.setInputDirection);
   const resetProgress = useProgress((s) => s.resetProgress);
   const clearHistory = useHistory((s) => s.clearHistory);
+  const resetPoints = usePoints((s) => s.resetPoints);
   const [erase, setErase] = useState<EraseStep>('idle');
 
   const eraseEverything = () => {
     resetProgress();
     clearHistory();
+    resetPoints();
     setErase('done');
   };
 
@@ -100,6 +114,22 @@ export function SettingsScreen({ onBack, onRedoPlacement, onOpenPrivacy }: Setti
         </Section>
 
         <Section title={t('settings.privacySection')}>
+          {canShare ? (
+            <>
+              <Option
+                label={t('settings.shareOn')}
+                hint={t('settings.shareOnHint')}
+                selected={shareRounds === true}
+                onPress={() => setSharing(true)}
+              />
+              <Option
+                label={t('settings.shareOff')}
+                hint={t('settings.shareOffHint')}
+                selected={shareRounds === false}
+                onPress={() => setSharing(false)}
+              />
+            </>
+          ) : null}
           <Button label={t('settings.privacy')} onPress={onOpenPrivacy} variant="secondary" />
         </Section>
       </View>

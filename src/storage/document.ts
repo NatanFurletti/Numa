@@ -1,4 +1,4 @@
-// Documentos salvos com `schemaVersion` e migrações (docs/DATA.md §1.4).
+// Documentos salvos com `schemaVersion` e migrações (docs/DATA.md §1.7).
 // Dados ilegíveis nunca travam o app: a leitura devolve `data: null` e o motivo em `error`,
 // e quem chama volta aos padrões.
 

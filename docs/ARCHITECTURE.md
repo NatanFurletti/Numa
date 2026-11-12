@@ -12,8 +12,16 @@
 │        ▼                                                         (localStorage) │
 │   src/i18n/  ·  src/ui/                                                         │
 └─────────────────────────────────────────────────────────────────────────────────┘
-      Hospedagem estática (Vercel) como PWA. Único servidor: o ranking do teste do dia
-      (src/services ──► Supabase). Sem ele, o resto do app funciona igual.
+      Hospedagem estática (Vercel) como PWA. Sem o servidor, o resto do app funciona igual.
+
+┌──────────────────────────────── Servidor (D-034) ───────────────────────────────┐
+│                                                                                 │
+│   src/services ──HTTP──►  api/ (Vercel Functions) ──► src/server ──► src/engine │
+│        │                                                   │        (o mesmo)   │
+│        │ ler o ranking                                     ▼ gravar             │
+│        └──────────────────────────────────────────────► Supabase (Postgres)     │
+└─────────────────────────────────────────────────────────────────────────────────┘
+      O app envia respostas e tempos. O servidor refaz as contas e grava o placar.
 ```
 
 Na Fase 2, o `src/storage/` ganha uma implementação que também sincroniza com uma API. O resto do app não muda.
@@ -69,6 +77,7 @@ numa/
 │  │  ├─ feedback.ts           # escolhe a mensagem e a comparação pessoal
 │  │  ├─ placement.ts          # teste de nivelamento
 │  │  ├─ streak.ts             # sequência de dias
+│  │  ├─ points.ts             # pontos de cada rodada e a soma no aparelho (GAME_RULES §14)
 │  │  ├─ types.ts
 │  │  └─ *.test.ts             # testes ao lado de cada módulo
 │  ├─ features/                # Hooks + componentes por funcionalidade
@@ -78,12 +87,14 @@ numa/
 │  │  ├─ review/
 │  │  ├─ levels/
 │  │  └─ settings/
-│  ├─ store/                   # Zustand: progress, settings, history
+│  ├─ store/                   # Zustand: progress, settings, history, daily, outbox, points
 │  ├─ storage/                 # Interface Storage + implementação AsyncStorage
 │  ├─ i18n/                    # index.ts, pt.ts, en.ts (D-024)
 │  ├─ ui/                      # Botões, tema (cores, fontes), layout
-│  ├─ services/                # Serviços externos: ranking do teste do dia (Supabase)
+│  ├─ services/                # Serviços externos: ranking e envio de rodadas (Supabase e api/)
+│  ├─ server/                  # Lógica das funções do servidor. Sem React/Expo. Só importa o engine
 │  ├─ lib/                     # clock.ts (relógio injetável), id.ts
+├─ api/                        # Vercel Functions: arquivos finos que chamam src/server
 ├─ supabase/migrations/        # SQL do banco (tabelas, políticas, funções)
 ├─ e2e/                        # Playwright
 ├─ docs/
@@ -97,11 +108,12 @@ numa/
 |---|---|---|
 | `src/engine` | apenas `src/engine` | React, Expo, RN, store, storage, i18n |
 | `src/store` | engine, storage | componentes, app, services |
-| `src/services` | apenas `src/services` | engine, store, features, app |
-| `src/features` | engine, store, services, ui, i18n, lib | app |
-| `src/app` | features, ui, i18n | engine diretamente (passe pelos hooks), services |
+| `src/services` | apenas `src/services` | engine, store, features, app, server |
+| `src/server`, `api/` | engine, server | React, Expo, RN e todo o resto do app. Só imports relativos |
+| `src/features` | engine, store, services, ui, i18n, lib | app, server |
+| `src/app` | features, ui, i18n | engine diretamente (passe pelos hooks), services, server |
 
-Essas regras serão verificadas por lint (`eslint-plugin-boundaries` ou `no-restricted-imports`) na Fase 0.
+Essas regras são verificadas pelo lint (`no-restricted-imports` em `eslint.config.js`). O `npm run lint` cobre `src/` e `api/`.
 
 ## 5. Peças-chave do engine
 
@@ -141,13 +153,27 @@ O hook `useRound` só liga o teclado e o relógio a esse reducer. Toda a regra (
 O ranking do teste do dia é a primeira parte do app que fala com um servidor (D-031).
 
 - `ranking.ts` define a interface `RankingService` (`submit`, `fetchRanking`). As telas só conhecem essa interface, e os testes passam uma implementação falsa.
-- `supabase-ranking.ts` é a implementação com o Supabase. `supabase.ts` cria o cliente **só quando alguém pede**, nunca ao importar o arquivo: na geração das páginas estáticas não há `window`.
-- Configuração por variáveis de ambiente (`.env.example`): `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Sem elas, `defaultRankingService()` devolve `null` e o app funciona sem ranking.
+- `supabase-ranking.ts` é a implementação: lê o ranking pela função SQL do Supabase e envia as respostas por `POST /api/daily`. `supabase.ts` cria o cliente **só quando alguém pede**, nunca ao importar o arquivo: na geração das páginas estáticas não há `window`.
+- `rounds.ts` define a interface `RoundSyncService` (`submitRound`), e `api-rounds.ts` a implementa com `POST /api/rounds`.
+- `api.ts` faz as chamadas às funções: pega o token do usuário anônimo (criando o usuário no primeiro envio) e manda no cabeçalho `Authorization`.
+- Configuração por variáveis de ambiente (`.env.example`): `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Sem elas, `defaultRankingService()` devolve `null` e o app funciona sem ranking. `EXPO_PUBLIC_API_URL` diz onde ficam as funções quando elas não estão no mesmo endereço do site (o `npm run web` local e os apps nativos).
 - O teste do dia em si não depende do servidor: as contas saem da data, no engine.
 
-## 8. Evolução prevista
+## 8. Servidor (`api/` e `src/server/`)
+
+Tudo o que vale para ranking é conferido no servidor (D-034). As funções rodam na Vercel, no mesmo deploy do site, então cada ambiente usa o engine do mesmo commit do app.
+
+- **`api/daily.ts` e `api/rounds.ts`** são as Vercel Functions. São finas: só entregam a requisição ao `src/server`. Aqui e no `src/server` valem só **imports relativos**, porque a Vercel não lê os atalhos `@/` do `tsconfig`.
+- **`src/server/submissions.ts`** tem a regra: identifica o usuário pelo token, confere o formato, chama o `src/engine/verify.ts` para refazer as contas e grava o placar calculado. Não conhece HTTP nem Supabase.
+- **`src/server/repo.ts`** é a interface do banco (`ServerRepo`), e `supabase-repo.ts` a implementa. Os testes usam um banco falso.
+- **`src/server/http.ts`** liga uma `Request` a um handler: lê o token e o JSON, responde ao preflight (CORS aberto, porque não há cookies) e transforma erro inesperado em 500.
+- **Variáveis no servidor** (projeto na Vercel): `SUPABASE_SECRET_KEY`, a chave secreta do Supabase, que passa por cima das políticas das tabelas. O endereço vem de `SUPABASE_URL` ou, se ela não existir, de `EXPO_PUBLIC_SUPABASE_URL`. Sem a chave, as funções respondem 503 e o app deixa os envios pendentes.
+- **No aparelho**, `src/features/sync/` cuida da fila das rodadas de desafio (`numa.outbox`) e do consentimento. O hook `useRoundSync` fica no layout raiz.
+- **Testar as funções localmente:** os testes do Jest cobrem a regra. Para chamar de verdade, use o preview que a Vercel cria para a branch.
+
+## 9. Evolução prevista
 
 | Fase | Mudança na arquitetura |
 |---|---|
 | 2 | API + Postgres. `src/storage` ganha sincronização. Configuração de regras baixada do servidor (com fallback local). Envio anônimo de rodadas para métricas |
-| 3 | Builds nativos via EAS, notificações push, validação do ranking no servidor reaproveitando `src/engine` |
+| 3 | Builds nativos via EAS, notificações push. A validação do ranking no servidor reaproveitando `src/engine` já está feita (§8) |
