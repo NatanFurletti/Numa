@@ -12,6 +12,8 @@ export interface DailyResultRow {
   total: number;
   elapsedMs: number;
   rulesVersion: number;
+  /** Pontos do teste do dia, calculados no servidor (GAME_RULES §14.3). */
+  points: number;
 }
 
 export interface RoundRow {
@@ -32,7 +34,14 @@ export interface RoundRow {
   stars: number | null;
   inputDirection: 'ltr' | 'rtl';
   problems: ProblemAttempt[];
+  /** Data local do aparelho no início, 'YYYY-MM-DD' (trava por dia). null nas rodadas de antes do M9. */
+  day: string | null;
+  /** Pontos da rodada, calculados no servidor (GAME_RULES §14). */
+  points: number;
 }
+
+/** O que os pontos precisam das rodadas já guardadas da pessoa numa etapa. */
+export type StageRoundRow = Pick<RoundRow, 'day' | 'status' | 'stars'>;
 
 /** `duplicate`: já existia (mesmo dia e usuário, ou mesmo id de rodada). Vale o primeiro. */
 export type InsertOutcome = 'inserted' | 'duplicate';
@@ -42,4 +51,6 @@ export interface ServerRepo {
   userIdFromToken(token: string): Promise<string | null>;
   insertDailyResult(row: DailyResultRow): Promise<InsertOutcome>;
   insertRound(row: RoundRow): Promise<InsertOutcome>;
+  /** Rodadas já guardadas da pessoa nessa etapa (para a melhor nota e a trava do dia). */
+  stageRounds(userId: string, stageId: string): Promise<StageRoundRow[]>;
 }

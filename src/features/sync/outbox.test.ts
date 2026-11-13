@@ -1,3 +1,4 @@
+import { localDateString } from '@/lib/date';
 import type { RoundSubmission, RoundSyncOutcome, RoundSyncService } from '@/services/rounds';
 import { useHistory } from '@/store/history';
 import { useOutbox } from '@/store/outbox';
@@ -42,7 +43,7 @@ describe('flushOutbox', () => {
     expect(useOutbox.getState().roundIds).toEqual([]);
   });
 
-  it('envia a seed, as respostas e os tempos, e não o placar', async () => {
+  it('envia a seed, as respostas, os tempos e o dia local, e não o placar', async () => {
     queue('a');
     const { service, sent } = fakeService();
 
@@ -55,6 +56,8 @@ describe('flushOutbox', () => {
       rulesVersion: useHistory.getState().rounds[0].rulesVersion,
       appVersion: '0.1.0',
       startedAt: '2026-10-23T12:00:00.000Z',
+      // O mesmo dia que os pontos usaram no aparelho (trava por dia, D-035).
+      day: localDateString(Date.parse('2026-10-23T12:00:00.000Z')),
       inputDirection: 'ltr',
       answers: expect.arrayContaining([{ answer: 2, timeMs: 4000, keystrokes: 2 }]),
     });

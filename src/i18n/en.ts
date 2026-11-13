@@ -266,7 +266,7 @@ export const en: Translation = {
   },
   privacy: {
     title: 'Privacy policy',
-    updated: 'Updated on November 12, 2026.',
+    updated: 'Updated on November 13, 2026.',
     intro:
       "Numa is built to keep as little about you as possible. We don't ask for your name, email, age or any sign-up.",
     sections: {
@@ -276,7 +276,7 @@ export const en: Translation = {
       },
       server: {
         title: 'What goes to the server, and only if you accept',
-        body: 'The first time you open the daily test, Numa asks whether you want to join the ranking. If you do not accept, nothing is sent and you play as usual, including the daily test.\n\nIf you accept, we send:\n• from the daily test: the nickname you chose, the day, and your answer and time for each problem;\n• from challenge rounds: the stage, your answer, time and number of key presses for each problem, the typing direction, the app version and the time the round started.\n\nThe server rebuilds the problems and checks the answers, so the ranking is fair. So we know the results are yours, your device gets a random code that contains nothing about you.\n\nThe nickname, correct answers, time and position in the daily test appear in the ranking for anyone to see. The random code and the challenge rounds do not. That is why you should not use your full name as your nickname.\n\nYou can stop sending at any time in Settings > Privacy. What was already sent stays stored until you ask us to delete it.',
+        body: 'The first time you open the daily test, Numa asks whether you want to join the ranking. If you do not accept, nothing is sent and you play as usual, including the daily test.\n\nIf you accept, we send:\n• from the daily test: the nickname you chose, the day, and your answer and time for each problem;\n• from challenge rounds: the stage, your answer, time and number of key presses for each problem, the typing direction, the app version, the time the round started and the date on your device at that moment.\n\nThe server rebuilds the problems, checks the answers and calculates the points, so the ranking is fair. So we know the results are yours, your device gets a random code that contains nothing about you.\n\nThe nickname, correct answers, time and position in the daily test appear in the ranking for anyone to see. The random code and the challenge rounds do not. That is why you should not use your full name as your nickname.\n\nYou can stop sending at any time in Settings > Privacy. What was already sent stays stored until you ask us to delete it.',
       },
       providers: {
         title: 'Who stores this data',

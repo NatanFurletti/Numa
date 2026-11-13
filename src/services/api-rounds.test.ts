@@ -9,6 +9,7 @@ const ROUND: RoundSubmission = {
   rulesVersion: 3,
   appVersion: '0.1.0',
   startedAt: '2026-11-12T11:58:00.000Z',
+  day: '2026-11-12',
   inputDirection: 'ltr',
   answers: [{ answer: 5, timeMs: 2000, keystrokes: 1 }],
 };

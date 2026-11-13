@@ -168,7 +168,7 @@ Objetivo: perguntas como "70% das pessoas de 7–9 anos fazem a L07-B com ⭐⭐
 ### 2.4 Ranking do teste do dia (D-031, D-034)
 Primeiro pedaço do backend, no Supabase. O SQL está em `supabase/migrations/`.
 ```
-daily_results (day, user_id, nickname, correct, total, elapsed_ms, rules_version, verified, created_at)
+daily_results (day, user_id, nickname, correct, total, elapsed_ms, rules_version, verified, points, created_at)
               chave primária: (day, user_id)
 ```
 - **`user_id`** é um usuário **anônimo** do Supabase Auth, criado no primeiro envio de cada aparelho. Sem e-mail nem senha.
@@ -176,7 +176,7 @@ daily_results (day, user_id, nickname, correct, total, elapsed_ms, rules_version
   ```
   { day, nickname, rulesVersion, answers: [{ answer, timeMs, keystrokes }, …] }
   ```
-  A função refaz as contas do dia com o `src/engine`, confere as respostas e grava, com a chave secreta, o placar que ela mesma calculou (`verified = true`). Uma vez por dia (chave primária): o segundo envio não muda nada.
+  A função refaz as contas do dia com o `src/engine`, confere as respostas e grava, com a chave secreta, o placar e os pontos (`dailyPoints`, GAME_RULES §14.3) que ela mesma calculou (`verified = true`). Uma vez por dia (chave primária): o segundo envio não muda nada.
 - **A função recusa:** token inválido (401); corpo fora do formato (400); `rulesVersion` diferente da do servidor (409); e, com 422, apelido fora das regras, dia a mais de 1 dia de distância da data do servidor (o dia do app é o do horário local) ou respostas que não passam na conferência (quantidade errada, resposta que o teclado não produz, conta respondida depois de uma sem resposta, conta respondida em menos de 250 ms ⚙️).
 - **Ler:** ninguém lê a tabela direto. A função SQL `daily_ranking(p_day, p_limit)` devolve posição, apelido, acertos, tempo, `is_me` e o total de jogadores. Os ids dos usuários não saem do banco. Ler o ranking não cria usuário anônimo.
 - Os resultados de antes do M8 não foram conferidos e ficam com `verified = false`.
@@ -184,17 +184,21 @@ daily_results (day, user_id, nickname, correct, total, elapsed_ms, rules_version
 ### 2.5 Rodadas de desafio conferidas (D-034)
 ```
 round_records (id, user_id, stage_id, seed, rules_version, app_version, status, started_at,
-               elapsed_ms, time_limit_ms, correct, total, stars, input_direction, problems, created_at)
+               elapsed_ms, time_limit_ms, correct, total, stars, input_direction, problems,
+               day, points, created_at)
               chave primária: id (o uuid da rodada no aparelho)
 ```
 - O app chama `POST /api/rounds` para cada rodada da fila (§1.5), com:
   ```
-  { id, stageId, seed, rulesVersion, appVersion, startedAt, inputDirection,
+  { id, stageId, seed, rulesVersion, appVersion, startedAt, day, inputDirection,
     answers: [{ answer, timeMs, keystrokes }, …] }
   ```
+  `day` é a data local do aparelho no início da rodada ('YYYY-MM-DD'), a mesma dos pontos no aparelho. Precisa estar a até 1 dia da data do `startedAt` em UTC (senão 422, `dayOutOfRange`).
 - A função refaz as contas pela etapa e pela seed, confere as respostas e calcula acertos, tempo, estrelas e se a rodada foi concluída ou abandonada. `problems` (jsonb) guarda cada conta refeita, no formato do `ProblemAttempt`.
 - É **uma tabela só**, com as contas em `jsonb`, e não as duas do rascunho da §2.1: basta para os pontos (M9) e para as consultas de calibração, e a função grava tudo de uma vez.
-- Ninguém lê nem grava pelo navegador (sem políticas). Os pontos do M9 serão calculados a partir daqui.
+- **Pontos (D-037):** a função calcula os pontos com o `roundPoints` do engine e grava em `points`. A melhor nota anterior e as rodadas do dia vêm das rodadas já guardadas da pessoa na etapa, na ordem de chegada. Rodadas de antes do M9 têm `day = null` e `points = 0`.
+- **Total e semana:** a soma de `points` de `round_records` e de `daily_results` (só `verified`), filtrando `day` para a semana. Não há total guardado à parte.
+- Ninguém lê nem grava pelo navegador (sem políticas).
 - Só rodadas de **desafio**. Treino livre, aquecimento e nivelamento não são enviados por enquanto.
 
 ### 2.6 Privacidade (LGPD)
@@ -202,5 +206,5 @@ round_records (id, user_id, stage_id, seed, rules_version, app_version, status, 
 - Idade apenas como **faixa etária** (ex.: `7-9`, `10-12`, `13-17`, `18+`), sem data de nascimento.
 - Para menores de 12 anos, **consentimento de um responsável** antes de qualquer coleta identificável.
 - Política de privacidade publicada antes do lançamento da Fase 2.
-- **O que é enviado**, ligado a um id anônimo: do teste do dia, o apelido e a resposta e o tempo de cada conta; das rodadas de desafio, a etapa, a seed, as respostas, os tempos, as teclas, a direção da digitação, a versão do app e o horário de início. O apelido é público. A tela pede para não usar o nome completo.
+- **O que é enviado**, ligado a um id anônimo: do teste do dia, o apelido e a resposta e o tempo de cada conta; das rodadas de desafio, a etapa, a seed, as respostas, os tempos, as teclas, a direção da digitação, a versão do app, o horário de início e a data local do aparelho. O apelido é público. A tela pede para não usar o nome completo.
 - A política de privacidade do app (`/privacy`) cobre tudo isso. Mudou o que é enviado? Atualize o texto e a data no mesmo PR (D-033).

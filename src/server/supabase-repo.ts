@@ -3,7 +3,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import type { InsertOutcome, ServerRepo } from './repo';
+import type { InsertOutcome, ServerRepo, StageRoundRow } from './repo';
 
 /** Código do Postgres para chave repetida. */
 const UNIQUE_VIOLATION = '23505';
@@ -35,6 +35,7 @@ export function createSupabaseRepo(client: SupabaseClient): ServerRepo {
         elapsed_ms: row.elapsedMs,
         rules_version: row.rulesVersion,
         verified: true,
+        points: row.points,
       });
       return outcomeOf(error);
     },
@@ -56,8 +57,20 @@ export function createSupabaseRepo(client: SupabaseClient): ServerRepo {
         stars: row.stars,
         input_direction: row.inputDirection,
         problems: row.problems,
+        day: row.day,
+        points: row.points,
       });
       return outcomeOf(error);
+    },
+
+    async stageRounds(userId, stageId) {
+      const { data, error } = await client
+        .from('round_records')
+        .select('day, status, stars')
+        .eq('user_id', userId)
+        .eq('stage_id', stageId);
+      if (error) throw error;
+      return (data ?? []) as StageRoundRow[];
     },
   };
 }
