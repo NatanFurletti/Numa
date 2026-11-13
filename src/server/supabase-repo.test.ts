@@ -195,6 +195,12 @@ describe('createSupabaseRepo.stageRounds', () => {
     await expect(createSupabaseRepo(client).stageRounds('user-1', 'L07-B')).resolves.toEqual([]);
   });
 
+  it('sem dados e sem erro: lista vazia', async () => {
+    const { client } = fakeClient({ selectRows: null });
+
+    await expect(createSupabaseRepo(client).stageRounds('user-1', 'L07-B')).resolves.toEqual([]);
+  });
+
   it('erro do banco é repassado', async () => {
     const { client } = fakeClient({ selectError: { code: '42P01' } });
 
