@@ -11,6 +11,7 @@ const DAILY: DailyResultRow = {
   total: 10,
   elapsedMs: 41_500,
   rulesVersion: 3,
+  points: 27,
 };
 
 const ROUND: RoundRow = {
@@ -29,21 +30,33 @@ const ROUND: RoundRow = {
   stars: 3,
   inputDirection: 'ltr',
   problems: [],
+  day: '2026-11-12',
+  points: 70,
 };
 
 function fakeClient(options: {
   user?: { id: string } | null;
   authError?: { status?: number } | null;
   insertError?: { code: string } | null;
+  selectRows?: unknown[] | null;
+  selectError?: { code: string } | null;
 }) {
   const insert = jest.fn(async () => ({ error: options.insertError ?? null }));
-  const from = jest.fn(() => ({ insert }));
+  const result = { data: options.selectRows ?? null, error: options.selectError ?? null };
+  // select(...).eq(...).eq(...): cada passo devolve a mesma consulta, que no fim é aguardada.
+  const query = {
+    eq: jest.fn(),
+    then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve),
+  };
+  query.eq.mockReturnValue(query);
+  const select = jest.fn(() => query);
+  const from = jest.fn(() => ({ insert, select }));
   const getUser = jest.fn(async () => ({
     data: { user: options.user ?? null },
     error: options.authError ?? null,
   }));
   const client = { auth: { getUser }, from };
-  return { client: client as unknown as SupabaseClient, insert, from, getUser };
+  return { client: client as unknown as SupabaseClient, insert, from, getUser, select, query };
 }
 
 describe('createSupabaseRepo.userIdFromToken', () => {
@@ -98,6 +111,7 @@ describe('createSupabaseRepo.insertDailyResult', () => {
       elapsed_ms: 41_500,
       rules_version: 3,
       verified: true,
+      points: 27,
     });
   });
 
@@ -140,6 +154,8 @@ describe('createSupabaseRepo.insertRound', () => {
       stars: 3,
       input_direction: 'ltr',
       problems: [],
+      day: '2026-11-12',
+      points: 70,
     });
   });
 
@@ -153,5 +169,37 @@ describe('createSupabaseRepo.insertRound', () => {
     const { client } = fakeClient({ insertError: { code: '23503' } });
 
     await expect(createSupabaseRepo(client).insertRound(ROUND)).rejects.toEqual({ code: '23503' });
+  });
+});
+
+describe('createSupabaseRepo.stageRounds', () => {
+  it('lê o dia, a situação e as estrelas das rodadas da pessoa nessa etapa', async () => {
+    const rows = [
+      { day: '2026-11-12', status: 'completed', stars: 2 },
+      { day: null, status: 'abandoned', stars: null },
+    ];
+    const { client, from, select, query } = fakeClient({ selectRows: rows });
+
+    const result = await createSupabaseRepo(client).stageRounds('user-1', 'L07-B');
+
+    expect(result).toEqual(rows);
+    expect(from).toHaveBeenCalledWith('round_records');
+    expect(select).toHaveBeenCalledWith('day, status, stars');
+    expect(query.eq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(query.eq).toHaveBeenCalledWith('stage_id', 'L07-B');
+  });
+
+  it('nenhuma rodada: lista vazia', async () => {
+    const { client } = fakeClient({ selectRows: [] });
+
+    await expect(createSupabaseRepo(client).stageRounds('user-1', 'L07-B')).resolves.toEqual([]);
+  });
+
+  it('erro do banco é repassado', async () => {
+    const { client } = fakeClient({ selectError: { code: '42P01' } });
+
+    await expect(createSupabaseRepo(client).stageRounds('user-1', 'L07-B')).rejects.toEqual({
+      code: '42P01',
+    });
   });
 });

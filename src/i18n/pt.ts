@@ -265,7 +265,7 @@ export const pt = {
   },
   privacy: {
     title: 'Política de privacidade',
-    updated: 'Atualizada em 12 de novembro de 2026.',
+    updated: 'Atualizada em 13 de novembro de 2026.',
     intro:
       'O Numa foi feito para guardar o mínimo possível sobre você. Não pedimos nome, e-mail, idade nem cadastro.',
     sections: {
@@ -275,7 +275,7 @@ export const pt = {
       },
       server: {
         title: 'O que vai para o servidor, e só se você aceitar',
-        body: 'Na primeira vez que você abre o teste do dia, o Numa pergunta se você quer entrar no ranking. Se você não aceitar, nada é enviado e você joga normalmente, inclusive o teste do dia.\n\nSe você aceitar, enviamos:\n• do teste do dia: o apelido que você escolheu, o dia, e a resposta e o tempo de cada conta;\n• das rodadas de desafio: a etapa, a resposta, o tempo e o número de teclas de cada conta, a direção da digitação, a versão do app e o horário em que a rodada começou.\n\nO servidor refaz as contas e confere as respostas, para o ranking ser justo. Para saber que os resultados são seus, o aparelho recebe um código aleatório, sem nenhum dado seu.\n\nO apelido, os acertos, o tempo e a posição no teste do dia aparecem no ranking para qualquer pessoa. O código aleatório e as rodadas de desafio não aparecem. Por isso, não use seu nome completo no apelido.\n\nVocê pode parar de enviar quando quiser, em Configurações > Privacidade. O que já foi enviado continua guardado até você pedir para apagar.',
+        body: 'Na primeira vez que você abre o teste do dia, o Numa pergunta se você quer entrar no ranking. Se você não aceitar, nada é enviado e você joga normalmente, inclusive o teste do dia.\n\nSe você aceitar, enviamos:\n• do teste do dia: o apelido que você escolheu, o dia, e a resposta e o tempo de cada conta;\n• das rodadas de desafio: a etapa, a resposta, o tempo e o número de teclas de cada conta, a direção da digitação, a versão do app, o horário em que a rodada começou e a data do seu aparelho nesse momento.\n\nO servidor refaz as contas, confere as respostas e calcula os pontos, para o ranking ser justo. Para saber que os resultados são seus, o aparelho recebe um código aleatório, sem nenhum dado seu.\n\nO apelido, os acertos, o tempo e a posição no teste do dia aparecem no ranking para qualquer pessoa. O código aleatório e as rodadas de desafio não aparecem. Por isso, não use seu nome completo no apelido.\n\nVocê pode parar de enviar quando quiser, em Configurações > Privacidade. O que já foi enviado continua guardado até você pedir para apagar.',
       },
       providers: {
         title: 'Quem guarda esses dados',

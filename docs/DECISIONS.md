@@ -328,7 +328,7 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **"Apagar progresso" zera os pontos**, junto com o histórico.
 - **`rulesVersion` sobe para 4:** os valores dos pontos fazem parte das regras que o servidor usa para recalcular. Nada sai do aparelho por causa dos pontos, então a política de privacidade não muda.
 
-**Pendente para o item do servidor (depois da homologação do M8):** a trava "por dia" usa o dia local do aparelho, que o servidor não sabe. O envio da rodada vai precisar levar o dia local, como o teste do dia já leva. Quem já jogava antes de aceitar enviar terá no aparelho mais pontos que no servidor, que só conhece as rodadas enviadas.
+**Pendente para o item do servidor (depois da homologação do M8, resolvido no D-037):** a trava "por dia" usa o dia local do aparelho, que o servidor não sabe. O envio da rodada vai precisar levar o dia local, como o teste do dia já leva. Quem já jogava antes de aceitar enviar terá no aparelho mais pontos que no servidor, que só conhece as rodadas enviadas.
 
 ### D-036 · Conta opcional como marco próprio (M14), antes do ranking semanal
 **Data:** 2026-11-13
@@ -340,3 +340,17 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **Primeiro o que já está no servidor** (ranking e pontos). Sincronizar o progresso que só existe no aparelho (níveis, estrelas, histórico) é decidido ao iniciar o marco, e pode virar um marco próprio.
 
 **Em aberto (decidir ao iniciar o M14):** quais logins oferecer; o que acontece quando a pessoa entra na conta num aparelho que já tem progresso anônimo; o escopo da sincronização; crianças e LGPD; "Apagar conta" no app; o envio de e-mails.
+
+### D-037 · Pontos no servidor: por rodada, com o dia local, sem total guardado à parte (M9)
+**Data:** 2026-11-13
+**Resolve:** o item do servidor do M9 e o "Pendente" do D-035.
+**Decisão:**
+- **O envio da rodada leva `day`**, a data local do aparelho no início da rodada (a mesma que o aparelho usou para os pontos). O servidor aceita até 1 dia de distância da data do `startedAt` em UTC, por causa dos fusos, e recusa o resto com 422 (`dayOutOfRange`). Sem `day`, ou com `day` fora do formato, é 400: um app antigo em cache tem as rodadas recusadas até atualizar.
+- **O servidor calcula os pontos com o mesmo `roundPoints` / `dailyPoints` do engine** e grava o resultado em cada linha: `round_records.points` (com `day`) e `daily_results.points`. A melhor nota anterior e as rodadas do dia saem das rodadas já guardadas da pessoa na etapa.
+- **A ordem é a de chegada.** A fila do app envia uma rodada por vez, na ordem em que foram jogadas, então a ordem de chegada é a ordem do jogo. Dois envios ao mesmo tempo da mesma pessoa podem, em tese, dar o bônus duas vezes; com a fila sequencial isso não acontece, e o custo de travar no banco não se paga agora.
+- **O total e o da semana não ficam numa tabela à parte:** são a soma de `points` das duas tabelas (filtrando `day` para a semana). Uma soma guardada à parte poderia divergir das rodadas. O ranking da semana (M12) decide se precisa de uma função SQL ou de um total em cache.
+- **Envio repetido** (mesmo id, ou segundo teste do mesmo dia) responde `points: 0`: os pontos já valeram no primeiro.
+- **Rodadas gravadas antes do M9** (sem `day`, `points = 0`) contam para a melhor nota, mas não para a trava do dia. Sem pontos retroativos, como no D-035.
+- `rulesVersion` não muda: as regras dos pontos são as mesmas do D-035. A política de privacidade passa a citar a data do aparelho no envio.
+
+**Limite conhecido:** o servidor só conhece as rodadas enviadas. Quem jogou antes de aceitar enviar tem no aparelho estrelas e pontos que o servidor não tem, e por isso pode receber lá bônus de estrela que no aparelho já tinha recebido.

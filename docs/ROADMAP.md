@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Próximo passo:** terminar o **M9** com o item do servidor: recalcular os pontos de cada rodada recebida e guardar o total e o da semana, com o envio da rodada levando o dia local (D-035). O M8 e a parte do aparelho do M9 já estão em homologação e produção (PRs #15, #16 e #17). Trabalhe em uma branch nova saindo da `homolog` atualizada. Ordem depois dele: M10, M11, M14 (conta opcional), M12, M13. Ao concluir um marco, atualize esta linha.
+> **Próximo passo:** publicar o item do servidor do **M9** (branch `m9-server-points`, D-037): a migração `20261113000000_round_points.sql` já rodou no Supabase; falta o PR para `homolog` e conferir que o total do servidor bate com o do aparelho. Depois, `homolog` → `main`. Ordem depois dele: M10, M11, M14 (conta opcional), M12, M13. Ao concluir um marco, atualize esta linha.
 
 ## Fase 0: setup do projeto
 
@@ -96,7 +96,8 @@ O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O
 - [x] `points` no engine (TDD): acertos × peso do nível, bônus por estrelas e por etapa nova, e as travas
 - [x] Pontos ganhos na tela de resultado (e no teste do dia) e total na tela inicial
 - [x] Store local dos pontos (`numa.points`): total e pontos de cada dia. O corte da semana fica para o M12
-- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana. O M8 já está homologado, então este item está liberado. O envio da rodada passa a levar o dia local (para a trava por dia, D-035)
+- [x] Servidor: recalcula os pontos de cada rodada recebida e guarda os pontos e o dia de cada uma (total e semana são a soma). O envio da rodada leva o dia local (D-037)
+- [ ] Publicar em homologação: migração `20261113000000_round_points.sql` no Supabase (**antes** do deploy; já rodada em 2026-11-13) e conferir que o total do servidor bate com o do aparelho
 
 **Decidir ao iniciar:** pesos, bônus e travas; se treino livre, aquecimento e teste do dia rendem pontos; se as rodadas já guardadas no histórico rendem pontos retroativos.
 **Pronto quando:** toda rodada mostra os pontos ganhos, repetir e falhar de propósito não rende, e o total do servidor bate com o do aparelho.

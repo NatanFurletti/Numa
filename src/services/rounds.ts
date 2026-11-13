@@ -12,6 +12,8 @@ export interface RoundSubmission {
   appVersion: string;
   /** ISO 8601. */
   startedAt: string;
+  /** Data local do início, 'YYYY-MM-DD': a trava dos pontos é por dia local (D-035). */
+  day: string;
   inputDirection: 'ltr' | 'rtl';
   answers: AnswerPayload[];
 }

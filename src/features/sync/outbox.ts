@@ -3,6 +3,7 @@
 
 import type { RoundRecord } from '@/engine/round-record';
 import { toSubmittedAnswers } from '@/engine/verify';
+import { localDateString } from '@/lib/date';
 import type { RoundSubmission, RoundSyncService } from '@/services/rounds';
 import { useHistory } from '@/store/history';
 import { useOutbox } from '@/store/outbox';
@@ -16,7 +17,7 @@ export function setSharing(share: boolean): void {
 
 export const isSharing = () => useSettings.getState().shareRounds === true;
 
-/** O que vai para o servidor: a seed, as respostas e os tempos. O placar ele mesmo calcula. */
+/** O que vai para o servidor: a seed, as respostas, os tempos e o dia. O placar e os pontos ele mesmo calcula. */
 function toSubmission(round: RoundRecord): RoundSubmission {
   return {
     id: round.id,
@@ -25,6 +26,8 @@ function toSubmission(round: RoundRecord): RoundSubmission {
     rulesVersion: round.rulesVersion,
     appVersion: round.appVersion,
     startedAt: round.startedAt,
+    // O mesmo dia que useSaveRound usou para os pontos.
+    day: localDateString(Date.parse(round.startedAt)),
     inputDirection: round.inputDirection,
     answers: toSubmittedAnswers(round.problems),
   };
