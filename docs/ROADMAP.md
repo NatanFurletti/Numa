@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Próximo passo:** publicar o **M8** em homologação: abrir o PR da branch `m8-server-verified-rounds` para a `homolog`, cadastrar `SUPABASE_SECRET_KEY` na Vercel, rodar a migração `20261112000000_verified_rounds.sql` no Supabase e testar no navegador (placar falso recusado; quem não aceitou não envia nada). O **M9** (pontos) já tem a parte do aparelho pronta na branch `m9-points` (D-035); depois da homologação do M8, falta o item do servidor nessa mesma branch. Ao concluir um marco, atualize esta linha.
+> **Próximo passo:** terminar o **M9** com o item do servidor: recalcular os pontos de cada rodada recebida e guardar o total e o da semana, com o envio da rodada levando o dia local (D-035). O M8 e a parte do aparelho do M9 já estão em homologação e produção (PRs #15, #16 e #17). Trabalhe em uma branch nova saindo da `homolog` atualizada. Ordem depois dele: M10, M11, M14 (conta opcional), M12, M13. Ao concluir um marco, atualize esta linha.
 
 ## Fase 0: setup do projeto
 
@@ -57,7 +57,7 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 ## Fase 2: contas, backend e dados
 
 - [x] Decidir o backend (D-003: Supabase × API própria): Supabase (D-031)
-- [ ] Conta opcional + sincronização entre aparelhos
+- [ ] Conta opcional + sincronização entre aparelhos (virou o M14, na Fase 4: D-036)
 - [x] Envio anônimo de rodadas com consentimento (DATA §2.5 e §2.6, D-034). Por enquanto, só as rodadas de desafio
 - [ ] Faixa etária opcional
 - [ ] Configuração de regras baixada do servidor (`rules_configs`)
@@ -78,7 +78,7 @@ Ordem em [TESTING.md §4](TESTING.md): rng → carry → answer-input → scorin
 
 Marcos em ordem. Cada um cabe em uma sessão de trabalho própria, em uma branch `mN-...` saindo de `homolog`. Os itens de **"Decidir ao iniciar"** são conversados no começo da sessão e registrados no DECISIONS antes do código.
 
-O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O M12 e o M13 dependem do M8 e do M9.
+O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O M12 e o M13 dependem do M8 e do M9. O M14 (conta opcional, D-036) depende do item do servidor do M9 e vem antes do M12: ele é o 14 para não renumerar os marcos já citados nas decisões.
 
 ### M8 · Rodadas conferidas no servidor e consentimento
 - [x] Teste técnico: rodar o `src/engine` no servidor (Edge Function do Supabase × Vercel Function) e escolher. Escolhida a Vercel Function (D-034)
@@ -86,7 +86,7 @@ O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O
 - [x] Consentimento para enviar rodadas (DATA §2.6), com a opção nas configurações
 - [x] Envio das rodadas de desafio (seed, respostas, tempos), com fila para quando não há internet
 - [x] Política de privacidade: acrescentar as rodadas enviadas e o consentimento (a versão simples é do D-033)
-- [ ] Publicar em homologação: `SUPABASE_SECRET_KEY` na Vercel, migração `20261112000000_verified_rounds.sql` no Supabase (só depois do deploy) e o teste do "Pronto quando" no navegador
+- [x] Publicar em homologação: `SUPABASE_SECRET_KEY` na Vercel, migração `20261112000000_verified_rounds.sql` no Supabase (só depois do deploy) e o teste do "Pronto quando" no navegador. Também já em produção (PR #17)
 
 **Decidir ao iniciar:** onde a conferência roda; em que momento pedir o consentimento (primeiro acesso ou ao abrir o ranking); o que acontece com quem já tem apelido.
 **Pronto quando:** um placar falso enviado pelo navegador é recusado, e quem não consentiu joga sem enviar nada.
@@ -96,7 +96,7 @@ O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O
 - [x] `points` no engine (TDD): acertos × peso do nível, bônus por estrelas e por etapa nova, e as travas
 - [x] Pontos ganhos na tela de resultado (e no teste do dia) e total na tela inicial
 - [x] Store local dos pontos (`numa.points`): total e pontos de cada dia. O corte da semana fica para o M12
-- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana. **Só depois da homologação do M8.** O envio da rodada passa a levar o dia local (para a trava por dia, D-035)
+- [ ] Servidor: recalcula os pontos de cada rodada recebida e guarda o total e o da semana. O M8 já está homologado, então este item está liberado. O envio da rodada passa a levar o dia local (para a trava por dia, D-035)
 
 **Decidir ao iniciar:** pesos, bônus e travas; se treino livre, aquecimento e teste do dia rendem pontos; se as rodadas já guardadas no histórico rendem pontos retroativos.
 **Pronto quando:** toda rodada mostra os pontos ganhos, repetir e falhar de propósito não rende, e o total do servidor bate com o do aparelho.
@@ -117,6 +117,16 @@ O M9 depende do M8 só na parte do servidor. O M10 e o M11 dependem só do M9. O
 
 **Decidir ao iniciar:** a lista de missões e quanto vale cada uma. Ponto de partida: concluir o teste do dia (bônus com 8/10 ou mais), completar 3 rodadas, acertar 25 contas, corrigir todas as erradas de uma rodada, fazer uma rodada 10/10, melhorar as estrelas de uma etapa antiga. A missão de desafiar um amigo entra com o M13.
 **Pronto quando:** as missões funcionam offline, mudam todo dia e nunca aparecem como algo perdido.
+
+### M14 · Conta opcional (D-036)
+- [ ] Criar a conta vinculando um login ao usuário anônimo do aparelho, sem trocar o `user_id` (`updateUser` / `linkIdentity` do Supabase)
+- [ ] Entrar na conta em outro aparelho e receber o que está no servidor: total e pontos da semana, apelido
+- [ ] Juntar o progresso anônimo do aparelho com o da conta, conforme a regra decidida
+- [ ] Sair da conta e "Apagar conta" nas configurações (exigência das lojas)
+- [ ] Política de privacidade com os dados da conta (D-033), no mesmo PR
+
+**Decidir ao iniciar:** quais logins (e-mail com código, Google, Apple; a Apple exige "Entrar com a Apple" se o app tiver o login do Google); o que acontece ao entrar na conta num aparelho que já tem progresso anônimo (a conta vence ou os pontos se somam); se níveis, estrelas e histórico também sincronizam ou ficam para outro marco; crianças (LGPD, art. 14) e se a faixa etária entra junto; o envio de e-mails (o SMTP padrão do Supabase só serve para testes); os endereços de retorno do login na web e nos apps nativos.
+**Pronto quando:** alguém joga anônimo, cria a conta, entra em outro aparelho e vê os mesmos pontos e o mesmo apelido; e quem nunca cria conta joga como antes.
 
 ### M12 · Ranking semanal de pontos
 - [ ] Tabela e função de ranking da semana no Supabase

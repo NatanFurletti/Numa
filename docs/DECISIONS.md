@@ -329,3 +329,14 @@ Cada decisão tem: contexto, o que foi decidido e por quê. Para mudar uma decis
 - **`rulesVersion` sobe para 4:** os valores dos pontos fazem parte das regras que o servidor usa para recalcular. Nada sai do aparelho por causa dos pontos, então a política de privacidade não muda.
 
 **Pendente para o item do servidor (depois da homologação do M8):** a trava "por dia" usa o dia local do aparelho, que o servidor não sabe. O envio da rodada vai precisar levar o dia local, como o teste do dia já leva. Quem já jogava antes de aceitar enviar terá no aparelho mais pontos que no servidor, que só conhece as rodadas enviadas.
+
+### D-036 · Conta opcional como marco próprio (M14), antes do ranking semanal
+**Data:** 2026-11-13
+**Contexto:** o D-032 manteve o usuário anônimo por aparelho e deixou a conta opcional da Fase 2 para "depois", sem marco. Com os pontos no servidor (M9), o mascote (M10) e o ranking semanal (M12), trocar de aparelho ou apagar os dados do navegador passa a custar semanas de pontos.
+**Decisão:**
+- **A conta vira o marco M14**, feito depois do item do servidor do M9 e antes do M12. O número é 14, e não 12, para não renumerar os marcos que outras decisões já citam.
+- **O usuário anônimo continua sendo o padrão.** A conta é opcional: o Supabase vincula um e-mail ou um login social ao mesmo usuário anônimo (`updateUser` / `linkIdentity`), sem trocar o `user_id`. Rodadas, ranking e pontos já enviados continuam ligados à pessoa.
+- **Quem não aceitou enviar rodadas** não tem usuário anônimo. Para criar uma conta, a pessoa precisa aceitar o envio antes.
+- **Primeiro o que já está no servidor** (ranking e pontos). Sincronizar o progresso que só existe no aparelho (níveis, estrelas, histórico) é decidido ao iniciar o marco, e pode virar um marco próprio.
+
+**Em aberto (decidir ao iniciar o M14):** quais logins oferecer; o que acontece quando a pessoa entra na conta num aparelho que já tem progresso anônimo; o escopo da sincronização; crianças e LGPD; "Apagar conta" no app; o envio de e-mails.
